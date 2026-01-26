@@ -2,41 +2,79 @@ import ArgumentParser
 import Foundation
 import SwiftBruja
 
+/// On-device LLM inference CLI for Apple Silicon using MLX.
 @main
-struct Bruja: AsyncParsableCommand {
+struct BrujaCLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "bruja",
-        abstract: "On-device LLM for Apple Silicon",
+        abstract: "On-device LLM inference for Apple Silicon using MLX",
+        discussion: """
+            Bruja provides fast, private, on-device language model inference using
+            Apple's MLX framework. No cloud APIs, no API keys, no network latency.
+
+            Models are automatically downloaded from HuggingFace and cached locally
+            in ~/Library/Application Support/SwiftBruja/Models/
+
+            Default model: \(SwiftBruja.Bruja.defaultModel)
+
+            Examples:
+              bruja "What is the capital of France?"     # Query with default model
+              bruja query "Explain quantum computing"    # Explicit query command
+              bruja download -m mlx-community/Llama-3-8B # Download specific model
+              bruja list                                 # Show downloaded models
+              bruja info -m ~/Models/Phi-3              # Show model details
+            """,
         version: "1.0.0",
-        subcommands: [Download.self, Query.self, List.self, Info.self],
-        defaultSubcommand: Query.self
+        subcommands: [DownloadCommand.self, QueryCommand.self, ListCommand.self, InfoCommand.self],
+        defaultSubcommand: QueryCommand.self
     )
 }
 
 // MARK: - Download Command
 
-struct Download: AsyncParsableCommand {
+struct DownloadCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Download a model from HuggingFace"
+        commandName: "download",
+        abstract: "Download a model from HuggingFace",
+        discussion: """
+            Downloads an MLX-compatible model from HuggingFace for local inference.
+            Models are stored in ~/Library/Application Support/SwiftBruja/Models/
+            by default.
+
+            MLX-optimized models from mlx-community are recommended for best
+            performance on Apple Silicon.
+
+            Popular models:
+              mlx-community/Phi-3-mini-4k-instruct-4bit  (~2.15 GB, fast)
+              mlx-community/Llama-3-8B-Instruct-4bit    (~4.5 GB, capable)
+              mlx-community/Mistral-7B-Instruct-v0.3-4bit (~4 GB, balanced)
+
+            Examples:
+              bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit
+              bruja download -m mlx-community/Llama-3-8B --destination ~/Models
+              bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit --force
+            """
     )
 
-    @Option(name: [.short, .long], help: "HuggingFace model ID")
+    @Option(name: [.short, .long], help: "HuggingFace model ID (e.g., mlx-community/Phi-3-mini-4k-instruct-4bit)")
     var model: String
 
-    @Option(name: [.short, .long], help: "Download destination")
+    @Option(name: [.short, .long], help: "Download destination directory (default: ~/Library/Application Support/SwiftBruja/Models/)")
     var destination: String?
 
-    @Flag(help: "Re-download even if model exists")
+    @Flag(name: .long, help: "Force re-download even if model already exists locally")
     var force = false
 
-    @Flag(help: "Suppress progress output")
+    @Flag(name: .shortAndLong, help: "Suppress progress output")
     var quiet = false
 
     func run() async throws {
         let destURL = destination.map { URL(fileURLWithPath: $0) }
             ?? SwiftBruja.Bruja.defaultModelsDirectory
 
-        if !quiet {
+        let showProgress = !quiet
+
+        if showProgress {
             print("Downloading \(model) to \(destURL.path)...")
         }
 
@@ -45,13 +83,13 @@ struct Download: AsyncParsableCommand {
             to: destURL,
             force: force
         ) { progress in
-            if !quiet {
+            if showProgress {
                 print("\r\(Int(progress * 100))%", terminator: "")
                 fflush(stdout)
             }
         }
 
-        if !quiet {
+        if showProgress {
             print("\nDownload complete.")
         }
     }
@@ -59,33 +97,53 @@ struct Download: AsyncParsableCommand {
 
 // MARK: - Query Command
 
-struct Query: AsyncParsableCommand {
+struct QueryCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Query a model"
+        commandName: "query",
+        abstract: "Query a language model with a prompt",
+        discussion: """
+            Send a prompt to a local language model and receive a response.
+            If the model is not downloaded, it will be fetched automatically.
+
+            The default model (\(SwiftBruja.Bruja.defaultModel)) is optimized
+            for instruction-following and general Q&A tasks.
+
+            Parameters:
+              --temperature: Controls randomness (0.0 = deterministic, 1.0 = creative)
+              --max-tokens: Maximum response length in tokens
+              --system: System prompt to set model behavior
+
+            Examples:
+              bruja "What is the capital of France?"
+              bruja query "Explain quantum computing" -m mlx-community/Llama-3-8B
+              bruja "Write a haiku" --temperature 0.9 --max-tokens 100
+              bruja "Summarize this text" --system "You are a helpful assistant"
+              bruja "List 5 programming languages" --json
+            """
     )
 
     @Argument(help: "The prompt to send to the model")
     var prompt: String
 
-    @Option(name: [.short, .long], help: "Model path or HuggingFace ID")
-    var model: String
+    @Option(name: [.short, .long], help: "Model path or HuggingFace ID (default: \(SwiftBruja.Bruja.defaultModel))")
+    var model: String = SwiftBruja.Bruja.defaultModel
 
-    @Option(name: [.short, .long], help: "Download destination for HuggingFace models")
+    @Option(name: [.short, .long], help: "Download destination for HuggingFace models (default: ~/Library/Application Support/SwiftBruja/Models/)")
     var destination: String?
 
-    @Option(help: "Sampling temperature")
+    @Option(name: .long, help: "Sampling temperature (0.0-1.0, default: 0.7)")
     var temperature: Float = 0.7
 
-    @Option(help: "Maximum tokens to generate")
-    var maxTokens: Int = 512
+    @Option(name: .long, help: "Maximum tokens to generate (default: 4096)")
+    var maxTokens: Int = 4096
 
-    @Option(help: "System prompt")
+    @Option(name: .long, help: "System prompt to set model behavior/persona")
     var system: String?
 
-    @Flag(help: "Output as JSON")
+    @Flag(name: .long, help: "Output response as JSON with metadata (model, tokens, duration)")
     var json = false
 
-    @Flag(help: "Suppress non-response output")
+    @Flag(name: .shortAndLong, help: "Suppress non-response output")
     var quiet = false
 
     func run() async throws {
@@ -111,15 +169,29 @@ struct Query: AsyncParsableCommand {
 
 // MARK: - List Command
 
-struct List: AsyncParsableCommand {
+struct ListCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "List downloaded models"
+        commandName: "list",
+        abstract: "List downloaded models",
+        discussion: """
+            Shows all models that have been downloaded and cached locally.
+            Models are stored in ~/Library/Application Support/SwiftBruja/Models/
+            by default.
+
+            Use --json for machine-readable output with full metadata including
+            model ID, path, size, and download date.
+
+            Examples:
+              bruja list                          # List models in default directory
+              bruja list --path ~/MyModels        # List models in custom directory
+              bruja list --json                   # Output as JSON
+            """
     )
 
-    @Option(name: [.short, .long], help: "Models directory")
+    @Option(name: [.short, .long], help: "Models directory to scan (default: ~/Library/Application Support/SwiftBruja/Models/)")
     var path: String?
 
-    @Flag(help: "Output as JSON")
+    @Flag(name: .long, help: "Output as JSON with full metadata")
     var json = false
 
     func run() async throws {
@@ -137,6 +209,7 @@ struct List: AsyncParsableCommand {
             if models.isEmpty {
                 print("No models found in \(modelsDir.path)")
             } else {
+                print("Downloaded models in \(modelsDir.path):\n")
                 for model in models {
                     print("• \(model.id) (\(formatBytes(model.sizeBytes)))")
                 }
@@ -153,15 +226,28 @@ struct List: AsyncParsableCommand {
 
 // MARK: - Info Command
 
-struct Info: AsyncParsableCommand {
+struct InfoCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Show model information"
+        commandName: "info",
+        abstract: "Show detailed information about a model",
+        discussion: """
+            Displays metadata about a specific downloaded model including its
+            ID, file path, size on disk, and download date.
+
+            You can specify the model by its local path or HuggingFace ID
+            (if already downloaded).
+
+            Examples:
+              bruja info -m mlx-community/Phi-3-mini-4k-instruct-4bit
+              bruja info -m ~/Library/Application\\ Support/SwiftBruja/Models/Phi-3
+              bruja info -m ~/MyModels/custom-model --json
+            """
     )
 
     @Option(name: [.short, .long], help: "Model path or HuggingFace ID")
     var model: String
 
-    @Flag(help: "Output as JSON")
+    @Flag(name: .long, help: "Output as JSON with full metadata")
     var json = false
 
     func run() async throws {
