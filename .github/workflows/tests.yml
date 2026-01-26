@@ -54,46 +54,16 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
-      - name: Build library with xcodebuild
+      - name: Build library
         run: |
-          echo "Building SwiftBruja library for macOS"
-          xcodebuild build \
-            -scheme SwiftBruja \
-            -destination 'platform=macOS' \
-            -quiet \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Build CLI with xcodebuild
-        run: |
-          echo "Building bruja CLI for macOS"
-          xcodebuild build \
-            -scheme bruja \
-            -destination 'platform=macOS' \
-            -quiet \
-            CODE_SIGNING_ALLOWED=NO
+          echo "Building SwiftBruja library"
+          swift build
 
       - name: Run unit tests
         run: |
-          set +e
           echo "Running unit tests (skipping integration tests)"
-
-          # Run unit tests only - skip integration tests
-          xcodebuild test \
-            -scheme SwiftBruja \
-            -destination 'platform=macOS' \
-            -skip-testing:BrujaIntegrationTests \
-            CODE_SIGNING_ALLOWED=NO \
-            > test_output.txt 2>&1
-          TEST_EXIT_CODE=$?
-          cat test_output.txt
-
-          if grep -q "Test run with .* tests in .* suites passed\|TEST SUCCEEDED" test_output.txt; then
-            echo "All unit tests passed"
-            exit 0
-          else
-            echo "Unit tests failed"
-            exit $TEST_EXIT_CODE
-          fi
+          # Unit tests don't require Metal - they test the API, types, and model management
+          swift test --filter SwiftBrujaTests 2>&1 | tee test_output.txt
 
       - name: Upload test results
         if: always()
@@ -135,27 +105,9 @@ jobs:
 
       - name: Run integration tests
         run: |
-          set +e
-
           echo "Running integration tests (end-to-end LLM inference)"
-
-          # Run only integration tests
-          xcodebuild test \
-            -scheme SwiftBruja \
-            -destination 'platform=macOS' \
-            -only-testing:BrujaIntegrationTests \
-            CODE_SIGNING_ALLOWED=NO \
-            > integration_output.txt 2>&1
-          TEST_EXIT_CODE=$?
-          cat integration_output.txt
-
-          if grep -q "Test run with .* tests in .* suites passed\|TEST SUCCEEDED" integration_output.txt; then
-            echo "All integration tests passed"
-            exit 0
-          else
-            echo "Integration tests failed"
-            exit $TEST_EXIT_CODE
-          fi
+          # Integration tests spawn the CLI binary as a subprocess
+          swift test --filter BrujaIntegrationTests 2>&1 | tee integration_output.txt
 
       - name: Upload integration test results
         if: always()
