@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 
 import PackageDescription
 
@@ -25,11 +25,11 @@ let package = Package(
         .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.21.0"),
         .package(url: "https://github.com/ml-explore/mlx-swift-lm", branch: "main"),
 
+        // HuggingFace Hub API (for model downloads)
+        .package(url: "https://github.com/huggingface/swift-transformers", from: "1.1.0"),
+
         // CLI argument parsing
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
-
-        // PROJECT.md types (optional, for use cases)
-        .package(url: "https://github.com/intrusive-memory/SwiftProyecto", from: "2.0.0"),
     ],
     targets: [
         // Main library
@@ -41,8 +41,7 @@ let package = Package(
                 .product(name: "MLXFast", package: "mlx-swift"),
                 .product(name: "MLXLLM", package: "mlx-swift-lm"),
                 .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
-                .product(name: "Hub", package: "mlx-swift-lm"),
-                .product(name: "SwiftProyecto", package: "SwiftProyecto"),
+                .product(name: "Hub", package: "swift-transformers"),
             ]
         ),
 
@@ -55,9 +54,15 @@ let package = Package(
             ]
         ),
 
-        // Tests
+        // Unit Tests
         .testTarget(
             name: "SwiftBrujaTests",
+            dependencies: ["SwiftBruja"]
+        ),
+
+        // Integration Tests (requires built binary and LLM model)
+        .testTarget(
+            name: "BrujaIntegrationTests",
             dependencies: ["SwiftBruja"]
         )
     ]

@@ -1,0 +1,126 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Step 1: Code Quality
+  code-quality:
+    name: Code Quality
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for TODOs in committed code
+        run: |
+          if git diff origin/main...HEAD | grep -E "^\+.*TODO|^\+.*FIXME"; then
+            echo "Warning: New TODOs or FIXMEs detected"
+          fi
+
+      - name: Check file sizes
+        run: |
+          find Sources -type f -name "*.swift" -size +100k -exec echo "Warning: Large file: {}" \;
+
+      - name: Check for print statements
+        run: |
+          if grep -r "print(" Sources/ --include="*.swift" | grep -v "// print"; then
+            echo "Warning: print() statements found in source code"
+          fi
+
+  # Step 2: Build and Test on macOS
+  # Note: Must use xcodebuild because Metal shaders cannot be compiled with swift build
+  macos-tests:
+    name: macOS Tests
+    runs-on: macos-26
+    needs: [code-quality]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Build library
+        run: |
+          echo "Building SwiftBruja library"
+          swift build
+
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests (skipping integration tests)"
+          # Unit tests don't require Metal - they test the API, types, and model management
+          swift test --filter SwiftBrujaTests 2>&1 | tee test_output.txt
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-test-results
+          path: test_output.txt
+          retention-days: 7
+
+  # Step 3: Integration Tests (end-to-end LLM inference)
+  integration-tests:
+    name: Integration Tests
+    runs-on: macos-26
+    needs: [macos-tests]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Build bruja CLI (Release)
+        run: |
+          echo "Building bruja CLI with Metal shaders"
+          make release
+          echo "Binary built: $(./bin/bruja --version 2>&1 || echo 'version check failed')"
+          ls -la ./bin/
+
+      - name: Cache LLM model
+        id: cache-model
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Application Support/SwiftBruja/Models
+          key: llm-model-phi3-mini-4k-4bit-v1
+
+      - name: Download LLM model
+        if: steps.cache-model.outputs.cache-hit != 'true'
+        run: |
+          echo "Downloading default LLM model for inference"
+          ./bin/bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit --quiet || ./bin/bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit
+          echo "Model downloaded"
+
+      - name: Run integration tests
+        run: |
+          echo "Running integration tests (end-to-end LLM inference)"
+          # Integration tests spawn the CLI binary as a subprocess
+          swift test --filter BrujaIntegrationTests 2>&1 | tee integration_output.txt
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: integration_output.txt
+          retention-days: 7
