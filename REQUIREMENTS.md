@@ -580,6 +580,91 @@ let package = Package(
 
 ---
 
+## Development Workflow & CI
+
+### Branch Strategy
+
+- **`development`** - All work happens here
+- **`main`** - Protected, PR-only, triggers CI
+- **NEVER** commit directly to `main`
+- **NEVER** delete `development` branch
+
+**Flow**: `development` → PR → CI passes → Merge → Tag → Release
+
+### CI Testing Requirements
+
+CI must pass before merging to `main`:
+
+1. **Compile Check**
+   - Build `SwiftBruja` library (macOS arm64)
+   - Build `bruja` CLI executable (macOS arm64)
+   - All targets must compile without errors
+
+2. **Integration Test**
+   - Download a small test model (or use cached)
+   - Run `bruja query` with a deterministic prompt
+   - Validate response contains expected content
+   - Example test:
+     ```bash
+     # Query with low temperature for deterministic output
+     RESPONSE=$(bruja query "What is 2+2? Reply with just the number." \
+       --model ~/Models/test-model --temperature 0.0)
+
+     # Verify response contains "4"
+     echo "$RESPONSE" | grep -q "4" || exit 1
+     ```
+
+3. **Unit Tests**
+   - `BrujaModelManager` tests (mock downloads)
+   - `ResponseParser` tests (JSON extraction)
+   - `FilePattern` tests (if using structured output)
+
+### GitHub Actions Workflow
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: macos-26
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Library
+        run: swift build --target SwiftBruja
+
+      - name: Build CLI
+        run: swift build --target bruja
+
+      - name: Run Unit Tests
+        run: swift test
+
+      - name: Integration Test
+        run: |
+          # Build release binary
+          swift build -c release --target bruja
+
+          # Run integration test (requires cached model in CI)
+          .build/release/bruja query "What is 2+2?" \
+            --model ${{ runner.temp }}/test-model \
+            --temperature 0.0 \
+            | grep -q "4"
+```
+
+### Model Caching for CI
+
+- Cache test model in GitHub Actions to avoid re-downloading
+- Use smallest viable model for CI (e.g., a tiny test model)
+- Consider creating a dedicated tiny test model for CI
+
+---
+
 ## Implementation Phases
 
 ### Phase 1: Core Infrastructure

@@ -139,6 +139,10 @@ let result: ProjectMd = try await Bruja.query(prompt, as: ProjectMd.self, model:
 
 ## Development Workflow
 
+**See [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md) for complete workflow.**
+
 - **Branch**: `development` → PR → `main`
+- **CI Required**: Build + unit tests + integration test (query with expected response)
 - **Platforms**: macOS 26+, iOS 26+ only
 - **Never** add `@available` checks for older platforms
+- **Never** commit directly to `main`
