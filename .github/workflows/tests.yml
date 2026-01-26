@@ -1,0 +1,124 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Step 1: Code Quality
+  code-quality:
+    name: Code Quality
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for TODOs in committed code
+        run: |
+          if git diff origin/main...HEAD | grep -E "^\+.*TODO|^\+.*FIXME"; then
+            echo "Warning: New TODOs or FIXMEs detected"
+          fi
+
+      - name: Check file sizes
+        run: |
+          find Sources -type f -name "*.swift" -size +100k -exec echo "Warning: Large file: {}" \;
+
+      - name: Check for print statements
+        run: |
+          if grep -r "print(" Sources/ --include="*.swift" | grep -v "// print"; then
+            echo "Warning: print() statements found in source code"
+          fi
+
+  # Step 2: Build and Test on macOS
+  # Note: Must use xcodebuild because Metal shaders cannot be compiled with swift build
+  macos-tests:
+    name: macOS Tests
+    runs-on: macos-26
+    needs: [code-quality]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Build library with xcodebuild
+        run: |
+          echo "Building SwiftBruja library for macOS"
+          xcodebuild build \
+            -scheme SwiftBruja \
+            -destination 'platform=macOS' \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Build CLI with xcodebuild
+        run: |
+          echo "Building bruja CLI for macOS"
+          xcodebuild build \
+            -scheme bruja \
+            -destination 'platform=macOS' \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run unit tests
+        run: |
+          set +e
+
+          echo "Running unit tests on macOS"
+
+          xcodebuild test \
+            -scheme SwiftBruja \
+            -destination 'platform=macOS' \
+            -enableCodeCoverage YES \
+            CODE_SIGNING_ALLOWED=NO \
+            > test_output.txt 2>&1
+          TEST_EXIT_CODE=$?
+          cat test_output.txt
+
+          # Check if tests passed
+          if grep -q "Test Suite .* passed\|TEST SUCCEEDED" test_output.txt; then
+            echo "All unit tests passed"
+            exit 0
+          else
+            echo ""
+            echo "============================================"
+            echo "UNIT TESTS FAILED"
+            echo "============================================"
+            echo ""
+
+            # Show failed tests
+            echo "Failed Tests:"
+            grep "Test Case.*failed" test_output.txt || echo "  No specific test failures found in output"
+
+            echo ""
+            echo "Error Messages:"
+            grep -E "error:|failed with|Assertion failed|Expected|Fatal error" test_output.txt | head -20 || echo "  No error messages found"
+
+            echo ""
+            echo "Test Summary:"
+            grep -E "Test Suite|Testing failed|passed with|failed with" test_output.txt | tail -10 || echo "  No summary found"
+
+            echo ""
+            echo "============================================"
+            exit $TEST_EXIT_CODE
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-test-results
+          path: test_output.txt
+          retention-days: 7
