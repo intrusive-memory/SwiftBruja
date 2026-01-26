@@ -97,7 +97,15 @@ jobs:
           echo "Binary built: $(./bin/bruja --version 2>&1 || echo 'version check failed')"
           ls -la ./bin/
 
+      - name: Cache LLM model
+        id: cache-model
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Application Support/SwiftBruja/Models
+          key: llm-model-phi3-mini-4k-4bit-v1
+
       - name: Download LLM model
+        if: steps.cache-model.outputs.cache-hit != 'true'
         run: |
           echo "Downloading default LLM model for inference"
           ./bin/bruja download --quiet || ./bin/bruja download
