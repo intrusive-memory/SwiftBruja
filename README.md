@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="SwiftBruja.png" alt="SwiftBruja" width="200" height="200">
+</p>
+
 # SwiftBruja
 
 **One import. One line. Local LLM queries on Apple Silicon.**
@@ -87,28 +91,90 @@ print("Tokens: \(result.tokensGenerated)")
 
 ## CLI Usage
 
-SwiftBruja also includes a command-line tool for quick queries and model management.
+SwiftBruja includes a command-line tool (`bruja`) for quick queries and model management.
 
-**Important:** Use `xcodebuild` for builds. Metal shaders required for MLX cannot be compiled with `swift build`.
+### Installation
 
 ```bash
-xcodebuild -scheme bruja -destination 'platform=OS X' build
+# Build and install to ./bin (Metal shaders required)
+make install
+
+# Or for release build
+make release
 ```
+
+**Important:** Use the Makefile or `xcodebuild` for builds. Metal shaders required for MLX cannot be compiled with `swift build`.
 
 ### Commands
 
+#### `bruja query` (default)
+
+Send a prompt to a local language model.
+
 ```bash
-# Query (auto-downloads model if needed)
-bruja query "What is the capital of France?" --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
+# Simple query (uses default model, auto-downloads if needed)
+bruja "What is the capital of France?"
 
-# Download a model
-bruja download --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
+# Explicit query command with specific model
+bruja query "Explain quantum computing" -m mlx-community/Llama-3-8B
 
-# List downloaded models
-bruja list
+# Adjust generation parameters
+bruja "Write a haiku" --temperature 0.9 --max-tokens 100
 
-# Model info
-bruja info --model ~/Library/Application\ Support/SwiftBruja/Models/Phi-3-mini-4k-instruct-4bit
+# Set system prompt for model behavior
+bruja "Summarize this text" --system "You are a helpful assistant"
+
+# JSON output with metadata (tokens, duration)
+bruja "List 5 programming languages" --json
+```
+
+**Options:**
+- `prompt` (argument): The prompt to send to the model
+- `-m, --model`: Model path or HuggingFace ID (default: mlx-community/Phi-3-mini-4k-instruct-4bit)
+- `-d, --destination`: Download destination for HuggingFace models
+- `--temperature`: Sampling temperature 0.0-1.0 (default: 0.7)
+- `--max-tokens`: Maximum tokens to generate (default: 512)
+- `--system`: System prompt to set model behavior
+- `--json`: Output as JSON with metadata
+- `-q, --quiet`: Suppress non-response output
+
+#### `bruja download`
+
+Download a model from HuggingFace.
+
+```bash
+# Download specific model
+bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit
+
+# Download to custom location
+bruja download -m mlx-community/Llama-3-8B -d ~/Models
+
+# Force re-download
+bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit --force
+```
+
+**Popular models:**
+- `mlx-community/Phi-3-mini-4k-instruct-4bit` (~2.15 GB, fast)
+- `mlx-community/Llama-3-8B-Instruct-4bit` (~4.5 GB, capable)
+- `mlx-community/Mistral-7B-Instruct-v0.3-4bit` (~4 GB, balanced)
+
+#### `bruja list`
+
+List downloaded models.
+
+```bash
+bruja list                    # List models in default directory
+bruja list --path ~/MyModels  # List models in custom directory
+bruja list --json             # JSON output
+```
+
+#### `bruja info`
+
+Show detailed information about a model.
+
+```bash
+bruja info -m mlx-community/Phi-3-mini-4k-instruct-4bit
+bruja info -m ~/Models/custom-model --json
 ```
 
 ## API Reference
@@ -143,12 +209,20 @@ SwiftBruja wraps the MLX ecosystem into a simple API:
 ## Building from Source
 
 ```bash
-# Build CLI (required for Metal shaders)
-xcodebuild -scheme bruja -destination 'platform=OS X' build
+# Build and install CLI to ./bin (recommended)
+make install
+
+# Or release build
+make release
+
+# Manual xcodebuild (requires correct destination for macOS 26 Apple Silicon)
+xcodebuild -scheme bruja -destination 'platform=macOS,arch=arm64' build
 
 # Run tests
 swift test
 ```
+
+**Note:** Metal shaders require `xcodebuild` or `make install`. Using `swift build` alone will compile but shaders won't load at runtime.
 
 ## License
 
