@@ -15,7 +15,7 @@ On-device LLM for Apple Silicon. Simple CLI and Swift library for downloading mo
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.0.0")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.0.0-beta")
 ]
 ```
 
