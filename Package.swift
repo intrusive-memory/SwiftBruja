@@ -54,9 +54,15 @@ let package = Package(
             ]
         ),
 
-        // Tests
+        // Unit Tests
         .testTarget(
             name: "SwiftBrujaTests",
+            dependencies: ["SwiftBruja"]
+        ),
+
+        // Integration Tests (requires built binary and LLM model)
+        .testTarget(
+            name: "BrujaIntegrationTests",
             dependencies: ["SwiftBruja"]
         )
     ]
