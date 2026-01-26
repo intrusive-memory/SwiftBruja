@@ -30,9 +30,6 @@ let package = Package(
 
         // CLI argument parsing
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
-
-        // PROJECT.md types (optional, for use cases)
-        .package(url: "https://github.com/intrusive-memory/SwiftProyecto", from: "2.0.0"),
     ],
     targets: [
         // Main library
@@ -45,7 +42,6 @@ let package = Package(
                 .product(name: "MLXLLM", package: "mlx-swift-lm"),
                 .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
                 .product(name: "Hub", package: "swift-transformers"),
-                .product(name: "SwiftProyecto", package: "SwiftProyecto"),
             ]
         ),
 
