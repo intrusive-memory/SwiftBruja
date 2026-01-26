@@ -1,11 +1,29 @@
-# SwiftBruja - AI Assistant Instructions
+# SwiftBruja - Claude Code Instructions
 
-## What is SwiftBruja?
+## Purpose
 
-**SwiftBruja** ("Swift Witch") is a Swift package for on-device LLM inference on Apple Silicon. It provides:
+**SwiftBruja exists for one reason: to make local LLM queries as simple as possible.**
 
-1. **`bruja` CLI** - Command-line tool for downloading models and running queries
-2. **SwiftBruja library** - Swift API for programmatic access to the same functionality
+```swift
+import SwiftBruja
+
+let response = try await Bruja.query("Your question here")
+```
+
+That's it. One import, one line. SwiftBruja handles:
+- Model downloading from HuggingFace
+- Model loading and caching
+- Tokenization and inference
+- GPU acceleration via Metal/MLX
+
+**No cloud APIs. No API keys. No network latency. Just fast, private, on-device AI.**
+
+## What SwiftBruja Provides
+
+1. **`Bruja` API** - Static methods for querying LLMs with minimal code
+2. **`bruja` CLI** - Command-line tool for queries and model management
+3. **Auto-download** - Pass a HuggingFace model ID, it downloads automatically
+4. **Structured output** - Get typed responses with `Bruja.query(as: MyType.self)`
 
 ## Platform Requirements
 
@@ -17,62 +35,47 @@
 - **NO Intel support** - MLX requires Apple Silicon GPU
 
 **Build Requirements:**
-- Use `xcodebuild` for fully functional builds (Metal shaders must be compiled)
+- Use `xcodebuild` for functional builds (Metal shaders must be compiled)
 - `swift build` compiles but Metal shaders won't load at runtime
 - Never add `@available` checks for older platforms
 
 ## Quick Reference
-
-### CLI Commands
-
-```bash
-# Download a model
-bruja download --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
-
-# Query a model
-bruja query "Your prompt here" --model ~/Models/Phi-3-mini-4k-instruct-4bit
-
-# Query with JSON output
-bruja query "Your prompt" --model <path> --json
-
-# List downloaded models
-bruja list
-
-# Show model info
-bruja info --model <path>
-```
 
 ### Library API
 
 ```swift
 import SwiftBruja
 
-// Simple query
-let response = try await Bruja.query("Your prompt", model: modelPath)
+// Simple query (uses default model)
+let response = try await Bruja.query("Your prompt")
 
-// Query with auto-download from HuggingFace
+// Query specific model (auto-downloads if needed)
 let response = try await Bruja.query(
     "Your prompt",
     model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
 )
 
-// Structured output (JSON -> Codable type)
+// Structured output
 struct Result: Codable { let answer: String }
-let result: Result = try await Bruja.query("...", as: Result.self, model: modelPath)
+let result: Result = try await Bruja.query("...", as: Result.self)
 
-// Query with metadata
-let result = try await Bruja.queryWithMetadata("Your prompt", model: modelPath)
-print("Response: \(result.response)")
+// Query with metadata (timing, tokens)
+let result = try await Bruja.queryWithMetadata("Your prompt")
 print("Duration: \(result.durationSeconds)s")
 
-// Download model
+// Model management
 try await Bruja.download(model: modelID, to: destinationURL)
-
-// Check if model exists
 let exists = Bruja.modelExists(at: modelPath)
-
-// List downloaded models
 let models = try Bruja.listModels()
+```
+
+### CLI Commands
+
+```bash
+bruja query "Your prompt" --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
+bruja download --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
+bruja list
+bruja info --model <path>
 ```
 
 ## Key Types
@@ -109,12 +112,12 @@ public struct BrujaModelInfo: Codable, Sendable {
 SwiftBruja/
 ├── Sources/
 │   ├── SwiftBruja/           # Library
-│   │   ├── Bruja.swift       # Main entry point
+│   │   ├── Bruja.swift       # Main entry point (static API)
 │   │   └── Core/
-│   │       ├── BrujaModelManager.swift
-│   │       ├── BrujaQuery.swift
-│   │       ├── BrujaTypes.swift
-│   │       └── BrujaError.swift
+│   │       ├── BrujaModelManager.swift  # Download & load models
+│   │       ├── BrujaQuery.swift         # Query execution
+│   │       ├── BrujaTypes.swift         # Result types
+│   │       └── BrujaError.swift         # Error handling
 │   └── bruja/                # CLI executable
 │       └── BrujaCLI.swift
 └── Tests/
@@ -127,7 +130,6 @@ SwiftBruja/
 - `mlx-swift-lm` - LLM inference (MLXLLM, MLXLMCommon)
 - `swift-transformers` - HuggingFace Hub API
 - `swift-argument-parser` - CLI parsing
-- `SwiftProyecto` - PROJECT.md parsing (optional)
 
 ## Building
 
@@ -142,42 +144,20 @@ xcodebuild -scheme bruja -destination 'platform=OS X' build
 swift test
 ```
 
-## When to Use SwiftBruja
-
-Use SwiftBruja when you need to:
-- Run LLM queries locally without cloud APIs
-- Download and manage HuggingFace models
-- Get structured (typed) responses from an LLM
-- Build CLI tools that use local LLMs
-
-## Example: Generate PROJECT.md
-
-```swift
-import SwiftBruja
-
-// Analyze a folder and generate PROJECT.md content
-let folderContents = describeFolder(at: folderURL)
-let prompt = """
-Analyze this project folder and generate a PROJECT.md file with YAML frontmatter.
-Folder contents: \(folderContents)
-"""
-
-struct ProjectMd: Codable {
-    let title: String
-    let description: String
-    let author: String
-    let tags: [String]
-}
-
-let result: ProjectMd = try await Bruja.query(prompt, as: ProjectMd.self, model: modelPath)
-```
-
 ## Development Workflow
 
 **See [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md) for complete workflow.**
 
 - **Branch**: `development` → PR → `main`
-- **CI Required**: Build + unit tests + integration test (query with expected response)
+- **CI Required**: Code Quality + macOS Tests must pass
 - **Platforms**: macOS 26+, iOS 26+ (Apple Silicon only)
 - **Never** add `@available` checks for older platforms
 - **Never** commit directly to `main`
+
+## Design Principles
+
+1. **Simplicity over flexibility**: One import, one line to query
+2. **Sensible defaults**: Works out of the box with default model
+3. **Progressive disclosure**: Simple API for simple use cases, more options available when needed
+4. **Privacy first**: Everything runs on-device, no cloud required
+5. **Swift-native**: Async/await, Codable, Sendable - follows modern Swift patterns
