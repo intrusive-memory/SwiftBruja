@@ -1,11 +1,12 @@
-# SwiftBruja 🧙‍♀️
+# SwiftBruja
 
 On-device LLM for Apple Silicon. Simple CLI and Swift library for downloading models from HuggingFace and running queries locally.
 
 ## Requirements
 
-- macOS 26.0+ or iOS 26.0+
-- Apple Silicon (M1/M2/M3/M4)
+- **macOS 26.0+** or **iOS 26.0+**
+- **Apple Silicon only** (M1/M2/M3/M4) - NO Intel support
+- **Swift 6.2+**
 - ~2-4 GB storage per model
 
 ## Installation
@@ -20,10 +21,17 @@ dependencies: [
 
 ### CLI
 
+**Important:** Use `xcodebuild` for fully functional builds. The Metal shaders required for MLX cannot be compiled with `swift build`.
+
 ```bash
-# Build and install
+# Build with xcodebuild (required for Metal shaders)
+xcodebuild -scheme bruja -destination 'platform=OS X' build
+
+# Binary will be at:
+# ~/Library/Developer/Xcode/DerivedData/SwiftBruja-*/Build/Products/Debug/bruja
+
+# Or build with swift (compiles but Metal shaders won't load at runtime)
 swift build -c release
-cp .build/release/bruja /usr/local/bin/
 ```
 
 ## CLI Usage
@@ -58,6 +66,12 @@ bruja list
 bruja list --json
 ```
 
+### Model Info
+
+```bash
+bruja info --model ~/Models/Phi-3-mini-4k-instruct-4bit
+```
+
 ## Library Usage
 
 ### Basic Query
@@ -84,6 +98,20 @@ let response = try await Bruja.query(
     model: "mlx-community/Phi-3-mini-4k-instruct-4bit",
     downloadDestination: Bruja.defaultModelsDirectory
 )
+```
+
+### Query with Metadata
+
+```swift
+import SwiftBruja
+
+let result = try await Bruja.queryWithMetadata(
+    "What is 2+2?",
+    model: modelPath
+)
+print("Response: \(result.response)")
+print("Duration: \(result.durationSeconds)s")
+print("Model: \(result.model)")
 ```
 
 ### Structured Output
@@ -123,6 +151,10 @@ let exists = Bruja.modelExists(at: modelPath)
 
 // List models
 let models = try Bruja.listModels(in: Bruja.defaultModelsDirectory)
+
+// Get model info
+let info = try await Bruja.modelInfo(at: modelPath)
+print("Size: \(info.formattedSize)")
 ```
 
 ## Default Model
@@ -132,6 +164,19 @@ let models = try Bruja.listModels(in: Bruja.defaultModelsDirectory)
 ## Storage Location
 
 Models are stored in: `~/Library/Application Support/SwiftBruja/Models/`
+
+## Building for Development
+
+```bash
+# Compile (for testing library code, Metal won't work)
+swift build
+
+# Build fully functional binary
+xcodebuild -scheme bruja -destination 'platform=OS X' build
+
+# Run tests
+swift test
+```
 
 ## License
 

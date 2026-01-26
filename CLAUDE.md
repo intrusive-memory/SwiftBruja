@@ -7,6 +7,20 @@
 1. **`bruja` CLI** - Command-line tool for downloading models and running queries
 2. **SwiftBruja library** - Swift API for programmatic access to the same functionality
 
+## Platform Requirements
+
+**CRITICAL: Apple Silicon Only**
+
+- **macOS 26.0+** (Apple Silicon M1/M2/M3/M4 only)
+- **iOS 26.0+** (Apple Silicon only)
+- **Swift 6.2+**
+- **NO Intel support** - MLX requires Apple Silicon GPU
+
+**Build Requirements:**
+- Use `xcodebuild` for fully functional builds (Metal shaders must be compiled)
+- `swift build` compiles but Metal shaders won't load at runtime
+- Never add `@available` checks for older platforms
+
 ## Quick Reference
 
 ### CLI Commands
@@ -23,6 +37,9 @@ bruja query "Your prompt" --model <path> --json
 
 # List downloaded models
 bruja list
+
+# Show model info
+bruja info --model <path>
 ```
 
 ### Library API
@@ -33,21 +50,29 @@ import SwiftBruja
 // Simple query
 let response = try await Bruja.query("Your prompt", model: modelPath)
 
-// Query with auto-download
+// Query with auto-download from HuggingFace
 let response = try await Bruja.query(
     "Your prompt",
     model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
 )
 
-// Structured output
+// Structured output (JSON -> Codable type)
 struct Result: Codable { let answer: String }
 let result: Result = try await Bruja.query("...", as: Result.self, model: modelPath)
+
+// Query with metadata
+let result = try await Bruja.queryWithMetadata("Your prompt", model: modelPath)
+print("Response: \(result.response)")
+print("Duration: \(result.durationSeconds)s")
 
 // Download model
 try await Bruja.download(model: modelID, to: destinationURL)
 
 // Check if model exists
 let exists = Bruja.modelExists(at: modelPath)
+
+// List downloaded models
+let models = try Bruja.listModels()
 ```
 
 ## Key Types
@@ -85,27 +110,37 @@ SwiftBruja/
 ├── Sources/
 │   ├── SwiftBruja/           # Library
 │   │   ├── Bruja.swift       # Main entry point
-│   │   ├── Core/
-│   │   │   ├── BrujaModelManager.swift
-│   │   │   ├── BrujaQuery.swift
-│   │   │   └── BrujaError.swift
-│   │   └── StructuredOutput/
-│   │       └── ResponseParser.swift
+│   │   └── Core/
+│   │       ├── BrujaModelManager.swift
+│   │       ├── BrujaQuery.swift
+│   │       ├── BrujaTypes.swift
+│   │       └── BrujaError.swift
 │   └── bruja/                # CLI executable
-│       └── main.swift
+│       └── BrujaCLI.swift
 └── Tests/
+    └── SwiftBrujaTests/
 ```
 
 ## Dependencies
 
-- `mlx-swift` - Core MLX framework
-- `mlx-swift-lm` - LLM inference (MLXLLM, Hub)
+- `mlx-swift` - Core MLX framework for Apple Silicon
+- `mlx-swift-lm` - LLM inference (MLXLLM, MLXLMCommon)
+- `swift-transformers` - HuggingFace Hub API
 - `swift-argument-parser` - CLI parsing
+- `SwiftProyecto` - PROJECT.md parsing (optional)
 
-## Platform Requirements
+## Building
 
-- **macOS 26.0+** / **iOS 26.0+**
-- **Apple Silicon only** (M1/M2/M3/M4)
+```bash
+# For development/testing (Metal shaders won't work)
+swift build
+
+# For fully functional builds (required for running queries)
+xcodebuild -scheme bruja -destination 'platform=OS X' build
+
+# Run tests
+swift test
+```
 
 ## When to Use SwiftBruja
 
@@ -143,6 +178,6 @@ let result: ProjectMd = try await Bruja.query(prompt, as: ProjectMd.self, model:
 
 - **Branch**: `development` → PR → `main`
 - **CI Required**: Build + unit tests + integration test (query with expected response)
-- **Platforms**: macOS 26+, iOS 26+ only
+- **Platforms**: macOS 26+, iOS 26+ (Apple Silicon only)
 - **Never** add `@available` checks for older platforms
 - **Never** commit directly to `main`
