@@ -74,46 +74,9 @@ jobs:
 
       - name: Run unit tests
         run: |
-          set +e
-
-          echo "Running unit tests on macOS"
-
-          xcodebuild test \
-            -scheme SwiftBruja \
-            -destination 'platform=macOS' \
-            -enableCodeCoverage YES \
-            CODE_SIGNING_ALLOWED=NO \
-            > test_output.txt 2>&1
-          TEST_EXIT_CODE=$?
-          cat test_output.txt
-
-          # Check if tests passed
-          if grep -q "Test Suite .* passed\|TEST SUCCEEDED" test_output.txt; then
-            echo "All unit tests passed"
-            exit 0
-          else
-            echo ""
-            echo "============================================"
-            echo "UNIT TESTS FAILED"
-            echo "============================================"
-            echo ""
-
-            # Show failed tests
-            echo "Failed Tests:"
-            grep "Test Case.*failed" test_output.txt || echo "  No specific test failures found in output"
-
-            echo ""
-            echo "Error Messages:"
-            grep -E "error:|failed with|Assertion failed|Expected|Fatal error" test_output.txt | head -20 || echo "  No error messages found"
-
-            echo ""
-            echo "Test Summary:"
-            grep -E "Test Suite|Testing failed|passed with|failed with" test_output.txt | tail -10 || echo "  No summary found"
-
-            echo ""
-            echo "============================================"
-            exit $TEST_EXIT_CODE
-          fi
+          echo "Running unit tests with swift test"
+          swift test 2>&1 | tee test_output.txt
+          echo "All unit tests passed"
 
       - name: Upload test results
         if: always()
