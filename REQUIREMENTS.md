@@ -2,22 +2,262 @@
 
 ## Vision
 
-**SwiftBruja** ("Swift Witch") is a Swift package that provides simple, single-import access to on-device LLM capabilities on Apple Silicon. It wraps MLX libraries to enable:
+**SwiftBruja** ("Swift Witch") provides on-device LLM capabilities on Apple Silicon via a simple CLI and Swift library.
 
-1. **Model Management** - Download and cache models from HuggingFace
-2. **Structured Output** - Query models and get typed Swift results
-3. **Use-Case Modules** - Pre-built solutions for common tasks
+## v1.0 Deliverable: `bruja` CLI
 
-**Philosophy**: One import, one line to get structured results from a local LLM.
+A command-line binary that can:
+1. **Download a model** from HuggingFace to a specified location
+2. **Run a query** against a local model
+3. **Skip download** if model already exists at destination
+4. **Return standardized output** (JSON or plain text)
+
+```bash
+# Download a model
+bruja download --model "mlx-community/Phi-3-mini-4k-instruct-4bit" --destination ~/Models
+
+# Query a model (downloads if needed)
+bruja query "What is the capital of France?" --model ~/Models/Phi-3-mini-4k-instruct-4bit
+
+# Query with JSON output
+bruja query "Summarize this text" --json --model ~/Models/Phi-3-mini-4k-instruct-4bit
+
+# Query with model auto-download to default location
+bruja query "Hello world" --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
+```
+
+---
+
+## CLI Specification
+
+### Commands
+
+#### `bruja download`
+
+Download a model from HuggingFace.
+
+```
+USAGE: bruja download --model <model-id> [--destination <path>]
+
+OPTIONS:
+  -m, --model <id>        HuggingFace model ID (e.g., "mlx-community/Phi-3-mini-4k-instruct-4bit")
+  -d, --destination <path> Download location (default: ~/Library/Application Support/SwiftBruja/Models/)
+  --force                  Re-download even if model exists
+  --quiet                  Suppress progress output
+  -h, --help               Show help
+```
+
+**Behavior**:
+- If model exists at destination → skip download (unless `--force`)
+- Show download progress (unless `--quiet`)
+- Exit 0 on success, non-zero on error
+
+#### `bruja query`
+
+Run a query against a model.
+
+```
+USAGE: bruja query <prompt> --model <model-or-path> [options]
+
+ARGUMENTS:
+  <prompt>                 The prompt to send to the model
+
+OPTIONS:
+  -m, --model <id-or-path> HuggingFace model ID or local path
+  -d, --destination <path> Where to download model if using model ID
+  --temperature <float>    Sampling temperature (default: 0.7)
+  --max-tokens <int>       Maximum tokens to generate (default: 512)
+  --json                   Output as JSON: {"response": "...", "model": "...", "tokens": N}
+  --system <prompt>        System prompt to prepend
+  --quiet                  Suppress non-response output
+  -h, --help               Show help
+```
+
+**Behavior**:
+- If `--model` is a path → use local model directly
+- If `--model` is a HuggingFace ID → download to destination first (skip if exists)
+- Output response to stdout
+- Exit 0 on success, non-zero on error
+
+#### `bruja list`
+
+List downloaded models.
+
+```
+USAGE: bruja list [--path <path>]
+
+OPTIONS:
+  -p, --path <path>        Models directory (default: ~/Library/Application Support/SwiftBruja/Models/)
+  --json                   Output as JSON array
+  -h, --help               Show help
+```
+
+#### `bruja info`
+
+Show information about a model.
+
+```
+USAGE: bruja info --model <model-or-path>
+
+OPTIONS:
+  -m, --model <id-or-path> HuggingFace model ID or local path
+  --json                   Output as JSON
+  -h, --help               Show help
+```
+
+---
+
+## Standardized Output
+
+### Plain Text (default)
+
+```
+$ bruja query "What is 2+2?" --model ~/Models/Phi-3-mini
+The answer is 4.
+```
+
+### JSON (`--json`)
+
+```json
+{
+  "response": "The answer is 4.",
+  "model": "Phi-3-mini-4k-instruct-4bit",
+  "model_path": "/Users/tom/Models/Phi-3-mini-4k-instruct-4bit",
+  "tokens_generated": 6,
+  "duration_seconds": 1.23
+}
+```
+
+### Error Output
+
+```json
+{
+  "error": "Model not found",
+  "details": "No model at path: /invalid/path",
+  "exit_code": 1
+}
+```
+
+---
+
+## Swift Library API (v1.0)
+
+The library exposes all CLI functionality programmatically for host packages/apps.
+
+### Model Management
 
 ```swift
 import SwiftBruja
 
-// Generate PROJECT.md for a podcast folder
-let projectMd = try await Bruja.generateProjectMd(for: podcastURL)
+// Download a model
+try await Bruja.download(
+    model: "mlx-community/Phi-3-mini-4k-instruct-4bit",
+    to: destinationURL,
+    force: false,
+    progress: { percent in print("\(Int(percent * 100))%") }
+)
 
-// Or use the model directly for custom queries
-let result: MyStruct = try await Bruja.query("Analyze this text...", as: MyStruct.self)
+// Check if model exists
+let exists = Bruja.modelExists(at: modelPath)
+
+// List downloaded models
+let models = try Bruja.listModels(in: modelsDirectory)
+
+// Get model info
+let info = try await Bruja.modelInfo(at: modelPath)
+```
+
+### Querying
+
+```swift
+import SwiftBruja
+
+// Simple query (returns string)
+let response = try await Bruja.query(
+    "What is the capital of France?",
+    model: modelPath,
+    temperature: 0.7,
+    maxTokens: 512
+)
+
+// Query with system prompt
+let response = try await Bruja.query(
+    "Summarize this document",
+    model: modelPath,
+    system: "You are a helpful assistant that provides concise summaries."
+)
+
+// Query with full result (includes metadata)
+let result = try await Bruja.queryWithMetadata(
+    "Explain quantum computing",
+    model: modelPath
+)
+print(result.response)          // "Quantum computing is..."
+print(result.tokensGenerated)   // 156
+print(result.durationSeconds)   // 2.34
+
+// Query with auto-download (downloads if model ID, uses directly if path)
+let response = try await Bruja.query(
+    "Hello world",
+    model: "mlx-community/Phi-3-mini-4k-instruct-4bit",  // Will download if needed
+    downloadDestination: defaultModelsDirectory
+)
+```
+
+### Structured Output
+
+```swift
+import SwiftBruja
+
+// Query with typed response
+struct Summary: Codable {
+    let title: String
+    let keyPoints: [String]
+    let sentiment: String
+}
+
+let summary: Summary = try await Bruja.query(
+    "Summarize this article: \(articleText)",
+    as: Summary.self,
+    model: modelPath
+)
+```
+
+### Types
+
+```swift
+/// Result from a query with metadata
+public struct BrujaQueryResult: Codable, Sendable {
+    public let response: String
+    public let model: String
+    public let modelPath: String
+    public let tokensGenerated: Int
+    public let durationSeconds: Double
+}
+
+/// Information about a downloaded model
+public struct BrujaModelInfo: Codable, Sendable {
+    public let id: String
+    public let path: String
+    public let sizeBytes: Int64
+    public let downloadDate: Date
+    public let config: ModelConfig?
+}
+
+/// Download progress
+public typealias BrujaProgressHandler = @Sendable (Double) -> Void
+```
+
+### Default Paths
+
+```swift
+/// Default models directory
+public static var defaultModelsDirectory: URL {
+    // ~/Library/Application Support/SwiftBruja/Models/
+}
+
+/// Default model for quick usage
+public static let defaultModelID = "mlx-community/Phi-3-mini-4k-instruct-4bit"
 ```
 
 ---
@@ -28,16 +268,16 @@ let result: MyStruct = try await Bruja.query("Analyze this text...", as: MyStruc
 ┌─────────────────────────────────────────────────────────────────┐
 │                         SwiftBruja                               │
 ├─────────────────────────────────────────────────────────────────┤
-│  Use Cases                                                       │
+│  CLI Binary (bruja)                                              │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ ProjectMd    │  │ Screenplay   │  │ Custom       │          │
-│  │ Generator    │  │ Classifier   │  │ Queries      │          │
+│  │ download     │  │ query        │  │ list/info    │          │
+│  │ command      │  │ command      │  │ commands     │          │
 │  └──────────────┘  └──────────────┘  └──────────────┘          │
 ├─────────────────────────────────────────────────────────────────┤
-│  Core Services                                                   │
+│  Swift Library (SwiftBruja)                                      │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ Model        │  │ Structured   │  │ Chat         │          │
-│  │ Manager      │  │ Output       │  │ Session      │          │
+│  │ Bruja        │  │ Model        │  │ Query        │          │
+│  │ (entry point)│  │ Manager      │  │ Engine       │          │
 │  └──────────────┘  └──────────────┘  └──────────────┘          │
 ├─────────────────────────────────────────────────────────────────┤
 │  Dependencies (MLX Ecosystem)                                    │

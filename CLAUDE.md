@@ -1,82 +1,144 @@
 # SwiftBruja - AI Assistant Instructions
 
-## Project Overview
+## What is SwiftBruja?
 
-**SwiftBruja** ("Swift Witch") is a Swift package providing simple access to on-device LLM capabilities on Apple Silicon. It wraps MLX libraries for:
+**SwiftBruja** ("Swift Witch") is a Swift package for on-device LLM inference on Apple Silicon. It provides:
 
-- **Model Management** - Download/cache models from HuggingFace
-- **Structured Output** - Query models, get typed Swift results
-- **Use-Case Modules** - Pre-built solutions (PROJECT.md generation, etc.)
+1. **`bruja` CLI** - Command-line tool for downloading models and running queries
+2. **SwiftBruja library** - Swift API for programmatic access to the same functionality
 
-**Platforms**: macOS 26.0+, iOS 26.0+ (Apple Silicon only)
+## Quick Reference
 
-## Key Design Principles
+### CLI Commands
 
-1. **Single Import** - `import SwiftBruja` gives access to everything
-2. **Structured by Default** - Prefer typed results over raw strings
-3. **Lazy Loading** - Models downloaded on-demand, not bundled
-4. **Actor Isolation** - Thread-safe by design
+```bash
+# Download a model
+bruja download --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
 
-## Architecture
+# Query a model
+bruja query "Your prompt here" --model ~/Models/Phi-3-mini-4k-instruct-4bit
+
+# Query with JSON output
+bruja query "Your prompt" --model <path> --json
+
+# List downloaded models
+bruja list
+```
+
+### Library API
+
+```swift
+import SwiftBruja
+
+// Simple query
+let response = try await Bruja.query("Your prompt", model: modelPath)
+
+// Query with auto-download
+let response = try await Bruja.query(
+    "Your prompt",
+    model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
+)
+
+// Structured output
+struct Result: Codable { let answer: String }
+let result: Result = try await Bruja.query("...", as: Result.self, model: modelPath)
+
+// Download model
+try await Bruja.download(model: modelID, to: destinationURL)
+
+// Check if model exists
+let exists = Bruja.modelExists(at: modelPath)
+```
+
+## Key Types
+
+```swift
+/// Query result with metadata
+public struct BrujaQueryResult: Codable, Sendable {
+    public let response: String
+    public let model: String
+    public let modelPath: String
+    public let tokensGenerated: Int
+    public let durationSeconds: Double
+}
+
+/// Model information
+public struct BrujaModelInfo: Codable, Sendable {
+    public let id: String
+    public let path: String
+    public let sizeBytes: Int64
+    public let downloadDate: Date
+}
+```
+
+## Default Values
+
+- **Default model**: `mlx-community/Phi-3-mini-4k-instruct-4bit`
+- **Models directory**: `~/Library/Application Support/SwiftBruja/Models/`
+- **Temperature**: 0.7
+- **Max tokens**: 512
+
+## Package Structure
 
 ```
 SwiftBruja/
-├── Sources/SwiftBruja/
-│   ├── Bruja.swift                 # Main entry point
-│   ├── Core/
-│   │   ├── BrujaModelManager.swift # Model download/cache
-│   │   ├── BrujaQuery.swift        # Structured queries
-│   │   └── BrujaChatSession.swift  # Multi-turn chat
-│   ├── StructuredOutput/
-│   │   ├── JSONSchemaBuilder.swift # Build schema from Codable
-│   │   └── ResponseParser.swift    # Parse LLM JSON responses
-│   └── UseCases/
-│       └── ProjectMdGenerator.swift # PROJECT.md generation
+├── Sources/
+│   ├── SwiftBruja/           # Library
+│   │   ├── Bruja.swift       # Main entry point
+│   │   ├── Core/
+│   │   │   ├── BrujaModelManager.swift
+│   │   │   ├── BrujaQuery.swift
+│   │   │   └── BrujaError.swift
+│   │   └── StructuredOutput/
+│   │       └── ResponseParser.swift
+│   └── bruja/                # CLI executable
+│       └── main.swift
+└── Tests/
 ```
 
 ## Dependencies
 
 - `mlx-swift` - Core MLX framework
-- `mlx-swift-lm` - LLM inference (MLXLLM, MLXLMCommon, Hub)
-- `SwiftProyecto` - PROJECT.md types (ProjectFrontMatter)
+- `mlx-swift-lm` - LLM inference (MLXLLM, Hub)
+- `swift-argument-parser` - CLI parsing
 
-## Default Model
+## Platform Requirements
 
-`mlx-community/Phi-3-mini-4k-instruct-4bit` (~2.15 GB)
+- **macOS 26.0+** / **iOS 26.0+**
+- **Apple Silicon only** (M1/M2/M3/M4)
 
-Storage: `~/Library/Application Support/SwiftBruja/Models/`
+## When to Use SwiftBruja
 
-## Code Patterns
+Use SwiftBruja when you need to:
+- Run LLM queries locally without cloud APIs
+- Download and manage HuggingFace models
+- Get structured (typed) responses from an LLM
+- Build CLI tools that use local LLMs
 
-### Structured Query
+## Example: Generate PROJECT.md
+
 ```swift
-struct Result: Codable { let answer: String }
-let result: Result = try await Bruja.query("...", as: Result.self)
-```
+import SwiftBruja
 
-### Model Management
-```swift
-if !await Bruja.isModelReady() {
-    try await Bruja.downloadDefaultModel { print($0) }
+// Analyze a folder and generate PROJECT.md content
+let folderContents = describeFolder(at: folderURL)
+let prompt = """
+Analyze this project folder and generate a PROJECT.md file with YAML frontmatter.
+Folder contents: \(folderContents)
+"""
+
+struct ProjectMd: Codable {
+    let title: String
+    let description: String
+    let author: String
+    let tags: [String]
 }
+
+let result: ProjectMd = try await Bruja.query(prompt, as: ProjectMd.self, model: modelPath)
 ```
-
-### PROJECT.md Generation
-```swift
-let result = try await Bruja.generateProjectMd(for: folderURL)
-try result.write(to: projectMdURL)
-```
-
-## Platform Version Enforcement
-
-**iOS 26.0+ and macOS 26.0+ ONLY. Never add @available checks for older versions.**
 
 ## Development Workflow
 
-See `.claude/WORKFLOW.md` for branch strategy (development → PR → main).
-
-## Related Projects
-
-- **Produciesta** - macOS/iOS app (has working MLX implementation to extract)
-- **SwiftProyecto** - Project metadata management
-- **SwiftCompartido** - Screenplay models and parsing
+- **Branch**: `development` → PR → `main`
+- **Platforms**: macOS 26+, iOS 26+ only
+- **Never** add `@available` checks for older platforms
