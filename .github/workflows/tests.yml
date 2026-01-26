@@ -108,7 +108,7 @@ jobs:
         if: steps.cache-model.outputs.cache-hit != 'true'
         run: |
           echo "Downloading default LLM model for inference"
-          ./bin/bruja download --quiet || ./bin/bruja download
+          ./bin/bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit --quiet || ./bin/bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit
           echo "Model downloaded"
 
       - name: Run integration tests
