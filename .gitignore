@@ -1,0 +1,26 @@
+# Xcode
+.DS_Store
+*.xcodeproj
+xcuserdata/
+*.xcworkspace
+!*.xcworkspace/contents.xcworkspacedata
+/*.gcno
+
+# Build
+.build/
+DerivedData/
+build/
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Accidental files
+*.orig
+*~
