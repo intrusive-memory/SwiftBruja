@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.5] - 2026-01-26
+
+### Fixed
+
+- **Homebrew Metal Bundle Discovery** - Fixed MLX Metal shader bundle not found at runtime
+  - Homebrew only symlinks files (not directories) from Cellar to `/opt/homebrew/bin/`
+  - MLX resolves the Metal bundle via `NS::Bundle::mainBundle()` which pointed to the symlink directory where the `.bundle` was missing
+  - Homebrew formula now installs binary and Metal bundle to `libexec/` with a wrapper script, keeping them colocated at the resolved binary path
+
+---
+
 ## [1.0.4] - 2026-01-26
 
 ### Fixed
