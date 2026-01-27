@@ -73,11 +73,11 @@ jobs:
           path: test_output.txt
           retention-days: 7
 
-  # Step 3: Integration Tests (end-to-end LLM inference)
+  # Step 2b: Integration Tests (runs in parallel with unit tests)
   integration-tests:
     name: Integration Tests
     runs-on: macos-26
-    needs: [macos-tests]
+    needs: [code-quality]
     timeout-minutes: 30
 
     steps:
