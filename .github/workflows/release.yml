@@ -41,19 +41,24 @@ jobs:
       - name: Build Release Binary
         run: make release
 
-      - name: Verify Binary
+      - name: Verify Binary and Metal Bundle
         run: |
           ./bin/bruja --version
           file ./bin/bruja
+          # Verify Metal bundle exists
+          test -d ./bin/mlx-swift_Cmlx.bundle || { echo "ERROR: Metal bundle not found"; exit 1; }
+          test -f ./bin/mlx-swift_Cmlx.bundle/Contents/Resources/default.metallib || { echo "ERROR: metallib not found"; exit 1; }
+          echo "Metal bundle verified: ./bin/mlx-swift_Cmlx.bundle"
 
-      - name: Package Binary
+      - name: Package Binary with Metal Bundle
         id: package
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           TARBALL="bruja-${VERSION}-arm64-macos.tar.gz"
 
           cd bin
-          tar -czvf "${TARBALL}" bruja
+          # Include both the binary and the Metal bundle
+          tar -czvf "${TARBALL}" bruja mlx-swift_Cmlx.bundle
           SHA256=$(shasum -a 256 "${TARBALL}" | cut -d' ' -f1)
 
           echo "tarball=${TARBALL}" >> $GITHUB_OUTPUT
