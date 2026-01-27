@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.4] - 2026-01-26
+
+### Fixed
+
+- **Homebrew Installation** - Release v1.0.3 was created before the workflow fix was merged
+  - This release is built with the corrected workflow that includes `mlx-swift_Cmlx.bundle`
+  - Fixes "Failed to load the default metallib" error when installed via Homebrew
+
+---
+
 ## [1.0.3] - 2026-01-26
 
 ### Fixed
