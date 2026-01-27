@@ -13,7 +13,7 @@ struct BrujaCLI: AsyncParsableCommand {
             Apple's MLX framework. No cloud APIs, no API keys, no network latency.
 
             Models are automatically downloaded from HuggingFace and cached locally
-            in ~/Library/Application Support/SwiftBruja/Models/
+            in ~/Library/Caches/intrusive-memory/Models/LLM/
 
             Default model: \(SwiftBruja.Bruja.defaultModel)
 
@@ -24,7 +24,7 @@ struct BrujaCLI: AsyncParsableCommand {
               bruja list                                 # Show downloaded models
               bruja info -m ~/Models/Phi-3              # Show model details
             """,
-        version: "1.0.7",
+        version: "1.0.8",
         subcommands: [DownloadCommand.self, QueryCommand.self, ListCommand.self, InfoCommand.self],
         defaultSubcommand: QueryCommand.self
     )
@@ -38,7 +38,7 @@ struct DownloadCommand: AsyncParsableCommand {
         abstract: "Download a model from HuggingFace",
         discussion: """
             Downloads an MLX-compatible model from HuggingFace for local inference.
-            Models are stored in ~/Library/Application Support/SwiftBruja/Models/
+            Models are stored in ~/Library/Caches/intrusive-memory/Models/LLM/
             by default.
 
             MLX-optimized models from mlx-community are recommended for best
@@ -59,7 +59,7 @@ struct DownloadCommand: AsyncParsableCommand {
     @Option(name: [.short, .long], help: "HuggingFace model ID (e.g., mlx-community/Phi-3-mini-4k-instruct-4bit)")
     var model: String
 
-    @Option(name: [.short, .long], help: "Download destination directory (default: ~/Library/Application Support/SwiftBruja/Models/)")
+    @Option(name: [.short, .long], help: "Download destination directory (default: ~/Library/Caches/intrusive-memory/Models/LLM/)")
     var destination: String?
 
     @Flag(name: .long, help: "Force re-download even if model already exists locally")
@@ -128,7 +128,7 @@ struct QueryCommand: AsyncParsableCommand {
     @Option(name: [.short, .long], help: "Model path or HuggingFace ID (default: \(SwiftBruja.Bruja.defaultModel))")
     var model: String = SwiftBruja.Bruja.defaultModel
 
-    @Option(name: [.short, .long], help: "Download destination for HuggingFace models (default: ~/Library/Application Support/SwiftBruja/Models/)")
+    @Option(name: [.short, .long], help: "Download destination for HuggingFace models (default: ~/Library/Caches/intrusive-memory/Models/LLM/)")
     var destination: String?
 
     @Option(name: .long, help: "Sampling temperature (0.0-1.0, default: 0.7)")
@@ -175,7 +175,7 @@ struct ListCommand: AsyncParsableCommand {
         abstract: "List downloaded models",
         discussion: """
             Shows all models that have been downloaded and cached locally.
-            Models are stored in ~/Library/Application Support/SwiftBruja/Models/
+            Models are stored in ~/Library/Caches/intrusive-memory/Models/LLM/
             by default.
 
             Use --json for machine-readable output with full metadata including
@@ -188,7 +188,7 @@ struct ListCommand: AsyncParsableCommand {
             """
     )
 
-    @Option(name: [.short, .long], help: "Models directory to scan (default: ~/Library/Application Support/SwiftBruja/Models/)")
+    @Option(name: [.short, .long], help: "Models directory to scan (default: ~/Library/Caches/intrusive-memory/Models/LLM/)")
     var path: String?
 
     @Flag(name: .long, help: "Output as JSON with full metadata")
@@ -239,7 +239,7 @@ struct InfoCommand: AsyncParsableCommand {
 
             Examples:
               bruja info -m mlx-community/Phi-3-mini-4k-instruct-4bit
-              bruja info -m ~/Library/Application\\ Support/SwiftBruja/Models/Phi-3
+              bruja info -m ~/Library/Caches/intrusive-memory/Models/LLM/Phi-3
               bruja info -m ~/MyModels/custom-model --json
             """
     )
