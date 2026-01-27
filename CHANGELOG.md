@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3] - 2026-01-26
+
+### Fixed
+
+- **Homebrew Installation** - Fixed "Failed to load the default metallib" error
+  - Release tarball now includes `mlx-swift_Cmlx.bundle` (Metal shader library)
+  - Required for MLX GPU acceleration on Apple Silicon
+
+---
+
 ## [1.0.2] - 2026-01-27
 
 ### Fixed
