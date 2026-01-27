@@ -134,13 +134,17 @@ SwiftBruja/
 ## Building
 
 ```bash
-# For development/testing (Metal shaders won't work)
+# For development/testing (Metal shaders won't work at runtime)
 swift build
 
 # For fully functional builds (required for running queries)
-xcodebuild -scheme bruja -destination 'platform=OS X' build
+make install    # Debug build with Metal shaders → ./bin/bruja
+make release    # Release build with Metal shaders → ./bin/bruja
 
-# Run tests
+# Run unit tests (filtered to skip integration tests)
+swift test --filter SwiftBrujaTests
+
+# Run all tests
 swift test
 ```
 
@@ -149,10 +153,19 @@ swift test
 **See [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md) for complete workflow.**
 
 - **Branch**: `development` → PR → `main`
-- **CI Required**: Code Quality + macOS Tests must pass
+- **CI Required**: Code Quality + macOS Tests + Integration Tests must pass
+- **Integration Tests**: Build CLI via `make release`, verify `--version` and `--help`
 - **Platforms**: macOS 26+, iOS 26+ (Apple Silicon only)
 - **Never** add `@available` checks for older platforms
 - **Never** commit directly to `main`
+
+### Branch Protection (Required Status Checks)
+
+```
+Code Quality
+macOS Tests
+Integration Tests
+```
 
 ## Design Principles
 

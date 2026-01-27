@@ -72,15 +72,15 @@ Follow Semantic Versioning (semver):
 
 ## CI Requirements
 
-All PRs to `main` must pass:
+All PRs to `main` must pass these required status checks:
 
-1. **Build Check**: Library and CLI compile on macOS arm64
-2. **Unit Tests**: All tests pass
-3. **Integration Test**: `bruja query` returns expected response
+1. **Code Quality**: TODOs, large files, print statement checks
+2. **macOS Tests**: `swift test --filter SwiftBrujaTests` (unit tests)
+3. **Integration Tests**: `make release` → verify `bruja --version` and `--help`
 
 ## Branch Protection (GitHub)
 
 Configure on `main`:
 - Require PR before merging
-- Require CI status checks to pass
+- Required status checks: `Code Quality`, `macOS Tests`, `Integration Tests`
 - No direct pushes

@@ -7,16 +7,21 @@ BIN_DIR = ./bin
 DESTINATION = platform=macOS,arch=arm64
 DERIVED_DATA = $(HOME)/Library/Developer/Xcode/DerivedData
 
-.PHONY: all build release install clean test help
+.PHONY: all build release install clean test resolve help
 
 all: install
+
+# Resolve all SPM package dependencies via xcodebuild
+resolve:
+	xcodebuild -resolvePackageDependencies -scheme $(SCHEME) -destination '$(DESTINATION)'
+	@echo "Package dependencies resolved."
 
 # Development build (swift build - fast but no Metal shaders)
 build:
 	swift build --product $(SCHEME)
 
 # Release build with xcodebuild + copy to bin
-release:
+release: resolve
 	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' -configuration Release build
 	@mkdir -p $(BIN_DIR)
 	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/SwiftBruja-*/Build/Products/Release -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
@@ -36,7 +41,7 @@ release:
 	fi
 
 # Debug build with xcodebuild + copy to bin (default)
-install:
+install: resolve
 	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' build
 	@mkdir -p $(BIN_DIR)
 	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/SwiftBruja-*/Build/Products/Debug -name $(BINARY) -type f 2>/dev/null | head -1 | xargs dirname); \
@@ -71,6 +76,7 @@ help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
+	@echo "  resolve  - Resolve all SPM package dependencies"
 	@echo "  build    - Development build (swift build, no Metal shaders)"
 	@echo "  install  - Debug build with xcodebuild + copy to ./bin (default)"
 	@echo "  release  - Release build with xcodebuild + copy to ./bin"
