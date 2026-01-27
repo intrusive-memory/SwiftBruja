@@ -41,7 +41,7 @@ USAGE: bruja download --model <model-id> [--destination <path>]
 
 OPTIONS:
   -m, --model <id>        HuggingFace model ID (e.g., "mlx-community/Phi-3-mini-4k-instruct-4bit")
-  -d, --destination <path> Download location (default: ~/Library/Application Support/SwiftBruja/Models/)
+  -d, --destination <path> Download location (default: ~/Library/Caches/intrusive-memory/Models/LLM/)
   --force                  Re-download even if model exists
   --quiet                  Suppress progress output
   -h, --help               Show help
@@ -87,7 +87,7 @@ List downloaded models.
 USAGE: bruja list [--path <path>]
 
 OPTIONS:
-  -p, --path <path>        Models directory (default: ~/Library/Application Support/SwiftBruja/Models/)
+  -p, --path <path>        Models directory (default: ~/Library/Caches/intrusive-memory/Models/LLM/)
   --json                   Output as JSON array
   -h, --help               Show help
 ```
@@ -253,7 +253,7 @@ public typealias BrujaProgressHandler = @Sendable (Double) -> Void
 ```swift
 /// Default models directory
 public static var defaultModelsDirectory: URL {
-    // ~/Library/Application Support/SwiftBruja/Models/
+    // ~/Library/Caches/intrusive-memory/Models/LLM/
 }
 
 /// Default model for quick usage
@@ -324,7 +324,7 @@ public actor BrujaModelManager {
 }
 ```
 
-**Storage Location**: `~/Library/Application Support/SwiftBruja/Models/`
+**Storage Location**: `~/Library/Caches/intrusive-memory/Models/LLM/`
 
 **Supported Models** (initial):
 - `mlx-community/Phi-3-mini-4k-instruct-4bit` (~2.15 GB) - Default

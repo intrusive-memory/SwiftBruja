@@ -18,8 +18,8 @@ public actor BrujaModelManager {
 
     /// Storage location for downloaded models
     public nonisolated var modelsDirectory: URL {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        return appSupport.appendingPathComponent("SwiftBruja/Models", isDirectory: true)
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        return caches.appendingPathComponent("intrusive-memory/Models/LLM", isDirectory: true)
     }
 
     /// Loaded model containers (cached for reuse)

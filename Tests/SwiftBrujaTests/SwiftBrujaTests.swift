@@ -11,8 +11,8 @@ final class SwiftBrujaTests: XCTestCase {
 
     func testBrujaDefaultModelsDirectory() {
         let dir = Bruja.defaultModelsDirectory
-        XCTAssertTrue(dir.path.contains("SwiftBruja"))
-        XCTAssertTrue(dir.path.contains("Models"))
+        XCTAssertTrue(dir.path.contains("intrusive-memory/Models"))
+        XCTAssertTrue(dir.path.contains("LLM"))
     }
 
     // MARK: - Bruja Model Existence Checks
@@ -341,9 +341,8 @@ final class BrujaModelManagerTests: XCTestCase {
     func testModelsDirectory() {
         let manager = BrujaModelManager.shared
         let dir = manager.modelsDirectory
-        XCTAssertTrue(dir.path.contains("Application Support"))
-        XCTAssertTrue(dir.path.contains("SwiftBruja"))
-        XCTAssertTrue(dir.path.contains("Models"))
+        XCTAssertTrue(dir.path.contains("Caches"))
+        XCTAssertTrue(dir.path.contains("intrusive-memory/Models/LLM"))
     }
 
     // MARK: - List Models Tests

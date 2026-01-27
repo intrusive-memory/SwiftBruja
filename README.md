@@ -193,7 +193,7 @@ bruja info -m ~/Models/custom-model --json
 ### Default Values
 
 - **Default model**: `mlx-community/Phi-3-mini-4k-instruct-4bit` (~2.15 GB)
-- **Models directory**: `~/Library/Application Support/SwiftBruja/Models/`
+- **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/`
 - **Temperature**: 0.7
 - **Max tokens**: 512
 
