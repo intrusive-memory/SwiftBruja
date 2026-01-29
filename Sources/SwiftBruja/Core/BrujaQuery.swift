@@ -15,7 +15,7 @@ public enum BrujaQuery {
         model: String,
         downloadDestination: URL? = nil,
         temperature: Float = 0.7,
-        maxTokens: Int = 512,
+        maxTokens: Int? = nil,
         system: String? = nil
     ) async throws -> String {
         let result = try await queryWithMetadata(
@@ -37,7 +37,7 @@ public enum BrujaQuery {
         model: String,
         downloadDestination: URL? = nil,
         temperature: Float = 0.7,
-        maxTokens: Int = 512,
+        maxTokens: Int? = nil,
         system: String? = nil
     ) async throws -> BrujaQueryResult {
         let startTime = Date()
@@ -48,13 +48,35 @@ public enum BrujaQuery {
             downloadDestination: downloadDestination
         )
 
+        // Resolve maxTokens: use caller's value if provided, otherwise auto-tune based on memory
+        let resolvedMaxTokens: Int
+        if let maxTokens {
+            resolvedMaxTokens = maxTokens
+        } else {
+            let manager = BrujaModelManager.shared
+            let modelDir: URL
+            let url = URL(fileURLWithPath: model)
+            if FileManager.default.fileExists(atPath: url.path) {
+                modelDir = url
+            } else if model.hasPrefix("~") {
+                modelDir = URL(fileURLWithPath: NSString(string: model).expandingTildeInPath)
+            } else {
+                modelDir = manager.modelDirectory(for: model)
+            }
+            let modelSize = (try? manager.modelInfo(at: modelDir).sizeBytes) ?? 0
+            resolvedMaxTokens = BrujaMemory.recommendedMaxTokens(modelSizeBytes: modelSize)
+        }
+
+        // Log the resolved maxTokens for user awareness
+        print("[SwiftBruja] maxTokens set to \(resolvedMaxTokens) for this query")
+
         // Create chat session with optional system prompt
         let instructions = system ?? "You are a helpful AI assistant. Be concise and direct in your responses."
 
         let session = ChatSession(
             container,
             instructions: instructions,
-            generateParameters: GenerateParameters(maxTokens: maxTokens, temperature: temperature)
+            generateParameters: GenerateParameters(maxTokens: resolvedMaxTokens, temperature: temperature)
         )
 
         // Execute query
@@ -83,7 +105,7 @@ public enum BrujaQuery {
         model: String,
         downloadDestination: URL? = nil,
         temperature: Float = 0.3,
-        maxTokens: Int = 1024,
+        maxTokens: Int? = nil,
         system: String? = nil
     ) async throws -> T {
         // Build a system prompt that encourages JSON output

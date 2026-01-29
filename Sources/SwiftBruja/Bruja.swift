@@ -99,7 +99,7 @@ public enum Bruja {
         model: String,
         downloadDestination: URL? = nil,
         temperature: Float = 0.7,
-        maxTokens: Int = 512,
+        maxTokens: Int? = nil,
         system: String? = nil
     ) async throws -> String {
         try await BrujaQuery.query(
@@ -118,7 +118,7 @@ public enum Bruja {
         model: String,
         downloadDestination: URL? = nil,
         temperature: Float = 0.7,
-        maxTokens: Int = 512,
+        maxTokens: Int? = nil,
         system: String? = nil
     ) async throws -> BrujaQueryResult {
         try await BrujaQuery.queryWithMetadata(
@@ -150,7 +150,7 @@ public enum Bruja {
         model: String,
         downloadDestination: URL? = nil,
         temperature: Float = 0.3,
-        maxTokens: Int = 1024,
+        maxTokens: Int? = nil,
         system: String? = nil
     ) async throws -> T {
         try await BrujaQuery.query(

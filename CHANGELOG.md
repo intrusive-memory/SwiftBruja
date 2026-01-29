@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.9] - 2026-01-29
+
+### Added
+
+- **Memory-Aware maxTokens** - `maxTokens` is now automatically tuned based on available unified memory when not explicitly set (≤8 GB → 512, 8–16 GB → 2048, 16–32 GB → 4096, >32 GB → 8192)
+- **Pre-Load Memory Validation** - Models are checked against available memory before loading; throws `BrujaError.insufficientMemory` if the model exceeds 80% of available memory
+- **BrujaMemory** - New `BrujaMemory` utility enum with `availableMemory()`, `recommendedMaxTokens(modelSizeBytes:)`, and `validateMemoryForModel(sizeBytes:)`
+- **Query Info Logging** - Each query prints `[SwiftBruja] maxTokens set to N for this query` to stdout
+
+### Changed
+
+- `maxTokens` parameter on `Bruja.query`, `Bruja.queryWithMetadata`, and `Bruja.query(as:)` changed from `Int` with a fixed default to `Int?` defaulting to `nil` (auto-tuned). Passing an explicit value still works as before.
+
+---
+
 ## [1.0.8] - 2026-01-27
 
 ### Changed

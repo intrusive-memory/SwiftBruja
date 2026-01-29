@@ -49,11 +49,14 @@ import SwiftBruja
 // Simple query (uses default model)
 let response = try await Bruja.query("Your prompt")
 
-// Query specific model (auto-downloads if needed)
+// Query specific model (auto-downloads if needed, maxTokens auto-tuned)
 let response = try await Bruja.query(
     "Your prompt",
     model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
 )
+
+// Override maxTokens explicitly
+let response = try await Bruja.query("Your prompt", model: modelId, maxTokens: 2048)
 
 // Structured output
 struct Result: Codable { let answer: String }
@@ -67,6 +70,17 @@ print("Duration: \(result.durationSeconds)s")
 try await Bruja.download(model: modelID, to: destinationURL)
 let exists = Bruja.modelExists(at: modelPath)
 let models = try Bruja.listModels()
+```
+
+### CLI Installation
+
+```bash
+# Homebrew (recommended)
+brew install intrusive-memory/tap/bruja
+
+# Or build from source
+make install    # Debug build → ./bin/bruja
+make release    # Release build → ./bin/bruja
 ```
 
 ### CLI Commands
@@ -97,6 +111,13 @@ public struct BrujaModelInfo: Codable, Sendable {
     public let sizeBytes: Int64
     public let downloadDate: Date
 }
+
+/// Memory utilities
+public enum BrujaMemory {
+    static func availableMemory() -> UInt64
+    static func recommendedMaxTokens(modelSizeBytes: Int64) -> Int
+    static func validateMemoryForModel(sizeBytes: Int64) throws  // throws BrujaError.insufficientMemory
+}
 ```
 
 ## Default Values
@@ -104,7 +125,20 @@ public struct BrujaModelInfo: Codable, Sendable {
 - **Default model**: `mlx-community/Phi-3-mini-4k-instruct-4bit`
 - **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/`
 - **Temperature**: 0.7
-- **Max tokens**: 512
+- **Max tokens**: Auto-tuned based on available memory (see below). Pass explicitly to override.
+
+## Memory Management
+
+SwiftBruja automatically manages memory via `BrujaMemory`:
+
+- **Pre-load validation**: Before loading a model, checks that the model size doesn't exceed 80% of available memory. Throws `BrujaError.insufficientMemory` if it does.
+- **Auto-tuned maxTokens**: When `maxTokens` is not explicitly passed (defaults to `nil`), it is automatically set based on available memory after accounting for model size:
+  - **≤ 8 GB available**: 512 tokens
+  - **8–16 GB**: 2048 tokens
+  - **16–32 GB**: 4096 tokens
+  - **> 32 GB**: 8192 tokens
+- **Info logging**: The resolved `maxTokens` value is printed to stdout for each query: `[SwiftBruja] maxTokens set to N for this query`
+- Callers can always override by passing an explicit `maxTokens` value.
 
 ## Package Structure
 
@@ -116,6 +150,7 @@ SwiftBruja/
 │   │   └── Core/
 │   │       ├── BrujaModelManager.swift  # Download & load models
 │   │       ├── BrujaQuery.swift         # Query execution
+│   │       ├── BrujaMemory.swift        # Memory checks & maxTokens auto-tuning
 │   │       ├── BrujaTypes.swift         # Result types
 │   │       └── BrujaError.swift         # Error handling
 │   └── bruja/                # CLI executable
