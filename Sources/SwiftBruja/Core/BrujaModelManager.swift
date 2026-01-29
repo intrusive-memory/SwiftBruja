@@ -127,6 +127,10 @@ public actor BrujaModelManager {
 
         let modelDir = modelDirectory(for: modelId)
 
+        // Validate memory before loading
+        let modelSize = try calculateDirectorySize(modelDir)
+        try BrujaMemory.validateMemoryForModel(sizeBytes: modelSize)
+
         // Load model using LLMModelFactory
         let modelConfig = ModelConfiguration(directory: modelDir)
 
@@ -157,6 +161,10 @@ public actor BrujaModelManager {
         guard FileManager.default.fileExists(atPath: path.appendingPathComponent("config.json").path) else {
             throw BrujaError.modelNotFound(path.path)
         }
+
+        // Validate memory before loading
+        let modelSize = try calculateDirectorySize(path)
+        try BrujaMemory.validateMemoryForModel(sizeBytes: modelSize)
 
         // Load model
         let modelConfig = ModelConfiguration(directory: path)

@@ -26,6 +26,9 @@ public enum BrujaError: LocalizedError, Sendable {
     /// Invalid model path or identifier
     case invalidModelPath(String)
 
+    /// Insufficient memory to load the model
+    case insufficientMemory(available: UInt64, required: UInt64)
+
     public var errorDescription: String? {
         switch self {
         case .modelNotDownloaded(let modelId):
@@ -44,6 +47,10 @@ public enum BrujaError: LocalizedError, Sendable {
             return "Failed to parse JSON response: \(reason)"
         case .invalidModelPath(let path):
             return "Invalid model path: \(path)"
+        case .insufficientMemory(let available, let required):
+            let availMB = available / (1024 * 1024)
+            let reqMB = required / (1024 * 1024)
+            return "Insufficient memory: \(availMB) MB available, \(reqMB) MB required to load model"
         }
     }
 }
