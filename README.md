@@ -21,6 +21,7 @@ let response = try await Bruja.query("What is the capital of France?")
 - **One-Line Queries**: `Bruja.query()` handles model loading, tokenization, and generation
 - **Auto-Download**: Pass a HuggingFace model ID and it downloads automatically
 - **Structured Output**: Get typed responses with `Bruja.query(as: MyType.self)`
+- **Memory-Aware**: Automatically adjusts token limits based on available memory
 - **No Cloud Required**: Runs entirely on-device using Apple Silicon GPU
 - **Privacy First**: Your prompts never leave your device
 
@@ -133,7 +134,7 @@ bruja "List 5 programming languages" --json
 - `-m, --model`: Model path or HuggingFace ID (default: mlx-community/Phi-3-mini-4k-instruct-4bit)
 - `-d, --destination`: Download destination for HuggingFace models
 - `--temperature`: Sampling temperature 0.0-1.0 (default: 0.7)
-- `--max-tokens`: Maximum tokens to generate (default: 512)
+- `--max-tokens`: Maximum tokens to generate (auto-tuned by memory if omitted)
 - `--system`: System prompt to set model behavior
 - `--json`: Output as JSON with metadata
 - `-q, --quiet`: Suppress non-response output
@@ -195,7 +196,27 @@ bruja info -m ~/Models/custom-model --json
 - **Default model**: `mlx-community/Phi-3-mini-4k-instruct-4bit` (~2.15 GB)
 - **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/`
 - **Temperature**: 0.7
-- **Max tokens**: 512
+- **Max tokens**: Auto-tuned based on available memory (pass explicitly to override)
+
+## Memory Management
+
+SwiftBruja automatically manages memory to prevent crashes and optimize performance:
+
+- **Pre-load validation**: Before loading a model, SwiftBruja checks that the model fits within 80% of available memory, leaving headroom for KV-cache and the OS. If not, it throws `BrujaError.insufficientMemory` with details.
+- **Auto-tuned maxTokens**: When you don't pass `maxTokens`, it is automatically set based on available memory after the model loads:
+
+| Available Memory | maxTokens |
+|-----------------|-----------|
+| ≤ 8 GB | 512 |
+| 8–16 GB | 2,048 |
+| 16–32 GB | 4,096 |
+| > 32 GB | 8,192 |
+
+You can always override by passing `maxTokens` explicitly:
+
+```swift
+let response = try await Bruja.query("...", model: modelId, maxTokens: 2048)
+```
 
 ## How It Works
 
@@ -203,8 +224,10 @@ SwiftBruja wraps the MLX ecosystem into a simple API:
 
 1. **Model Resolution**: Accepts local paths or HuggingFace model IDs
 2. **Auto-Download**: Downloads missing models from HuggingFace Hub
-3. **Model Caching**: Keeps loaded models in memory for fast subsequent queries
-4. **Inference**: Uses MLX for GPU-accelerated generation on Apple Silicon
+3. **Memory Validation**: Checks available memory before loading
+4. **Model Caching**: Keeps loaded models in memory for fast subsequent queries
+5. **Token Auto-Tuning**: Sets maxTokens based on remaining memory
+6. **Inference**: Uses MLX for GPU-accelerated generation on Apple Silicon
 
 ## Building from Source
 
