@@ -34,11 +34,17 @@ let response = try await Bruja.query("What is the capital of France?")
 
 ## Installation
 
-### Swift Package Manager
+### Homebrew (CLI)
+
+```bash
+brew install intrusive-memory/tap/bruja
+```
+
+### Swift Package Manager (Library)
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.0.0-beta")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.0.0")
 ]
 ```
 
@@ -97,14 +103,15 @@ SwiftBruja includes a command-line tool (`bruja`) for quick queries and model ma
 ### Installation
 
 ```bash
-# Build and install to ./bin (Metal shaders required)
-make install
+# Homebrew (recommended)
+brew install intrusive-memory/tap/bruja
 
-# Or for release build
-make release
+# Or build from source
+make install    # Debug build → ./bin/bruja
+make release    # Release build → ./bin/bruja
 ```
 
-**Important:** Use the Makefile or `xcodebuild` for builds. Metal shaders required for MLX cannot be compiled with `swift build`.
+**Note:** Building from source requires `xcodebuild` or `make` - Metal shaders required for MLX cannot be compiled with `swift build`.
 
 ### Commands
 

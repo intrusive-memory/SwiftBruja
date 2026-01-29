@@ -72,6 +72,17 @@ let exists = Bruja.modelExists(at: modelPath)
 let models = try Bruja.listModels()
 ```
 
+### CLI Installation
+
+```bash
+# Homebrew (recommended)
+brew install intrusive-memory/tap/bruja
+
+# Or build from source
+make install    # Debug build → ./bin/bruja
+make release    # Release build → ./bin/bruja
+```
+
 ### CLI Commands
 
 ```bash
