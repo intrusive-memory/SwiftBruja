@@ -45,14 +45,14 @@ struct DownloadCommand: AsyncParsableCommand {
             performance on Apple Silicon.
 
             Popular models:
-              mlx-community/Phi-3-mini-4k-instruct-4bit  (~2.15 GB, fast)
-              mlx-community/Llama-3-8B-Instruct-4bit    (~4.5 GB, capable)
+              mlx-community/Qwen2.5-7B-Instruct-4bit    (~4.4 GB, best quality, default)
+              mlx-community/Llama-3.2-3B-Instruct-4bit  (~2.1 GB, good balance)
               mlx-community/Mistral-7B-Instruct-v0.3-4bit (~4 GB, balanced)
 
             Examples:
-              bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit
-              bruja download -m mlx-community/Llama-3-8B --destination ~/Models
-              bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit --force
+              bruja download -m mlx-community/Qwen2.5-7B-Instruct-4bit
+              bruja download -m mlx-community/Llama-3.2-3B-Instruct-4bit --destination ~/Models
+              bruja download -m mlx-community/Qwen2.5-7B-Instruct-4bit --force
             """
     )
 
@@ -238,8 +238,8 @@ struct InfoCommand: AsyncParsableCommand {
             (if already downloaded).
 
             Examples:
-              bruja info -m mlx-community/Phi-3-mini-4k-instruct-4bit
-              bruja info -m ~/Library/Caches/intrusive-memory/Models/LLM/Phi-3
+              bruja info -m mlx-community/Qwen2.5-7B-Instruct-4bit
+              bruja info -m ~/Library/Caches/intrusive-memory/Models/LLM/Qwen2.5
               bruja info -m ~/MyModels/custom-model --json
             """
     )

@@ -10,8 +10,8 @@ public actor BrujaModelManager {
     /// Shared instance
     public static let shared = BrujaModelManager()
 
-    /// Default model for general use
-    public static let defaultModel = "mlx-community/Phi-3-mini-4k-instruct-4bit"
+    /// Default model for general use (Qwen2.5-7B for reliable JSON output)
+    public static let defaultModel = "mlx-community/Qwen2.5-7B-Instruct-4bit"
 
     /// Base URL for HuggingFace model downloads
     private static let huggingFaceBaseURL = "https://huggingface.co"
