@@ -133,9 +133,7 @@ SwiftBruja automatically manages memory via `BrujaMemory`:
 
 - **Pre-load validation**: Before loading a model, checks that the model size doesn't exceed 80% of available memory. Throws `BrujaError.insufficientMemory` if it does.
 - **Auto-tuned maxTokens**: When `maxTokens` is not explicitly passed (defaults to `nil`), it is automatically set based on available memory after accounting for model size:
-  - **≤ 8 GB available**: 512 tokens
-  - **8–16 GB**: 2048 tokens
-  - **16–32 GB**: 4096 tokens
+  - **≤ 32 GB available**: 4096 tokens (minimum floor)
   - **> 32 GB**: 8192 tokens
 - **Info logging**: The resolved `maxTokens` value is printed to stdout for each query: `[SwiftBruja] maxTokens set to N for this query`
 - Callers can always override by passing an explicit `maxTokens` value.

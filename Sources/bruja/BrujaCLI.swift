@@ -24,7 +24,7 @@ struct BrujaCLI: AsyncParsableCommand {
               bruja list                                 # Show downloaded models
               bruja info -m ~/Models/Phi-3              # Show model details
             """,
-        version: "1.0.9",
+        version: "1.0.10",
         subcommands: [DownloadCommand.self, QueryCommand.self, ListCommand.self, InfoCommand.self],
         defaultSubcommand: QueryCommand.self
     )

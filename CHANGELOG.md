@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.10] - 2026-01-31
+
+### Changed
+
+- **Minimum 4K Token Context** - `recommendedMaxTokens` now enforces a floor of 4096 tokens regardless of available memory, ensuring a minimum context window for all queries
+
+---
+
 ## [1.0.9] - 2026-01-29
 
 ### Added
