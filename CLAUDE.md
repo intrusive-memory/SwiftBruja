@@ -174,11 +174,11 @@ swift build
 make install    # Debug build with Metal shaders → ./bin/bruja
 make release    # Release build with Metal shaders → ./bin/bruja
 
-# Run unit tests (filtered to skip integration tests)
-swift test --filter SwiftBrujaTests
+# Run unit tests (MUST use xcodebuild, not swift test — Metal shaders require it)
+xcodebuild test -scheme SwiftBruja-Package -destination 'platform=macOS' -only-testing:SwiftBrujaTests
 
 # Run all tests
-swift test
+xcodebuild test -scheme SwiftBruja-Package -destination 'platform=macOS'
 ```
 
 ## Development Workflow
