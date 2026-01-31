@@ -6,7 +6,7 @@ final class SwiftBrujaTests: XCTestCase {
     // MARK: - Bruja Static Properties
 
     func testBrujaDefaultModel() {
-        XCTAssertEqual(Bruja.defaultModel, "mlx-community/Phi-3-mini-4k-instruct-4bit")
+        XCTAssertEqual(Bruja.defaultModel, "mlx-community/Qwen2.5-7B-Instruct-4bit")
     }
 
     func testBrujaDefaultModelsDirectory() {
@@ -48,6 +48,65 @@ final class SwiftBrujaTests: XCTestCase {
 
         let models = try Bruja.listModels(in: nonexistentDir)
         XCTAssertTrue(models.isEmpty)
+    }
+}
+
+// MARK: - BrujaMemory Tests
+
+final class BrujaMemoryTests: XCTestCase {
+
+    // Uses the internal tokensForAvailableMemory helper to avoid Metal/GPU dependency.
+
+    func testMinimumFloor_ZeroMemoryAfterModel() {
+        // Model consumes all memory → 0 GB remaining → should still return 4096
+        let tokens = BrujaMemory.tokensForAvailableMemory(4_000_000_000, modelSizeBytes: 4_000_000_000)
+        XCTAssertEqual(tokens, 4096, "Minimum floor of 4096 must be enforced")
+    }
+
+    func testMinimumFloor_ModelExceedsMemory() {
+        // Model is larger than available memory
+        let tokens = BrujaMemory.tokensForAvailableMemory(4_000_000_000, modelSizeBytes: 100_000_000_000)
+        XCTAssertEqual(tokens, 4096)
+    }
+
+    func testMinimumFloor_VeryLowRemainingMemory() {
+        // 1 GB remaining after model → base tier is 512, but floor enforces 4096
+        let oneGB: UInt64 = 1 * 1024 * 1024 * 1024
+        let tokens = BrujaMemory.tokensForAvailableMemory(oneGB, modelSizeBytes: 0)
+        XCTAssertEqual(tokens, 4096)
+    }
+
+    func testMinimumFloor_EightGBRemaining() {
+        // 10 GB remaining → base tier is 2048, but floor enforces 4096
+        let tenGB: UInt64 = 10 * 1024 * 1024 * 1024
+        let tokens = BrujaMemory.tokensForAvailableMemory(tenGB, modelSizeBytes: 0)
+        XCTAssertEqual(tokens, 4096)
+    }
+
+    func testTier_SixteenGBRemaining() {
+        // 20 GB remaining → base tier is 4096, matches floor
+        let twentyGB: UInt64 = 20 * 1024 * 1024 * 1024
+        let tokens = BrujaMemory.tokensForAvailableMemory(twentyGB, modelSizeBytes: 0)
+        XCTAssertEqual(tokens, 4096)
+    }
+
+    func testTier_AboveThirtyTwoGB() {
+        // 48 GB remaining → should return 8192
+        let fortyEightGB: UInt64 = 48 * 1024 * 1024 * 1024
+        let tokens = BrujaMemory.tokensForAvailableMemory(fortyEightGB, modelSizeBytes: 0)
+        XCTAssertEqual(tokens, 8192)
+    }
+
+    func testNeverBelowFloor_AllTiers() {
+        // Exhaustively check that no input produces a value below 4096
+        let sizes: [UInt64] = [0, 1_000_000_000, 4_000_000_000, 8_000_000_000, 16_000_000_000]
+        let models: [Int64] = [0, 1_000_000_000, 50_000_000_000, 200_000_000_000]
+        for avail in sizes {
+            for model in models {
+                let tokens = BrujaMemory.tokensForAvailableMemory(avail, modelSizeBytes: model)
+                XCTAssertGreaterThanOrEqual(tokens, 4096, "Failed for available=\(avail), model=\(model)")
+            }
+        }
     }
 }
 
@@ -476,7 +535,7 @@ final class BrujaModelManagerTests: XCTestCase {
     // MARK: - Default Model Constant
 
     func testDefaultModelConstant() {
-        XCTAssertEqual(BrujaModelManager.defaultModel, "mlx-community/Phi-3-mini-4k-instruct-4bit")
+        XCTAssertEqual(BrujaModelManager.defaultModel, "mlx-community/Qwen2.5-7B-Instruct-4bit")
     }
 }
 

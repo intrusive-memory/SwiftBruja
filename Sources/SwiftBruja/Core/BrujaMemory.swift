@@ -14,19 +14,26 @@ public enum BrujaMemory {
     /// Recommends a maxTokens value based on available memory after accounting for model size
     public static func recommendedMaxTokens(modelSizeBytes: Int64) -> Int {
         let available = availableMemory()
+        return tokensForAvailableMemory(available, modelSizeBytes: modelSizeBytes)
+    }
+
+    /// Pure logic for token recommendation given a known available memory value.
+    public static func tokensForAvailableMemory(_ available: UInt64, modelSizeBytes: Int64) -> Int {
         let afterModel = available > UInt64(modelSizeBytes) ? available - UInt64(modelSizeBytes) : 0
         let afterModelGB = Double(afterModel) / (1024 * 1024 * 1024)
 
+        let tokens: Int
         switch afterModelGB {
         case ...8:
-            return 512
+            tokens = 512
         case 8..<16:
-            return 2048
+            tokens = 2048
         case 16..<32:
-            return 4096
+            tokens = 4096
         default:
-            return 8192
+            tokens = 8192
         }
+        return max(tokens, 4096)
     }
 
     /// Validates that there is sufficient memory to load a model of the given size
