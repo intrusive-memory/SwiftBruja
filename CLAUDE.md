@@ -123,7 +123,7 @@ public enum BrujaMemory {
 ## Default Values
 
 - **Default model**: `mlx-community/Phi-3-mini-4k-instruct-4bit`
-- **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/`
+- **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/` (see **Shared Model Cache** below)
 - **Temperature**: 0.7
 - **Max tokens**: Auto-tuned based on available memory (see below). Pass explicitly to override.
 
@@ -199,6 +199,19 @@ Code Quality
 macOS Tests
 Integration Tests
 ```
+
+## Shared Model Cache
+
+All `intrusive-memory` projects share a common model cache hierarchy under `~/Library/Caches/intrusive-memory/Models/`. Each project stores its models in a type-specific subdirectory:
+
+| Project | Cache path |
+|---------|-----------|
+| **SwiftBruja** (LLM) | `~/Library/Caches/intrusive-memory/Models/LLM/<namespace>_<repo>/` |
+| **mlx-audio-swift** (Audio) | `~/Library/Caches/intrusive-memory/Models/Audio/<namespace>_<repo>/` |
+
+The `<namespace>_<repo>` directory name is the HuggingFace repo ID with `/` replaced by `_` (e.g., `mlx-community/Phi-3-mini-4k-instruct-4bit` becomes `mlx-community_Phi-3-mini-4k-instruct-4bit`).
+
+If you add a new model cache path, always use the `intrusive-memory/Models/` hierarchy. The implementation is in `BrujaModelManager.modelsDirectory`.
 
 ## Design Principles
 
