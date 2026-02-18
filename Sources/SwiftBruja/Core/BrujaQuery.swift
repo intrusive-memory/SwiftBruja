@@ -131,7 +131,7 @@ public enum BrujaQuery {
     // MARK: - Private Helpers
 
     /// Resolve a model identifier or path to a loaded container
-    private static func resolveModel(
+    internal static func resolveModel(
         _ model: String,
         downloadDestination: URL?
     ) async throws -> (ModelContainer, String, String) {

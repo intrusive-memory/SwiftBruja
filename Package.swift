@@ -51,6 +51,7 @@ let package = Package(
             dependencies: [
                 "SwiftBruja",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
             ]
         ),
 
