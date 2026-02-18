@@ -24,6 +24,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Determine Version
         id: version
@@ -38,33 +43,20 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Building version: ${VERSION} (tag: ${TAG})"
 
-      - name: Build Release Binary
-        run: make release
+      - name: Build and package
+        run: make dist
 
-      - name: Verify Binary and Metal Bundle
-        run: |
-          ./bin/bruja --version
-          file ./bin/bruja
-          # Verify Metal bundle exists
-          test -d ./bin/mlx-swift_Cmlx.bundle || { echo "ERROR: Metal bundle not found"; exit 1; }
-          test -f ./bin/mlx-swift_Cmlx.bundle/Contents/Resources/default.metallib || { echo "ERROR: metallib not found"; exit 1; }
-          echo "Metal bundle verified: ./bin/mlx-swift_Cmlx.bundle"
-
-      - name: Package Binary with Metal Bundle
+      - name: Verify dist
         id: package
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           TARBALL="bruja-${VERSION}-arm64-macos.tar.gz"
 
-          cd bin
-          # Include both the binary and the Metal bundle
-          tar -czvf "${TARBALL}" bruja mlx-swift_Cmlx.bundle
-          SHA256=$(shasum -a 256 "${TARBALL}" | cut -d' ' -f1)
+          test -f "dist/${TARBALL}" || { echo "ERROR: dist/${TARBALL} not found"; ls -la dist/; exit 1; }
 
+          SHA256=$(shasum -a 256 "dist/${TARBALL}" | cut -d' ' -f1)
           echo "tarball=${TARBALL}" >> $GITHUB_OUTPUT
           echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
-
-          echo "Created: ${TARBALL}"
           echo "SHA256: ${SHA256}"
 
       - name: Upload to Release
@@ -72,7 +64,7 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           files: |
-            bin/${{ steps.package.outputs.tarball }}
+            dist/${{ steps.package.outputs.tarball }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

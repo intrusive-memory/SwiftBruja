@@ -54,16 +54,8 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
-      - name: Build library
-        run: |
-          echo "Building SwiftBruja library"
-          swift build
-
-      - name: Run unit tests
-        run: |
-          echo "Running unit tests (skipping integration tests)"
-          # Unit tests don't require Metal - they test the API, types, and model management
-          swift test --filter SwiftBrujaTests 2>&1 | tee test_output.txt
+      - name: Build and test
+        run: make test 2>&1 | tee test_output.txt
 
       - name: Upload test results
         if: always()
@@ -73,7 +65,7 @@ jobs:
           path: test_output.txt
           retention-days: 7
 
-  # Step 2b: Integration Tests (CLI binary smoke test)
+  # Step 2b: Integration Tests (CLI binary smoke test + dist artifact)
   integration-tests:
     name: Integration Tests
     runs-on: macos-26
@@ -83,14 +75,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-      - name: Build bruja CLI (Release)
-        run: |
-          make release
-          ls -la ./bin/
+      - name: Build distributable tarball
+        run: make dist
 
       - name: Verify CLI binary
         run: |
@@ -100,5 +92,20 @@ jobs:
           ./bin/bruja --help
           echo "Checking bruja query --help"
           ./bin/bruja query --help
+          echo "Checking bruja chat --help"
+          ./bin/bruja chat --help
           echo "Checking bruja download --help"
           ./bin/bruja download --help
+
+      - name: Verify Metal bundle
+        run: |
+          test -d ./bin/mlx-swift_Cmlx.bundle || { echo "ERROR: Metal bundle not found"; exit 1; }
+          test -f ./bin/mlx-swift_Cmlx.bundle/Contents/Resources/default.metallib || { echo "ERROR: metallib not found"; exit 1; }
+          echo "Metal bundle verified"
+
+      - name: Upload dist tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: bruja-dist
+          path: dist/*.tar.gz
+          retention-days: 30

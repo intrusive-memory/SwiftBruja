@@ -1,4 +1,5 @@
 import Foundation
+import MLXLMCommon
 
 /// SwiftBruja - On-device LLM for Apple Silicon
 ///
@@ -80,6 +81,25 @@ public enum Bruja {
     public static func listModels(in directory: URL? = nil) throws -> [BrujaModelInfo] {
         let dir = directory ?? defaultModelsDirectory
         return try BrujaModelManager.shared.listModels(in: dir)
+    }
+
+    // MARK: - Model Loading
+
+    /// Load a model and return its container for use with ChatSession or other APIs
+    ///
+    /// - Parameters:
+    ///   - model: Model path or HuggingFace ID (will auto-download if needed)
+    ///   - downloadDestination: Where to download the model if not found locally
+    /// - Returns: A loaded `ModelContainer` ready for use
+    public static func loadModel(
+        _ model: String,
+        downloadDestination: URL? = nil
+    ) async throws -> ModelContainer {
+        let (container, _, _) = try await BrujaQuery.resolveModel(
+            model,
+            downloadDestination: downloadDestination
+        )
+        return container
     }
 
     // MARK: - Queries

@@ -25,3 +25,4 @@ Carthage/Build/
 *.orig
 *~
 bin/*
+dist/*

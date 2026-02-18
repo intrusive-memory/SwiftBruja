@@ -6,7 +6,7 @@ final class SwiftBrujaTests: XCTestCase {
     // MARK: - Bruja Static Properties
 
     func testBrujaDefaultModel() {
-        XCTAssertEqual(Bruja.defaultModel, "mlx-community/Qwen2.5-7B-Instruct-4bit")
+        XCTAssertEqual(Bruja.defaultModel, "mlx-community/Qwen3-Coder-Next-4bit")
     }
 
     func testBrujaDefaultModelsDirectory() {
@@ -535,7 +535,7 @@ final class BrujaModelManagerTests: XCTestCase {
     // MARK: - Default Model Constant
 
     func testDefaultModelConstant() {
-        XCTAssertEqual(BrujaModelManager.defaultModel, "mlx-community/Qwen2.5-7B-Instruct-4bit")
+        XCTAssertEqual(BrujaModelManager.defaultModel, "mlx-community/Qwen3-Coder-Next-4bit")
     }
 }
 

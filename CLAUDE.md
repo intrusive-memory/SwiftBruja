@@ -1,59 +1,29 @@
-# SwiftBruja - Claude Code Instructions
+# CLAUDE.md
 
-## Purpose
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**SwiftBruja exists for one reason: to make local LLM queries as simple as possible.**
-
-```swift
-import SwiftBruja
-
-let response = try await Bruja.query("Your question here")
-```
-
-That's it. One import, one line. SwiftBruja handles:
-- Model downloading from HuggingFace
-- Model loading and caching
-- Tokenization and inference
-- GPU acceleration via Metal/MLX
-
-**No cloud APIs. No API keys. No network latency. Just fast, private, on-device AI.**
-
-## What SwiftBruja Provides
-
-1. **`Bruja` API** - Static methods for querying LLMs with minimal code
-2. **`bruja` CLI** - Command-line tool for queries and model management
-3. **Auto-download** - Pass a HuggingFace model ID, it downloads automatically
-4. **Structured output** - Get typed responses with `Bruja.query(as: MyType.self)`
-
-## Platform Requirements
-
-**CRITICAL: Apple Silicon Only**
-
-- **macOS 26.0+** (Apple Silicon M1/M2/M3/M4 only)
-- **iOS 26.0+** (Apple Silicon only)
-- **Swift 6.2+**
-- **NO Intel support** - MLX requires Apple Silicon GPU
-
-**Build Requirements:**
-- Use `xcodebuild` for functional builds (Metal shaders must be compiled)
-- `swift build` compiles but Metal shaders won't load at runtime
-- Never add `@available` checks for older platforms
+For detailed project documentation, architecture, and development guidelines, see **[AGENTS.md](AGENTS.md)**.
 
 ## Quick Reference
 
-### Library API
+**Project**: SwiftBruja - One-line local LLM queries on Apple Silicon
 
-```swift
-import SwiftBruja
+**Platforms**: iOS 26.0+, macOS 26.0+ (Apple Silicon only)
 
-// Simple query (uses default model)
-let response = try await Bruja.query("Your prompt")
+**Purpose**: Make local LLM queries as simple as possible. One import, one line, zero configuration.
 
-// Query specific model (auto-downloads if needed, maxTokens auto-tuned)
-let response = try await Bruja.query(
-    "Your prompt",
-    model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
-)
+**Key Components**:
+- Static `Bruja` API for one-line queries with auto-download
+- `bruja` CLI for model management
+- Auto-tuned memory management (maxTokens based on available RAM)
+- Structured output via `Codable`
+
+**Important Notes**:
+- **Apple Silicon only** - NO Intel support (requires Metal/MLX)
+- ONLY supports iOS 26.0+ and macOS 26.0+ (NEVER add code for older platforms)
+- MUST build with `xcodebuild` or `make` (Metal shaders required)
+- `swift build` compiles but won't run queries (shaders missing)
+- See [AGENTS.md](AGENTS.md) for complete API reference, memory management, workflow, and architecture
 
 // Override maxTokens explicitly
 let response = try await Bruja.query("Your prompt", model: modelId, maxTokens: 2048)
@@ -81,13 +51,16 @@ brew install intrusive-memory/tap/bruja
 # Or build from source
 make install    # Debug build → ./bin/bruja
 make release    # Release build → ./bin/bruja
+make dist       # Release build + distributable tarball → ./dist/
 ```
 
 ### CLI Commands
 
 ```bash
-bruja query "Your prompt" --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
-bruja download --model "mlx-community/Phi-3-mini-4k-instruct-4bit"
+bruja query "Your prompt" --model "mlx-community/Qwen3-Coder-Next-4bit"
+bruja chat                                # Interactive multi-turn REPL
+bruja chat --system "You are a pirate"    # Chat with custom persona
+bruja download --model "mlx-community/Qwen3-Coder-Next-4bit"
 bruja list
 bruja info --model <path>
 ```
@@ -122,7 +95,7 @@ public enum BrujaMemory {
 
 ## Default Values
 
-- **Default model**: `mlx-community/Phi-3-mini-4k-instruct-4bit`
+- **Default model**: `mlx-community/Qwen3-Coder-Next-4bit`
 - **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/` (see **Shared Model Cache** below)
 - **Temperature**: 0.7
 - **Max tokens**: Auto-tuned based on available memory (see below). Pass explicitly to override.
@@ -167,18 +140,14 @@ SwiftBruja/
 ## Building
 
 ```bash
-# For development/testing (Metal shaders won't work at runtime)
-swift build
-
 # For fully functional builds (required for running queries)
-make install    # Debug build with Metal shaders → ./bin/bruja
-make release    # Release build with Metal shaders → ./bin/bruja
+make build      # Debug build with xcodebuild (includes Metal shaders)
+make install    # Debug build + copy to ./bin/bruja
+make release    # Release build + copy to ./bin/bruja
+make dist       # Release build + distributable tarball → ./dist/
+make test       # Run tests with xcodebuild
 
-# Run unit tests (MUST use xcodebuild, not swift test — Metal shaders require it)
-xcodebuild test -scheme SwiftBruja-Package -destination 'platform=macOS' -only-testing:SwiftBrujaTests
-
-# Run all tests
-xcodebuild test -scheme SwiftBruja-Package -destination 'platform=macOS'
+# NEVER use swift build or swift test — Metal shaders require xcodebuild
 ```
 
 ## Development Workflow
@@ -187,7 +156,7 @@ xcodebuild test -scheme SwiftBruja-Package -destination 'platform=macOS'
 
 - **Branch**: `development` → PR → `main`
 - **CI Required**: Code Quality + macOS Tests + Integration Tests must pass
-- **Integration Tests**: Build CLI via `make release`, verify `--version` and `--help`
+- **Integration Tests**: Build CLI via `make dist`, verify binary and Metal bundle
 - **Platforms**: macOS 26+, iOS 26+ (Apple Silicon only)
 - **Never** add `@available` checks for older platforms
 - **Never** commit directly to `main`

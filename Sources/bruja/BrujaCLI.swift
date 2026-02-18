@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import MLXLMCommon
 import SwiftBruja
 
 /// On-device LLM inference CLI for Apple Silicon using MLX.
@@ -25,7 +26,7 @@ struct BrujaCLI: AsyncParsableCommand {
               bruja info -m ~/Models/Phi-3              # Show model details
             """,
         version: "1.0.11",
-        subcommands: [DownloadCommand.self, QueryCommand.self, ListCommand.self, InfoCommand.self],
+        subcommands: [DownloadCommand.self, QueryCommand.self, ChatCommand.self, ListCommand.self, InfoCommand.self],
         defaultSubcommand: QueryCommand.self
     )
 }
@@ -45,14 +46,14 @@ struct DownloadCommand: AsyncParsableCommand {
             performance on Apple Silicon.
 
             Popular models:
-              mlx-community/Qwen2.5-7B-Instruct-4bit    (~4.4 GB, best quality, default)
+              mlx-community/Qwen3-Coder-Next-4bit       (80B/3B active, coding agent, default)
+              mlx-community/Qwen2.5-7B-Instruct-4bit    (~4.4 GB, general purpose)
               mlx-community/Llama-3.2-3B-Instruct-4bit  (~2.1 GB, good balance)
-              mlx-community/Mistral-7B-Instruct-v0.3-4bit (~4 GB, balanced)
 
             Examples:
-              bruja download -m mlx-community/Qwen2.5-7B-Instruct-4bit
+              bruja download -m mlx-community/Qwen3-Coder-Next-4bit
               bruja download -m mlx-community/Llama-3.2-3B-Instruct-4bit --destination ~/Models
-              bruja download -m mlx-community/Qwen2.5-7B-Instruct-4bit --force
+              bruja download -m mlx-community/Qwen3-Coder-Next-4bit --force
             """
     )
 
@@ -167,6 +168,119 @@ struct QueryCommand: AsyncParsableCommand {
     }
 }
 
+// MARK: - Chat Command
+
+struct ChatCommand: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "chat",
+        abstract: "Interactive multi-turn chat with a language model",
+        discussion: """
+            Start an interactive chat session with a local language model.
+            The model is loaded once and maintains context across turns.
+            Responses are streamed token-by-token.
+
+            Commands:
+              /quit   — Exit the chat session
+              /clear  — Reset conversation history (keeps model loaded)
+
+            Examples:
+              bruja chat
+              bruja chat -m mlx-community/Llama-3.2-3B-Instruct-4bit
+              bruja chat --system "You are a pirate" --temperature 0.9
+            """
+    )
+
+    @Option(name: [.short, .long], help: "Model path or HuggingFace ID (default: \(SwiftBruja.Bruja.defaultModel))")
+    var model: String = SwiftBruja.Bruja.defaultModel
+
+    @Option(name: [.short, .long], help: "Download destination for HuggingFace models")
+    var destination: String?
+
+    @Option(name: .long, help: "Sampling temperature (0.0-1.0, default: 0.7)")
+    var temperature: Float = 0.7
+
+    @Option(name: .long, help: "Maximum tokens per response (default: auto-tuned)")
+    var maxTokens: Int?
+
+    @Option(name: .long, help: "System prompt to set model behavior/persona")
+    var system: String?
+
+    func run() async throws {
+        let destURL = destination.map { URL(fileURLWithPath: $0) }
+
+        // Resolve maxTokens
+        let resolvedMaxTokens: Int
+        if let maxTokens {
+            resolvedMaxTokens = maxTokens
+        } else {
+            let modelSize = (try? await SwiftBruja.Bruja.modelInfo(at: model).sizeBytes) ?? 0
+            resolvedMaxTokens = SwiftBruja.BrujaMemory.recommendedMaxTokens(modelSizeBytes: modelSize)
+        }
+
+        print("Loading model: \(model)...")
+        let container = try await SwiftBruja.Bruja.loadModel(
+            model,
+            downloadDestination: destURL
+        )
+
+        let instructions = system ?? "You are a helpful AI assistant. Be concise and direct in your responses."
+        var session = ChatSession(
+            container,
+            instructions: instructions,
+            generateParameters: GenerateParameters(maxTokens: resolvedMaxTokens, temperature: temperature)
+        )
+
+        let modelShort = model.components(separatedBy: "/").last ?? model
+        print("Model loaded: \(modelShort) (maxTokens: \(resolvedMaxTokens))")
+        print("Type /quit to exit, /clear to reset conversation.\n")
+
+        while true {
+            print("> ", terminator: "")
+            fflush(stdout)
+
+            guard let input = readLine() else {
+                // EOF (Ctrl+D)
+                print("")
+                break
+            }
+
+            let trimmed = input.trimmingCharacters(in: .whitespaces)
+
+            if trimmed.isEmpty {
+                continue
+            }
+
+            if trimmed.lowercased() == "/quit" {
+                break
+            }
+
+            if trimmed.lowercased() == "/clear" {
+                await session.clear()
+                session = ChatSession(
+                    container,
+                    instructions: instructions,
+                    generateParameters: GenerateParameters(maxTokens: resolvedMaxTokens, temperature: temperature)
+                )
+                print("[Conversation cleared]\n")
+                continue
+            }
+
+            let stream = session.streamResponse(to: trimmed)
+            do {
+                for try await chunk in stream {
+                    print(chunk, terminator: "")
+                    fflush(stdout)
+                }
+                print("\n")
+            } catch {
+                print("\n[Error: \(error.localizedDescription)]\n")
+            }
+        }
+
+        await session.synchronize()
+    }
+}
+
 // MARK: - List Command
 
 struct ListCommand: AsyncParsableCommand {
@@ -238,8 +352,8 @@ struct InfoCommand: AsyncParsableCommand {
             (if already downloaded).
 
             Examples:
-              bruja info -m mlx-community/Qwen2.5-7B-Instruct-4bit
-              bruja info -m ~/Library/Caches/intrusive-memory/Models/LLM/Qwen2.5
+              bruja info -m mlx-community/Qwen3-Coder-Next-4bit
+              bruja info -m ~/Library/Caches/intrusive-memory/Models/LLM/Qwen3-Coder-Next
               bruja info -m ~/MyModels/custom-model --json
             """
     )
