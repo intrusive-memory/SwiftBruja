@@ -1,5 +1,4 @@
 import Foundation
-import Hub
 import MLX
 import MLXLLM
 import MLXLMCommon
