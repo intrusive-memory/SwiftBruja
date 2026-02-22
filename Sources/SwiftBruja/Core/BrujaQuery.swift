@@ -1,8 +1,8 @@
 import Foundation
-import Hub
 import MLX
 import MLXLLM
 import MLXLMCommon
+import SwiftAcervo
 
 /// Handles query execution against loaded models
 public enum BrujaQuery {
@@ -13,7 +13,6 @@ public enum BrujaQuery {
     public static func query(
         _ prompt: String,
         model: String,
-        downloadDestination: URL? = nil,
         temperature: Float = 0.7,
         maxTokens: Int? = nil,
         system: String? = nil
@@ -21,7 +20,6 @@ public enum BrujaQuery {
         let result = try await queryWithMetadata(
             prompt,
             model: model,
-            downloadDestination: downloadDestination,
             temperature: temperature,
             maxTokens: maxTokens,
             system: system
@@ -35,7 +33,6 @@ public enum BrujaQuery {
     public static func queryWithMetadata(
         _ prompt: String,
         model: String,
-        downloadDestination: URL? = nil,
         temperature: Float = 0.7,
         maxTokens: Int? = nil,
         system: String? = nil
@@ -43,27 +40,25 @@ public enum BrujaQuery {
         let startTime = Date()
 
         // Determine model path and container
-        let (container, modelPath, modelId) = try await resolveModel(
-            model,
-            downloadDestination: downloadDestination
-        )
+        let (container, modelPath, modelId) = try await resolveModel(model)
 
         // Resolve maxTokens: use caller's value if provided, otherwise auto-tune based on memory
         let resolvedMaxTokens: Int
         if let maxTokens {
             resolvedMaxTokens = maxTokens
         } else {
-            let manager = BrujaModelManager.shared
-            let modelDir: URL
+            let modelSize: Int64
             let url = URL(fileURLWithPath: model)
             if FileManager.default.fileExists(atPath: url.path) {
-                modelDir = url
+                // Local path: use path-based size calculation
+                modelSize = (try? pathBasedDirectorySize(url)) ?? 0
             } else if model.hasPrefix("~") {
-                modelDir = URL(fileURLWithPath: NSString(string: model).expandingTildeInPath)
+                let expanded = URL(fileURLWithPath: NSString(string: model).expandingTildeInPath)
+                modelSize = (try? pathBasedDirectorySize(expanded)) ?? 0
             } else {
-                modelDir = manager.modelDirectory(for: model)
+                // HuggingFace ID: use Acervo
+                modelSize = (try? Acervo.modelInfo(model).sizeBytes) ?? 0
             }
-            let modelSize = (try? manager.modelInfo(at: modelDir).sizeBytes) ?? 0
             resolvedMaxTokens = BrujaMemory.recommendedMaxTokens(modelSizeBytes: modelSize)
         }
 
@@ -103,7 +98,6 @@ public enum BrujaQuery {
         _ prompt: String,
         as type: T.Type,
         model: String,
-        downloadDestination: URL? = nil,
         temperature: Float = 0.3,
         maxTokens: Int? = nil,
         system: String? = nil
@@ -119,7 +113,6 @@ public enum BrujaQuery {
         let result = try await queryWithMetadata(
             prompt,
             model: model,
-            downloadDestination: downloadDestination,
             temperature: temperature,
             maxTokens: maxTokens,
             system: jsonSystem
@@ -132,8 +125,7 @@ public enum BrujaQuery {
 
     /// Resolve a model identifier or path to a loaded container
     internal static func resolveModel(
-        _ model: String,
-        downloadDestination: URL?
+        _ model: String
     ) async throws -> (ModelContainer, String, String) {
         let manager = BrujaModelManager.shared
 
@@ -155,13 +147,36 @@ public enum BrujaQuery {
             }
         }
 
-        // It's a HuggingFace model ID - ensure it's downloaded
-        try await manager.ensureModelAvailable(model, to: downloadDestination)
+        // It's a HuggingFace model ID - ensure it's downloaded via BrujaDownloadManager
+        try await BrujaDownloadManager.shared.downloadModel(model)
 
         let container = try await manager.loadModel(model)
-        let modelDir = manager.modelDirectory(for: model)
+        let modelDir = try Acervo.modelDirectory(for: model)
 
         return (container, modelDir.path, model)
+    }
+
+    /// Calculate directory size from a local path (for maxTokens auto-tuning)
+    private static func pathBasedDirectorySize(_ url: URL) throws -> Int64 {
+        var totalSize: Int64 = 0
+
+        let contents = try FileManager.default.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: [.fileSizeKey],
+            options: .skipsHiddenFiles
+        )
+
+        for fileURL in contents {
+            let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey])
+
+            if resourceValues.isDirectory == true {
+                totalSize += try pathBasedDirectorySize(fileURL)
+            } else if let fileSize = resourceValues.fileSize {
+                totalSize += Int64(fileSize)
+            }
+        }
+
+        return totalSize
     }
 
     /// Parse a JSON string into a Codable type

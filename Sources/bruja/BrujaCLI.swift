@@ -1,6 +1,7 @@
 import ArgumentParser
 import Foundation
 import MLXLMCommon
+import SwiftAcervo
 import SwiftBruja
 
 /// On-device LLM inference CLI for Apple Silicon using MLX.
@@ -14,7 +15,7 @@ struct BrujaCLI: AsyncParsableCommand {
             Apple's MLX framework. No cloud APIs, no API keys, no network latency.
 
             Models are automatically downloaded from HuggingFace and cached locally
-            in ~/Library/Caches/intrusive-memory/Models/LLM/
+            in ~/Library/SharedModels/
 
             Default model: \(SwiftBruja.Bruja.defaultModel)
 
@@ -39,8 +40,7 @@ struct DownloadCommand: AsyncParsableCommand {
         abstract: "Download a model from HuggingFace",
         discussion: """
             Downloads an MLX-compatible model from HuggingFace for local inference.
-            Models are stored in ~/Library/Caches/intrusive-memory/Models/LLM/
-            by default.
+            Models are stored in ~/Library/SharedModels/
 
             MLX-optimized models from mlx-community are recommended for best
             performance on Apple Silicon.
@@ -52,16 +52,13 @@ struct DownloadCommand: AsyncParsableCommand {
 
             Examples:
               bruja download -m mlx-community/Qwen3-Coder-Next-4bit
-              bruja download -m mlx-community/Llama-3.2-3B-Instruct-4bit --destination ~/Models
+              bruja download -m mlx-community/Llama-3.2-3B-Instruct-4bit
               bruja download -m mlx-community/Qwen3-Coder-Next-4bit --force
             """
     )
 
     @Option(name: [.short, .long], help: "HuggingFace model ID (e.g., mlx-community/Phi-3-mini-4k-instruct-4bit)")
     var model: String
-
-    @Option(name: [.short, .long], help: "Download destination directory (default: ~/Library/Caches/intrusive-memory/Models/LLM/)")
-    var destination: String?
 
     @Flag(name: .long, help: "Force re-download even if model already exists locally")
     var force = false
@@ -70,18 +67,14 @@ struct DownloadCommand: AsyncParsableCommand {
     var quiet = false
 
     func run() async throws {
-        let destURL = destination.map { URL(fileURLWithPath: $0) }
-            ?? SwiftBruja.Bruja.defaultModelsDirectory
-
         let showProgress = !quiet
 
         if showProgress {
-            print("Downloading \(model) to \(destURL.path)...")
+            print("Downloading \(model) to \(Acervo.sharedModelsDirectory.path)...")
         }
 
         try await SwiftBruja.Bruja.download(
             model: model,
-            to: destURL,
             force: force
         ) { progress in
             if showProgress {
@@ -129,9 +122,6 @@ struct QueryCommand: AsyncParsableCommand {
     @Option(name: [.short, .long], help: "Model path or HuggingFace ID (default: \(SwiftBruja.Bruja.defaultModel))")
     var model: String = SwiftBruja.Bruja.defaultModel
 
-    @Option(name: [.short, .long], help: "Download destination for HuggingFace models (default: ~/Library/Caches/intrusive-memory/Models/LLM/)")
-    var destination: String?
-
     @Option(name: .long, help: "Sampling temperature (0.0-1.0, default: 0.7)")
     var temperature: Float = 0.7
 
@@ -151,7 +141,6 @@ struct QueryCommand: AsyncParsableCommand {
         let result = try await SwiftBruja.Bruja.queryWithMetadata(
             prompt,
             model: model,
-            downloadDestination: destination.map { URL(fileURLWithPath: $0) },
             temperature: temperature,
             maxTokens: maxTokens,
             system: system
@@ -193,9 +182,6 @@ struct ChatCommand: AsyncParsableCommand {
     @Option(name: [.short, .long], help: "Model path or HuggingFace ID (default: \(SwiftBruja.Bruja.defaultModel))")
     var model: String = SwiftBruja.Bruja.defaultModel
 
-    @Option(name: [.short, .long], help: "Download destination for HuggingFace models")
-    var destination: String?
-
     @Option(name: .long, help: "Sampling temperature (0.0-1.0, default: 0.7)")
     var temperature: Float = 0.7
 
@@ -206,22 +192,17 @@ struct ChatCommand: AsyncParsableCommand {
     var system: String?
 
     func run() async throws {
-        let destURL = destination.map { URL(fileURLWithPath: $0) }
-
         // Resolve maxTokens
         let resolvedMaxTokens: Int
         if let maxTokens {
             resolvedMaxTokens = maxTokens
         } else {
-            let modelSize = (try? await SwiftBruja.Bruja.modelInfo(at: model).sizeBytes) ?? 0
+            let modelSize = (try? SwiftBruja.Bruja.modelInfo(at: model).sizeBytes) ?? 0
             resolvedMaxTokens = SwiftBruja.BrujaMemory.recommendedMaxTokens(modelSizeBytes: modelSize)
         }
 
         print("Loading model: \(model)...")
-        let container = try await SwiftBruja.Bruja.loadModel(
-            model,
-            downloadDestination: destURL
-        )
+        let container = try await SwiftBruja.Bruja.loadModel(model)
 
         let instructions = system ?? "You are a helpful AI assistant. Be concise and direct in your responses."
         var session = ChatSession(
@@ -289,30 +270,22 @@ struct ListCommand: AsyncParsableCommand {
         abstract: "List downloaded models",
         discussion: """
             Shows all models that have been downloaded and cached locally.
-            Models are stored in ~/Library/Caches/intrusive-memory/Models/LLM/
-            by default.
+            Models are stored in ~/Library/SharedModels/
 
             Use --json for machine-readable output with full metadata including
             model ID, path, size, and download date.
 
             Examples:
               bruja list                          # List models in default directory
-              bruja list --path ~/MyModels        # List models in custom directory
               bruja list --json                   # Output as JSON
             """
     )
-
-    @Option(name: [.short, .long], help: "Models directory to scan (default: ~/Library/Caches/intrusive-memory/Models/LLM/)")
-    var path: String?
 
     @Flag(name: .long, help: "Output as JSON with full metadata")
     var json = false
 
     func run() async throws {
-        let modelsDir = path.map { URL(fileURLWithPath: $0) }
-            ?? SwiftBruja.Bruja.defaultModelsDirectory
-
-        let models = try SwiftBruja.Bruja.listModels(in: modelsDir)
+        let models = try SwiftBruja.Bruja.listModels()
 
         if json {
             let encoder = JSONEncoder()
@@ -321,9 +294,9 @@ struct ListCommand: AsyncParsableCommand {
             print(String(data: data, encoding: .utf8)!)
         } else {
             if models.isEmpty {
-                print("No models found in \(modelsDir.path)")
+                print("No models found in \(Acervo.sharedModelsDirectory.path)")
             } else {
-                print("Downloaded models in \(modelsDir.path):\n")
+                print("Downloaded models in \(Acervo.sharedModelsDirectory.path):\n")
                 for model in models {
                     print("• \(model.id) (\(formatBytes(model.sizeBytes)))")
                 }
@@ -353,7 +326,7 @@ struct InfoCommand: AsyncParsableCommand {
 
             Examples:
               bruja info -m mlx-community/Qwen3-Coder-Next-4bit
-              bruja info -m ~/Library/Caches/intrusive-memory/Models/LLM/Qwen3-Coder-Next
+              bruja info -m ~/Library/SharedModels/mlx-community_Qwen3-Coder-Next
               bruja info -m ~/MyModels/custom-model --json
             """
     )
@@ -365,7 +338,7 @@ struct InfoCommand: AsyncParsableCommand {
     var json = false
 
     func run() async throws {
-        let info = try await SwiftBruja.Bruja.modelInfo(at: model)
+        let info = try SwiftBruja.Bruja.modelInfo(at: model)
 
         if json {
             let encoder = JSONEncoder()

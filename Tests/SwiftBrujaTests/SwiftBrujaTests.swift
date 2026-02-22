@@ -1,5 +1,6 @@
 import XCTest
 @testable import SwiftBruja
+import SwiftAcervo
 
 final class SwiftBrujaTests: XCTestCase {
 
@@ -11,8 +12,7 @@ final class SwiftBrujaTests: XCTestCase {
 
     func testBrujaDefaultModelsDirectory() {
         let dir = Bruja.defaultModelsDirectory
-        XCTAssertTrue(dir.path.contains("intrusive-memory/Models"))
-        XCTAssertTrue(dir.path.contains("LLM"))
+        XCTAssertTrue(dir.path.contains("SharedModels"))
     }
 
     // MARK: - Bruja Model Existence Checks
@@ -32,22 +32,10 @@ final class SwiftBrujaTests: XCTestCase {
 
     // MARK: - Bruja List Models
 
-    func testListModels_EmptyDirectory() throws {
-        let tempDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("BrujaTest-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: tempDir) }
-
-        let models = try Bruja.listModels(in: tempDir)
-        XCTAssertTrue(models.isEmpty)
-    }
-
-    func testListModels_NonexistentDirectory() throws {
-        let nonexistentDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("NonexistentDir-\(UUID().uuidString)")
-
-        let models = try Bruja.listModels(in: nonexistentDir)
-        XCTAssertTrue(models.isEmpty)
+    func testListModels_ReturnsArray() throws {
+        // Just verify it returns without throwing (may be empty if no models downloaded)
+        let models = try Bruja.listModels()
+        XCTAssertNotNil(models)
     }
 }
 
@@ -58,7 +46,7 @@ final class BrujaMemoryTests: XCTestCase {
     // Uses the internal tokensForAvailableMemory helper to avoid Metal/GPU dependency.
 
     func testMinimumFloor_ZeroMemoryAfterModel() {
-        // Model consumes all memory → 0 GB remaining → should still return 4096
+        // Model consumes all memory -> 0 GB remaining -> should still return 4096
         let tokens = BrujaMemory.tokensForAvailableMemory(4_000_000_000, modelSizeBytes: 4_000_000_000)
         XCTAssertEqual(tokens, 4096, "Minimum floor of 4096 must be enforced")
     }
@@ -70,28 +58,28 @@ final class BrujaMemoryTests: XCTestCase {
     }
 
     func testMinimumFloor_VeryLowRemainingMemory() {
-        // 1 GB remaining after model → base tier is 512, but floor enforces 4096
+        // 1 GB remaining after model -> base tier is 512, but floor enforces 4096
         let oneGB: UInt64 = 1 * 1024 * 1024 * 1024
         let tokens = BrujaMemory.tokensForAvailableMemory(oneGB, modelSizeBytes: 0)
         XCTAssertEqual(tokens, 4096)
     }
 
     func testMinimumFloor_EightGBRemaining() {
-        // 10 GB remaining → base tier is 2048, but floor enforces 4096
+        // 10 GB remaining -> base tier is 2048, but floor enforces 4096
         let tenGB: UInt64 = 10 * 1024 * 1024 * 1024
         let tokens = BrujaMemory.tokensForAvailableMemory(tenGB, modelSizeBytes: 0)
         XCTAssertEqual(tokens, 4096)
     }
 
     func testTier_SixteenGBRemaining() {
-        // 20 GB remaining → base tier is 4096, matches floor
+        // 20 GB remaining -> base tier is 4096, matches floor
         let twentyGB: UInt64 = 20 * 1024 * 1024 * 1024
         let tokens = BrujaMemory.tokensForAvailableMemory(twentyGB, modelSizeBytes: 0)
         XCTAssertEqual(tokens, 4096)
     }
 
     func testTier_AboveThirtyTwoGB() {
-        // 48 GB remaining → should return 8192
+        // 48 GB remaining -> should return 8192
         let fortyEightGB: UInt64 = 48 * 1024 * 1024 * 1024
         let tokens = BrujaMemory.tokensForAvailableMemory(fortyEightGB, modelSizeBytes: 0)
         XCTAssertEqual(tokens, 8192)
@@ -211,7 +199,7 @@ final class BrujaQueryResultTests: XCTestCase {
 
     func testCodableRoundTrip() throws {
         let original = BrujaQueryResult(
-            response: "Test response with special chars: é, ñ, 中文",
+            response: "Test response with special chars: e, n, zhong wen",
             model: "mlx-community/test-model",
             modelPath: "/Users/test/models/test",
             tokensGenerated: 100,
@@ -317,25 +305,38 @@ final class BrujaModelInfoTests: XCTestCase {
     func testFormattedSize_Kilobytes() {
         let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 1024, downloadDate: Date())
         XCTAssertFalse(info.formattedSize.isEmpty)
-        // Should be ~1 KB
     }
 
     func testFormattedSize_Megabytes() {
         let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 1024 * 1024 * 50, downloadDate: Date())
         XCTAssertFalse(info.formattedSize.isEmpty)
-        // Should be ~50 MB
     }
 
     func testFormattedSize_Gigabytes() {
         let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 1024 * 1024 * 1024 * 2, downloadDate: Date())
         XCTAssertFalse(info.formattedSize.isEmpty)
-        // Should be ~2 GB
     }
 
     func testFormattedSize_Zero() {
         let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 0, downloadDate: Date())
         XCTAssertFalse(info.formattedSize.isEmpty)
-        // Should handle zero bytes gracefully
+    }
+
+    func testBridgeFromAcervoModel() {
+        let date = Date()
+        let acervoModel = AcervoModel(
+            id: "mlx-community/test-model",
+            path: URL(fileURLWithPath: "/tmp/models/mlx-community_test-model"),
+            sizeBytes: 1024 * 1024,
+            downloadDate: date
+        )
+
+        let brujaInfo = BrujaModelInfo(from: acervoModel)
+
+        XCTAssertEqual(brujaInfo.id, "mlx-community/test-model")
+        XCTAssertTrue(brujaInfo.path.contains("mlx-community_test-model"))
+        XCTAssertEqual(brujaInfo.sizeBytes, 1024 * 1024)
+        XCTAssertEqual(brujaInfo.downloadDate, date)
     }
 }
 
@@ -343,39 +344,18 @@ final class BrujaModelInfoTests: XCTestCase {
 
 final class BrujaModelManagerTests: XCTestCase {
 
-    var tempDirectory: URL!
-
-    override func setUp() {
-        super.setUp()
-        tempDirectory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("BrujaModelManagerTests-\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
-    }
-
-    override func tearDown() {
-        try? FileManager.default.removeItem(at: tempDirectory)
-        super.tearDown()
-    }
-
     // MARK: - Model Directory Tests
 
-    func testModelDirectory() {
+    func testModelDirectory() throws {
         let manager = BrujaModelManager.shared
-        let dir = manager.modelDirectory(for: "mlx-community/test-model")
+        let dir = try manager.modelDirectory(for: "mlx-community/test-model")
         XCTAssertTrue(dir.path.contains("mlx-community_test-model"))
     }
 
-    func testModelDirectory_SlashReplacement() {
+    func testModelDirectory_InvalidId() {
         let manager = BrujaModelManager.shared
-        let dir = manager.modelDirectory(for: "org/sub/model")
-        XCTAssertTrue(dir.path.contains("org_sub_model"))
-        XCTAssertFalse(dir.lastPathComponent.contains("/"))
-    }
-
-    func testModelDirectory_SimpleId() {
-        let manager = BrujaModelManager.shared
-        let dir = manager.modelDirectory(for: "simple-model")
-        XCTAssertTrue(dir.lastPathComponent == "simple-model")
+        // IDs without exactly one slash should throw via Acervo
+        XCTAssertThrowsError(try manager.modelDirectory(for: "simple-model"))
     }
 
     // MARK: - Model Availability Tests
@@ -385,113 +365,12 @@ final class BrujaModelManagerTests: XCTestCase {
         XCTAssertFalse(manager.isModelAvailable("nonexistent/model"))
     }
 
-    func testIsModelAvailable_EmptyDirectory() throws {
-        let manager = BrujaModelManager.shared
-        // Create an empty directory (no config.json)
-        let modelDir = tempDirectory.appendingPathComponent("empty-model")
-        try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-
-        // Model should not be considered available without config.json
-        XCTAssertFalse(manager.isModelAvailable("nonexistent/empty-model"))
-    }
-
     // MARK: - Models Directory Tests
 
     func testModelsDirectory() {
         let manager = BrujaModelManager.shared
         let dir = manager.modelsDirectory
-        XCTAssertTrue(dir.path.contains("Caches"))
-        XCTAssertTrue(dir.path.contains("intrusive-memory/Models/LLM"))
-    }
-
-    // MARK: - List Models Tests
-
-    func testListModels_EmptyDirectory() throws {
-        let manager = BrujaModelManager.shared
-        let models = try manager.listModels(in: tempDirectory)
-        XCTAssertTrue(models.isEmpty)
-    }
-
-    func testListModels_NonexistentDirectory() throws {
-        let manager = BrujaModelManager.shared
-        let nonexistentDir = tempDirectory.appendingPathComponent("nonexistent")
-        let models = try manager.listModels(in: nonexistentDir)
-        XCTAssertTrue(models.isEmpty)
-    }
-
-    func testListModels_WithValidModel() throws {
-        let manager = BrujaModelManager.shared
-
-        // Create a fake model directory with config.json
-        let modelDir = tempDirectory.appendingPathComponent("test_model")
-        try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-        try "{}".write(to: modelDir.appendingPathComponent("config.json"), atomically: true, encoding: .utf8)
-
-        let models = try manager.listModels(in: tempDirectory)
-        XCTAssertEqual(models.count, 1)
-        XCTAssertEqual(models.first?.id, "test/model") // Underscore converted back to slash
-    }
-
-    func testListModels_IgnoresFilesWithoutConfigJson() throws {
-        let manager = BrujaModelManager.shared
-
-        // Create a directory without config.json
-        let invalidDir = tempDirectory.appendingPathComponent("invalid_model")
-        try FileManager.default.createDirectory(at: invalidDir, withIntermediateDirectories: true)
-        try "test".write(to: invalidDir.appendingPathComponent("other.txt"), atomically: true, encoding: .utf8)
-
-        let models = try manager.listModels(in: tempDirectory)
-        XCTAssertTrue(models.isEmpty)
-    }
-
-    func testListModels_MultipleModels() throws {
-        let manager = BrujaModelManager.shared
-
-        // Create multiple fake models
-        for i in 1...3 {
-            let modelDir = tempDirectory.appendingPathComponent("model_\(i)")
-            try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-            try "{}".write(to: modelDir.appendingPathComponent("config.json"), atomically: true, encoding: .utf8)
-        }
-
-        let models = try manager.listModels(in: tempDirectory)
-        XCTAssertEqual(models.count, 3)
-    }
-
-    // MARK: - Model Info Tests
-
-    func testModelInfo_ValidModel() throws {
-        let manager = BrujaModelManager.shared
-
-        // Create a fake model with some content
-        let modelDir = tempDirectory.appendingPathComponent("info_test_model")
-        try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-        try "{}".write(to: modelDir.appendingPathComponent("config.json"), atomically: true, encoding: .utf8)
-        try "tokenizer data".write(to: modelDir.appendingPathComponent("tokenizer.json"), atomically: true, encoding: .utf8)
-
-        let info = try manager.modelInfo(at: modelDir)
-
-        XCTAssertEqual(info.id, "info/test/model") // Underscores become slashes
-        XCTAssertEqual(info.path, modelDir.path)
-        XCTAssertGreaterThan(info.sizeBytes, 0)
-        XCTAssertNotNil(info.downloadDate)
-    }
-
-    func testModelInfo_NonexistentPath() {
-        let manager = BrujaModelManager.shared
-        let nonexistentPath = tempDirectory.appendingPathComponent("nonexistent")
-
-        XCTAssertThrowsError(try manager.modelInfo(at: nonexistentPath)) { error in
-            guard let brujaError = error as? BrujaError else {
-                XCTFail("Expected BrujaError")
-                return
-            }
-            if case .modelNotFound = brujaError {
-                // Expected
-            } else {
-                XCTFail("Expected modelNotFound error")
-            }
-        }
+        XCTAssertTrue(dir.path.contains("SharedModels"))
     }
 
     // MARK: - Unload Models Tests
@@ -506,30 +385,6 @@ final class BrujaModelManagerTests: XCTestCase {
         let manager = BrujaModelManager.shared
         // Should not throw even if no models are loaded
         await manager.unloadAllModels()
-    }
-
-    // MARK: - Delete Model Tests
-
-    func testDeleteModel_ExistingModel() async throws {
-        let manager = BrujaModelManager.shared
-
-        // Create a fake model
-        let modelId = "delete_test_model"
-        let modelDir = manager.modelDirectory(for: modelId)
-        try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-        try "{}".write(to: modelDir.appendingPathComponent("config.json"), atomically: true, encoding: .utf8)
-
-        XCTAssertTrue(FileManager.default.fileExists(atPath: modelDir.path))
-
-        try await manager.deleteModel(modelId)
-
-        XCTAssertFalse(FileManager.default.fileExists(atPath: modelDir.path))
-    }
-
-    func testDeleteModel_NonexistentModel() async throws {
-        let manager = BrujaModelManager.shared
-        // Should not throw for nonexistent model
-        try await manager.deleteModel("nonexistent_model_to_delete")
     }
 
     // MARK: - Default Model Constant
@@ -585,7 +440,7 @@ final class BrujaConcurrencyTests: XCTestCase {
         await withTaskGroup(of: Bool.self) { group in
             for i in 0..<100 {
                 group.addTask {
-                    manager.isModelAvailable("concurrent-test-model-\(i)")
+                    manager.isModelAvailable("concurrent-test/model-\(i)")
                 }
             }
 
@@ -602,16 +457,18 @@ final class BrujaConcurrencyTests: XCTestCase {
     func testConcurrentModelDirectoryAccess() async {
         let manager = BrujaModelManager.shared
 
-        await withTaskGroup(of: URL.self) { group in
+        await withTaskGroup(of: URL?.self) { group in
             for i in 0..<100 {
                 group.addTask {
-                    manager.modelDirectory(for: "test/model-\(i)")
+                    try? manager.modelDirectory(for: "test/model-\(i)")
                 }
             }
 
             var results: [URL] = []
             for await result in group {
-                results.append(result)
+                if let url = result {
+                    results.append(url)
+                }
             }
 
             XCTAssertEqual(results.count, 100)

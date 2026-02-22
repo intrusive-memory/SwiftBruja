@@ -2,7 +2,7 @@
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.0.10 (February 2026)
+**Current Version**: 1.1.0 (February 2026)
 
 ---
 
@@ -16,7 +16,9 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 
 - `Sources/SwiftBruja/` -- Library target with static `Bruja` API
   - `Bruja.swift` -- Main entry point (static methods: `query`, `queryWithMetadata`, `download`, `listModels`)
-  - `Core/BrujaModelManager.swift` -- Model downloading and loading from HuggingFace
+  - `Core/BrujaModelManager.swift` -- Loads models into memory, validates memory
+  - `Core/BrujaDownloadManager.swift` -- Thin SwiftAcervo wrapper for model download and discovery
+  - `Core/LLMModelFiles.swift` -- Required file list for LLM model downloads
   - `Core/BrujaQuery.swift` -- Query execution via MLX
   - `Core/BrujaMemory.swift` -- Memory validation and auto-tuned maxTokens
   - `Core/BrujaTypes.swift` -- `BrujaQueryResult`, `BrujaModelInfo`
@@ -29,7 +31,9 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 | File | Purpose |
 |------|---------|
 | `Bruja.swift` | Static API for queries: `query()`, `queryWithMetadata()`, `download()`, `listModels()`, `modelExists()` |
-| `BrujaModelManager.swift` | Downloads models from HuggingFace Hub, loads models into memory, manages shared cache `~/Library/Caches/intrusive-memory/Models/LLM/` |
+| `BrujaModelManager.swift` | Loads models into memory, validates memory |
+| `BrujaDownloadManager.swift` | Thin SwiftAcervo wrapper for model download and discovery |
+| `LLMModelFiles.swift` | Required file list for LLM model downloads |
 | `BrujaQuery.swift` | Executes LLM inference via MLX, handles tokenization and generation, supports structured output via `Decodable` |
 | `BrujaMemory.swift` | Validates available memory before loading models (80% threshold), auto-tunes `maxTokens` based on memory (4096 or 8192) |
 | `BrujaTypes.swift` | `BrujaQueryResult` (response + metadata), `BrujaModelInfo` (model details) |
@@ -50,7 +54,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 |---------|---------|---------|
 | mlx-swift | 0.21.0+ | Core MLX framework for Apple Silicon GPU |
 | mlx-swift-lm | main | LLM inference (MLXLLM, MLXLMCommon) |
-| swift-transformers | 1.1.0+ | HuggingFace Hub API for model downloads |
+| SwiftAcervo | main | Shared model management (download, cache, discovery) |
 | swift-argument-parser | 1.3.0+ | CLI argument parsing |
 
 ## Build and Test
@@ -85,7 +89,7 @@ xcodebuild test -scheme SwiftBruja-Package -destination 'platform=macOS'
 - **Auto-download**: Pass HuggingFace model ID, downloads automatically if not cached
 - **Structured output**: `Bruja.query(as: MyType.self)` returns typed responses via `Decodable`
 - **Memory-aware**: Pre-load validation (80% threshold), auto-tuned `maxTokens` based on available memory
-- **Shared cache**: All models stored in `~/Library/Caches/intrusive-memory/Models/LLM/<namespace>_<repo>/`
+- **Shared cache**: All models stored in `~/Library/SharedModels/<namespace>_<repo>/`
 - **Swift 6 concurrency**: Async/await throughout, `Sendable` types, actor isolation
 
 ## API Usage
@@ -143,21 +147,21 @@ SwiftBruja automatically manages memory to prevent out-of-memory errors:
 
 ## Default Values
 
-- **Default model**: `mlx-community/Phi-3-mini-4k-instruct-4bit`
-- **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/`
+- **Default model**: `mlx-community/Qwen3-Coder-Next-4bit`
+- **Models directory**: `~/Library/SharedModels/`
 - **Temperature**: 0.7
 - **Max tokens**: Auto-tuned (4096 or 8192 based on memory)
 
 ## Shared Model Cache
 
-All `intrusive-memory` projects share `~/Library/Caches/intrusive-memory/Models/` hierarchy:
+All `intrusive-memory` projects share a flat model cache at `~/Library/SharedModels/` via SwiftAcervo:
 
 | Project | Cache Path |
 |---------|------------|
-| **SwiftBruja** (LLM) | `~/Library/Caches/intrusive-memory/Models/LLM/<namespace>_<repo>/` |
-| **mlx-audio-swift** (Audio) | `~/Library/Caches/intrusive-memory/Models/Audio/<namespace>_<repo>/` |
+| **SwiftBruja** (LLM) | `~/Library/SharedModels/<namespace>_<repo>/` |
+| **mlx-audio-swift** (Audio) | `~/Library/SharedModels/<namespace>_<repo>/` |
 
-The `<namespace>_<repo>` directory name is the HuggingFace repo ID with `/` replaced by `_` (e.g., `mlx-community/Phi-3-mini-4k-instruct-4bit` becomes `mlx-community_Phi-3-mini-4k-instruct-4bit`).
+The `<namespace>_<repo>` directory name is the HuggingFace repo ID with `/` replaced by `_` (e.g., `mlx-community/Qwen3-Coder-Next-4bit` becomes `mlx-community_Qwen3-Coder-Next-4bit`). SwiftAcervo manages the canonical directory path. Legacy models from old cache paths are automatically migrated on first use.
 
 ## Homebrew Distribution
 

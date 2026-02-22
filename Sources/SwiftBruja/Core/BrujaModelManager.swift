@@ -1,10 +1,15 @@
 import Foundation
-import Hub
 import MLX
 import MLXLLM
 import MLXLMCommon
+import SwiftAcervo
 
-/// Manages downloading, caching, and loading LLM models from HuggingFace
+/// Manages loading LLM models into memory for inference.
+///
+/// Download, list, info, and delete responsibilities are handled by
+/// `BrujaDownloadManager` (which delegates to SwiftAcervo). This actor
+/// is inference-only: it loads models into `ModelContainer` instances,
+/// caches them, validates memory, and supports legacy path migration.
 public actor BrujaModelManager {
 
     /// Shared instance
@@ -13,108 +18,54 @@ public actor BrujaModelManager {
     /// Default model for general use (Qwen3-Coder-Next for coding agent tasks)
     public static let defaultModel = "mlx-community/Qwen3-Coder-Next-4bit"
 
-    /// Base URL for HuggingFace model downloads
-    private static let huggingFaceBaseURL = "https://huggingface.co"
-
-    /// Storage location for downloaded models
+    /// Storage location for downloaded models (delegates to Acervo)
     public nonisolated var modelsDirectory: URL {
-        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        return caches.appendingPathComponent("intrusive-memory/Models/LLM", isDirectory: true)
+        Acervo.sharedModelsDirectory
     }
 
     /// Loaded model containers (cached for reuse)
     private var loadedModels: [String: ModelContainer] = [:]
 
+    /// Whether legacy migration has been attempted this session
+    private var migrationAttempted = false
+
     private init() {}
+
+    // MARK: - Migration
+
+    /// Migrate models from legacy cache paths to ~/Library/SharedModels/ (one-shot per session)
+    func migrateIfNeeded() {
+        guard !migrationAttempted else { return }
+        migrationAttempted = true
+        do {
+            let migrated = try Acervo.migrateFromLegacyPaths()
+            if !migrated.isEmpty {
+                print("[SwiftBruja] Migrated \(migrated.count) model(s) to ~/Library/SharedModels/")
+            }
+        } catch {
+            print("[SwiftBruja] Warning: legacy migration failed: \(error.localizedDescription)")
+        }
+    }
 
     // MARK: - Model Availability
 
     /// Check if a model is downloaded and available locally
     public nonisolated func isModelAvailable(_ modelId: String) -> Bool {
-        let modelDir = modelDirectory(for: modelId)
-        return FileManager.default.fileExists(atPath: modelDir.appendingPathComponent("config.json").path)
+        Acervo.isModelAvailable(modelId)
     }
 
     /// Get the local directory for a model
-    public nonisolated func modelDirectory(for modelId: String) -> URL {
-        modelsDirectory.appendingPathComponent(modelId.replacingOccurrences(of: "/", with: "_"))
-    }
-
-    /// Ensure a model is available, downloading if necessary
-    public func ensureModelAvailable(
-        _ modelId: String,
-        to destination: URL? = nil,
-        force: Bool = false,
-        progress: (@Sendable (Double) -> Void)? = nil
-    ) async throws {
-        if !force && isModelAvailable(modelId) {
-            return
-        }
-        try await downloadModel(modelId, to: destination, force: force, progress: progress ?? { _ in })
-    }
-
-    // MARK: - Model Download
-
-    /// Download a model from HuggingFace
-    public func downloadModel(
-        _ modelId: String,
-        to destination: URL? = nil,
-        force: Bool = false,
-        progress: @Sendable @escaping (Double) -> Void
-    ) async throws {
-        let modelDir = destination ?? modelDirectory(for: modelId)
-
-        // Remove existing if force download
-        if force && FileManager.default.fileExists(atPath: modelDir.path) {
-            try FileManager.default.removeItem(at: modelDir)
-        }
-
-        // Skip if already downloaded
-        if !force && FileManager.default.fileExists(atPath: modelDir.appendingPathComponent("config.json").path) {
-            progress(1.0)
-            return
-        }
-
-        // Create models directory if needed
-        try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-
-        // Build the base URL for this model
-        let modelURL = URL(string: "\(Self.huggingFaceBaseURL)/\(modelId)/resolve/main/")!
-
-        // Required model files (4-bit quantized models typically need these)
-        let files = [
-            "config.json",
-            "tokenizer.json",
-            "tokenizer_config.json",
-            "model.safetensors"
-        ]
-
-        for (index, file) in files.enumerated() {
-            let fileURL = modelURL.appendingPathComponent(file)
-            let destinationURL = modelDir.appendingPathComponent(file)
-
-            // Skip if file already exists
-            if FileManager.default.fileExists(atPath: destinationURL.path) {
-                progress(Double(index + 1) / Double(files.count))
-                continue
-            }
-
-            let (localURL, response) = try await URLSession.shared.download(from: fileURL)
-
-            // Check for HTTP errors
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-                throw BrujaError.downloadFailed("HTTP \(httpResponse.statusCode) for \(file)")
-            }
-
-            try FileManager.default.moveItem(at: localURL, to: destinationURL)
-            progress(Double(index + 1) / Double(files.count))
-        }
+    public nonisolated func modelDirectory(for modelId: String) throws -> URL {
+        try Acervo.modelDirectory(for: modelId)
     }
 
     // MARK: - Model Loading
 
     /// Load a model into memory for inference
     public func loadModel(_ modelId: String) async throws -> ModelContainer {
+        // Run one-shot migration on first load
+        migrateIfNeeded()
+
         // Return cached model if already loaded
         if let cached = loadedModels[modelId] {
             return cached
@@ -125,11 +76,13 @@ public actor BrujaModelManager {
             throw BrujaError.modelNotDownloaded(modelId)
         }
 
-        let modelDir = modelDirectory(for: modelId)
+        let modelDir = try Acervo.modelDirectory(for: modelId)
 
         // Validate memory before loading
-        let modelSize = try calculateDirectorySize(modelDir)
-        try BrujaMemory.validateMemoryForModel(sizeBytes: modelSize)
+        let modelSize = (try? Acervo.modelInfo(modelId).sizeBytes) ?? 0
+        if modelSize > 0 {
+            try BrujaMemory.validateMemoryForModel(sizeBytes: modelSize)
+        }
 
         // Load model using LLMModelFactory
         let modelConfig = ModelConfiguration(directory: modelDir)
@@ -191,83 +144,9 @@ public actor BrujaModelManager {
         loadedModels.removeAll()
     }
 
-    // MARK: - Model Info
-
-    /// Get information about a downloaded model
-    public nonisolated func modelInfo(_ modelId: String) throws -> BrujaModelInfo {
-        let modelDir = modelDirectory(for: modelId)
-
-        guard FileManager.default.fileExists(atPath: modelDir.path) else {
-            throw BrujaError.modelNotFound(modelDir.path)
-        }
-
-        return try modelInfo(at: modelDir)
-    }
-
-    /// Get information about a model at a specific path
-    public nonisolated func modelInfo(at path: URL) throws -> BrujaModelInfo {
-        guard FileManager.default.fileExists(atPath: path.path) else {
-            throw BrujaError.modelNotFound(path.path)
-        }
-
-        // Calculate total size
-        let size = try calculateDirectorySize(path)
-
-        // Get creation date
-        let attributes = try FileManager.default.attributesOfItem(atPath: path.path)
-        let creationDate = attributes[.creationDate] as? Date ?? Date()
-
-        return BrujaModelInfo(
-            id: path.lastPathComponent.replacingOccurrences(of: "_", with: "/"),
-            path: path.path,
-            sizeBytes: size,
-            downloadDate: creationDate
-        )
-    }
-
-    /// List all downloaded models
-    public nonisolated func listModels() throws -> [BrujaModelInfo] {
-        try listModels(in: modelsDirectory)
-    }
-
-    /// List models in a specific directory
-    public nonisolated func listModels(in directory: URL) throws -> [BrujaModelInfo] {
-        guard FileManager.default.fileExists(atPath: directory.path) else {
-            return []
-        }
-
-        let contents = try FileManager.default.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: [.isDirectoryKey, .creationDateKey]
-        )
-
-        return try contents.compactMap { url -> BrujaModelInfo? in
-            var isDirectory: ObjCBool = false
-            guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory),
-                  isDirectory.boolValue,
-                  FileManager.default.fileExists(atPath: url.appendingPathComponent("config.json").path) else {
-                return nil
-            }
-
-            return try modelInfo(at: url)
-        }
-    }
-
-    /// Delete a downloaded model
-    public func deleteModel(_ modelId: String) throws {
-        let modelDir = modelDirectory(for: modelId)
-
-        // Unload from memory first
-        unloadModel(modelId)
-
-        // Delete from disk
-        if FileManager.default.fileExists(atPath: modelDir.path) {
-            try FileManager.default.removeItem(at: modelDir)
-        }
-    }
-
     // MARK: - Private Helpers
 
+    /// Calculate directory size (used only for path-based loading where Acervo info is unavailable)
     private nonisolated func calculateDirectorySize(_ url: URL) throws -> Int64 {
         var totalSize: Int64 = 0
 

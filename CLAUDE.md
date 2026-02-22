@@ -37,7 +37,7 @@ let result = try await Bruja.queryWithMetadata("Your prompt")
 print("Duration: \(result.durationSeconds)s")
 
 // Model management
-try await Bruja.download(model: modelID, to: destinationURL)
+try await Bruja.download(model: modelID)
 let exists = Bruja.modelExists(at: modelPath)
 let models = try Bruja.listModels()
 ```
@@ -96,7 +96,7 @@ public enum BrujaMemory {
 ## Default Values
 
 - **Default model**: `mlx-community/Qwen3-Coder-Next-4bit`
-- **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/` (see **Shared Model Cache** below)
+- **Models directory**: `~/Library/SharedModels/` (see **Shared Model Cache** below)
 - **Temperature**: 0.7
 - **Max tokens**: Auto-tuned based on available memory (see below). Pass explicitly to override.
 
@@ -119,7 +119,9 @@ SwiftBruja/
 │   ├── SwiftBruja/           # Library
 │   │   ├── Bruja.swift       # Main entry point (static API)
 │   │   └── Core/
-│   │       ├── BrujaModelManager.swift  # Download & load models
+│   │       ├── BrujaModelManager.swift  # Load models into memory, validates memory
+│   │       ├── BrujaDownloadManager.swift  # Thin SwiftAcervo wrapper for model download and discovery
+│   │       ├── LLMModelFiles.swift      # Required file list for LLM model downloads
 │   │       ├── BrujaQuery.swift         # Query execution
 │   │       ├── BrujaMemory.swift        # Memory checks & maxTokens auto-tuning
 │   │       ├── BrujaTypes.swift         # Result types
@@ -134,7 +136,7 @@ SwiftBruja/
 
 - `mlx-swift` - Core MLX framework for Apple Silicon
 - `mlx-swift-lm` - LLM inference (MLXLLM, MLXLMCommon)
-- `swift-transformers` - HuggingFace Hub API
+- `SwiftAcervo` - Shared model management (download, cache, discovery)
 - `swift-argument-parser` - CLI parsing
 
 ## Building
@@ -171,16 +173,16 @@ Integration Tests
 
 ## Shared Model Cache
 
-All `intrusive-memory` projects share a common model cache hierarchy under `~/Library/Caches/intrusive-memory/Models/`. Each project stores its models in a type-specific subdirectory:
+All `intrusive-memory` projects share a flat model cache at `~/Library/SharedModels/` via SwiftAcervo. Each model is stored in a directory named `<namespace>_<repo>/`:
 
 | Project | Cache path |
 |---------|-----------|
-| **SwiftBruja** (LLM) | `~/Library/Caches/intrusive-memory/Models/LLM/<namespace>_<repo>/` |
-| **mlx-audio-swift** (Audio) | `~/Library/Caches/intrusive-memory/Models/Audio/<namespace>_<repo>/` |
+| **SwiftBruja** (LLM) | `~/Library/SharedModels/<namespace>_<repo>/` |
+| **mlx-audio-swift** (Audio) | `~/Library/SharedModels/<namespace>_<repo>/` |
 
-The `<namespace>_<repo>` directory name is the HuggingFace repo ID with `/` replaced by `_` (e.g., `mlx-community/Phi-3-mini-4k-instruct-4bit` becomes `mlx-community_Phi-3-mini-4k-instruct-4bit`).
+The `<namespace>_<repo>` directory name is the HuggingFace repo ID with `/` replaced by `_` (e.g., `mlx-community/Qwen3-Coder-Next-4bit` becomes `mlx-community_Qwen3-Coder-Next-4bit`).
 
-If you add a new model cache path, always use the `intrusive-memory/Models/` hierarchy. The implementation is in `BrujaModelManager.modelsDirectory`.
+SwiftAcervo manages the canonical directory. The implementation is in `BrujaDownloadManager.modelsDirectory` which delegates to `Acervo.sharedModelsDirectory`. Legacy models from old cache paths are automatically migrated to `~/Library/SharedModels/` on first use.
 
 ## Design Principles
 

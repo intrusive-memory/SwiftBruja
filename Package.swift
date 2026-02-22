@@ -25,8 +25,8 @@ let package = Package(
         .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.21.0"),
         .package(url: "https://github.com/ml-explore/mlx-swift-lm", branch: "main"),
 
-        // HuggingFace Hub API (for model downloads)
-        .package(url: "https://github.com/huggingface/swift-transformers", from: "1.1.0"),
+        // Shared model management (download, cache, discovery)
+        .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", branch: "main"),
 
         // CLI argument parsing
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
@@ -41,7 +41,7 @@ let package = Package(
                 .product(name: "MLXFast", package: "mlx-swift"),
                 .product(name: "MLXLLM", package: "mlx-swift-lm"),
                 .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
-                .product(name: "Hub", package: "swift-transformers"),
+                .product(name: "SwiftAcervo", package: "SwiftAcervo"),
             ]
         ),
 
@@ -52,13 +52,17 @@ let package = Package(
                 "SwiftBruja",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
+                .product(name: "SwiftAcervo", package: "SwiftAcervo"),
             ]
         ),
 
         // Unit Tests
         .testTarget(
             name: "SwiftBrujaTests",
-            dependencies: ["SwiftBruja"]
+            dependencies: [
+                "SwiftBruja",
+                .product(name: "SwiftAcervo", package: "SwiftAcervo"),
+            ]
         ),
 
         // Integration Tests (requires built binary and LLM model)

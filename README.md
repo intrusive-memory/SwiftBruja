@@ -44,7 +44,7 @@ brew install intrusive-memory/tap/bruja
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.0.0")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.1.0")
 ]
 ```
 
@@ -138,8 +138,7 @@ bruja "List 5 programming languages" --json
 
 **Options:**
 - `prompt` (argument): The prompt to send to the model
-- `-m, --model`: Model path or HuggingFace ID (default: mlx-community/Phi-3-mini-4k-instruct-4bit)
-- `-d, --destination`: Download destination for HuggingFace models
+- `-m, --model`: Model path or HuggingFace ID (default: mlx-community/Qwen3-Coder-Next-4bit)
 - `--temperature`: Sampling temperature 0.0-1.0 (default: 0.7)
 - `--max-tokens`: Maximum tokens to generate (auto-tuned by memory if omitted)
 - `--system`: System prompt to set model behavior
@@ -153,9 +152,6 @@ Download a model from HuggingFace.
 ```bash
 # Download specific model
 bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit
-
-# Download to custom location
-bruja download -m mlx-community/Llama-3-8B -d ~/Models
 
 # Force re-download
 bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit --force
@@ -171,8 +167,7 @@ bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit --force
 List downloaded models.
 
 ```bash
-bruja list                    # List models in default directory
-bruja list --path ~/MyModels  # List models in custom directory
+bruja list                    # List downloaded models
 bruja list --json             # JSON output
 ```
 
@@ -194,14 +189,15 @@ bruja info -m ~/Models/custom-model --json
 | `Bruja.query(_:model:)` | Simple text query, returns String |
 | `Bruja.query(_:as:model:)` | Structured query, returns Codable type |
 | `Bruja.queryWithMetadata(_:model:)` | Query with timing and token info |
-| `Bruja.download(model:to:)` | Download model from HuggingFace |
+| `Bruja.download(model:)` | Download model from HuggingFace |
 | `Bruja.listModels()` | List downloaded models |
-| `Bruja.modelExists(at:)` | Check if model exists locally |
+| `Bruja.modelExists(at:)` | Check if model exists at path |
+| `Bruja.modelExists(id:)` | Check if model exists by HuggingFace ID |
 
 ### Default Values
 
-- **Default model**: `mlx-community/Phi-3-mini-4k-instruct-4bit` (~2.15 GB)
-- **Models directory**: `~/Library/Caches/intrusive-memory/Models/LLM/`
+- **Default model**: `mlx-community/Qwen3-Coder-Next-4bit`
+- **Models directory**: `~/Library/SharedModels/` (shared via [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo))
 - **Temperature**: 0.7
 - **Max tokens**: Auto-tuned based on available memory (pass explicitly to override)
 
@@ -248,8 +244,8 @@ make release
 # Manual xcodebuild (requires correct destination for macOS 26 Apple Silicon)
 xcodebuild -scheme bruja -destination 'platform=macOS,arch=arm64' build
 
-# Run tests
-swift test
+# Run tests (requires xcodebuild)
+make test
 ```
 
 **Note:** Metal shaders require `xcodebuild` or `make install`. Using `swift build` alone will compile but shaders won't load at runtime.
