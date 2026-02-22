@@ -1,4 +1,5 @@
 import Foundation
+import SwiftAcervo
 
 /// Result of a query operation with metadata
 public struct BrujaQueryResult: Codable, Sendable {
@@ -58,5 +59,17 @@ public struct BrujaModelInfo: Codable, Sendable {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
         return formatter.string(fromByteCount: sizeBytes)
+    }
+}
+
+extension BrujaModelInfo {
+    /// Bridge from AcervoModel
+    public init(from acervo: AcervoModel) {
+        self.init(
+            id: acervo.id,
+            path: acervo.path.path,
+            sizeBytes: acervo.sizeBytes,
+            downloadDate: acervo.downloadDate
+        )
     }
 }

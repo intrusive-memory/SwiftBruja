@@ -70,18 +70,14 @@ struct DownloadCommand: AsyncParsableCommand {
     var quiet = false
 
     func run() async throws {
-        let destURL = destination.map { URL(fileURLWithPath: $0) }
-            ?? SwiftBruja.Bruja.defaultModelsDirectory
-
         let showProgress = !quiet
 
         if showProgress {
-            print("Downloading \(model) to \(destURL.path)...")
+            print("Downloading \(model) to \(SwiftBruja.Bruja.defaultModelsDirectory.path)...")
         }
 
         try await SwiftBruja.Bruja.download(
             model: model,
-            to: destURL,
             force: force
         ) { progress in
             if showProgress {
@@ -151,7 +147,6 @@ struct QueryCommand: AsyncParsableCommand {
         let result = try await SwiftBruja.Bruja.queryWithMetadata(
             prompt,
             model: model,
-            downloadDestination: destination.map { URL(fileURLWithPath: $0) },
             temperature: temperature,
             maxTokens: maxTokens,
             system: system
@@ -206,22 +201,17 @@ struct ChatCommand: AsyncParsableCommand {
     var system: String?
 
     func run() async throws {
-        let destURL = destination.map { URL(fileURLWithPath: $0) }
-
         // Resolve maxTokens
         let resolvedMaxTokens: Int
         if let maxTokens {
             resolvedMaxTokens = maxTokens
         } else {
-            let modelSize = (try? await SwiftBruja.Bruja.modelInfo(at: model).sizeBytes) ?? 0
+            let modelSize = (try? SwiftBruja.Bruja.modelInfo(at: model).sizeBytes) ?? 0
             resolvedMaxTokens = SwiftBruja.BrujaMemory.recommendedMaxTokens(modelSizeBytes: modelSize)
         }
 
         print("Loading model: \(model)...")
-        let container = try await SwiftBruja.Bruja.loadModel(
-            model,
-            downloadDestination: destURL
-        )
+        let container = try await SwiftBruja.Bruja.loadModel(model)
 
         let instructions = system ?? "You are a helpful AI assistant. Be concise and direct in your responses."
         var session = ChatSession(
@@ -309,10 +299,9 @@ struct ListCommand: AsyncParsableCommand {
     var json = false
 
     func run() async throws {
-        let modelsDir = path.map { URL(fileURLWithPath: $0) }
-            ?? SwiftBruja.Bruja.defaultModelsDirectory
+        let modelsDir = SwiftBruja.Bruja.defaultModelsDirectory
 
-        let models = try SwiftBruja.Bruja.listModels(in: modelsDir)
+        let models = try SwiftBruja.Bruja.listModels()
 
         if json {
             let encoder = JSONEncoder()
@@ -365,7 +354,7 @@ struct InfoCommand: AsyncParsableCommand {
     var json = false
 
     func run() async throws {
-        let info = try await SwiftBruja.Bruja.modelInfo(at: model)
+        let info = try SwiftBruja.Bruja.modelInfo(at: model)
 
         if json {
             let encoder = JSONEncoder()
