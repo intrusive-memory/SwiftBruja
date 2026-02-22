@@ -37,7 +37,7 @@ let result = try await Bruja.queryWithMetadata("Your prompt")
 print("Duration: \(result.durationSeconds)s")
 
 // Model management
-try await Bruja.download(model: modelID, to: destinationURL)
+try await Bruja.download(model: modelID)
 let exists = Bruja.modelExists(at: modelPath)
 let models = try Bruja.listModels()
 ```
