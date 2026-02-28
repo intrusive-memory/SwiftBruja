@@ -23,7 +23,7 @@ let package = Package(
     dependencies: [
         // MLX ecosystem for on-device inference
         .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.21.0"),
-        .package(url: "https://github.com/ml-explore/mlx-swift-lm", branch: "main"),
+        .package(url: "https://github.com/intrusive-memory/mlx-swift-lm.git", branch: "xcode26-deps-fix"),
 
         // Shared model management (download, cache, discovery)
         .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", branch: "main"),
