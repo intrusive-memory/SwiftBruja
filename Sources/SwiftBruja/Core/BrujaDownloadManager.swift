@@ -35,7 +35,7 @@ public actor BrujaDownloadManager {
         }
         try await Acervo.ensureAvailable(
             modelId,
-            files: LLMModelFiles.required
+            files: []
         ) { acervoProgress in
             progress?(acervoProgress.overallProgress)
         }
