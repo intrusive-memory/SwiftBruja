@@ -1,0 +1,306 @@
+name: Ensure Model on CDN
+
+# Uploads the default SwiftBruja LLM model to the intrusive-memory R2 CDN with a
+# SwiftAcervo-compatible CDNManifest v1. The workflow is idempotent: if the manifest
+# already exists at {CDN_BASE}/models/{MODEL_SLUG}/manifest.json it exits immediately.
+#
+# Disk constraint: the model is ~44.8 GB across 9 sharded safetensors files. Standard
+# GitHub-hosted runners have ~14 GB free. Files are processed one at a time:
+#   download → SHA-256 → upload to R2 → delete local copy
+# This keeps peak disk usage to ~6 GB per shard (largest shard is ~5.26 GB).
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches: [main]
+    paths:
+      # Re-run only when this workflow file itself changes on main
+      - .github/workflows/ensure-model-cdn.yml
+
+jobs:
+  ensure-model-cdn:
+    name: Ensure Model on CDN
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # ~6 h: 9 shards × ~25 min each (download + upload on a 1 Gbps runner)
+
+    env:
+      # -----------------------------------------------------------------------
+      # MODEL_REPO must match BrujaModelManager.defaultModel in
+      #   Sources/SwiftBruja/Core/BrujaModelManager.swift
+      #   public static let defaultModel = "mlx-community/Qwen3-Coder-Next-4bit"
+      # If that constant changes, update MODEL_REPO here to match.
+      # -----------------------------------------------------------------------
+      MODEL_REPO: mlx-community/Qwen3-Coder-Next-4bit
+      MODEL_SLUG: mlx-community_Qwen3-Coder-Next-4bit
+      CDN_BASE: https://pub-8e049ed02be340cbb18f921765fd24f3.r2.dev
+      R2_BUCKET: intrusive-memory-audio
+      HF_API_BASE: https://huggingface.co
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Check CDN idempotency — skip everything if manifest already exists
+      # -----------------------------------------------------------------------
+      - name: Check if manifest already exists on CDN
+        id: cdn_check
+        run: |
+          MANIFEST_URL="${CDN_BASE}/models/${MODEL_SLUG}/manifest.json"
+          echo "Checking ${MANIFEST_URL}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${MANIFEST_URL}")
+          echo "HTTP status: ${STATUS}"
+          if [ "${STATUS}" = "200" ]; then
+            echo "manifest_exists=true" >> "$GITHUB_OUTPUT"
+            echo "Manifest already exists on CDN. Skipping upload."
+          else
+            echo "manifest_exists=false" >> "$GITHUB_OUTPUT"
+            echo "Manifest not found (HTTP ${STATUS}). Proceeding with upload."
+          fi
+
+      # -----------------------------------------------------------------------
+      # All remaining steps are skipped when the manifest already exists
+      # -----------------------------------------------------------------------
+
+      - name: Checkout code
+        if: steps.cdn_check.outputs.manifest_exists != 'true'
+        uses: actions/checkout@v4
+
+      - name: Configure AWS CLI for R2
+        if: steps.cdn_check.outputs.manifest_exists != 'true'
+        run: |
+          pip install awscli --quiet
+          aws configure set aws_access_key_id "${{ secrets.R2_ACCESS_KEY_ID }}"
+          aws configure set aws_secret_access_key "${{ secrets.R2_SECRET_ACCESS_KEY }}"
+          aws configure set region auto
+        env:
+          R2_ENDPOINT_URL: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
+
+      # -----------------------------------------------------------------------
+      # Step 2: Discover files from the HuggingFace model repository
+      # -----------------------------------------------------------------------
+      - name: Discover model files from HuggingFace
+        if: steps.cdn_check.outputs.manifest_exists != 'true'
+        id: discover
+        run: |
+          # Use the HuggingFace Hub API to list files in the repository
+          # Filter: *.json, *.safetensors, *.jinja — exclude *.md, *.txt, *.py, .git*, .gitattributes
+          set -euo pipefail
+
+          HF_API_URL="https://huggingface.co/api/models/${MODEL_REPO}"
+          echo "Fetching file list from: ${HF_API_URL}"
+
+          RESPONSE=$(curl -fsSL \
+            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}" \
+            "${HF_API_URL}")
+
+          # Extract filenames via jq, applying include/exclude rules
+          FILE_LIST=$(echo "${RESPONSE}" | jq -r '
+            .siblings[]?.rfilename
+            | select(
+                (test("\\.(json|safetensors|jinja)$"))
+                and
+                (test("^\\.(git|gitattributes)") | not)
+                and
+                (test("\\.(md|txt|py)$") | not)
+                and
+                (test("README") | not)
+              )
+          ')
+
+          echo "Files to process:"
+          echo "${FILE_LIST}"
+
+          FILE_COUNT=$(echo "${FILE_LIST}" | wc -l | tr -d ' ')
+          echo "file_count=${FILE_COUNT}" >> "$GITHUB_OUTPUT"
+
+          # Persist list to file for use in subsequent steps
+          echo "${FILE_LIST}" > /tmp/model_files.txt
+          echo "File list written to /tmp/model_files.txt (${FILE_COUNT} files)"
+
+      # -----------------------------------------------------------------------
+      # Step 3: Process each file sequentially: download → SHA-256 → upload → delete
+      # Manifest entries are accumulated incrementally.
+      # -----------------------------------------------------------------------
+      - name: Process files sequentially and build manifest
+        if: steps.cdn_check.outputs.manifest_exists != 'true'
+        run: |
+          set -euo pipefail
+
+          R2_ENDPOINT_URL="https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+          R2_PREFIX="models/${MODEL_SLUG}"
+          WORK_DIR="/tmp/model_work"
+          mkdir -p "${WORK_DIR}"
+
+          # Accumulate file entries as JSON lines — assembled into manifest later
+          ENTRIES_FILE="/tmp/manifest_entries.jsonl"
+          > "${ENTRIES_FILE}"
+
+          while IFS= read -r FILENAME; do
+            [ -z "${FILENAME}" ] && continue
+
+            echo "==================================================================="
+            echo "Processing: ${FILENAME}"
+            echo "==================================================================="
+
+            LOCAL_PATH="${WORK_DIR}/${FILENAME}"
+            # Create subdirectories if needed (e.g. nested paths)
+            mkdir -p "$(dirname "${LOCAL_PATH}")"
+
+            # ------------------------------------------------------------------
+            # Download from HuggingFace
+            # ------------------------------------------------------------------
+            DOWNLOAD_URL="${HF_API_BASE}/${MODEL_REPO}/resolve/main/${FILENAME}"
+            echo "Downloading from: ${DOWNLOAD_URL}"
+            curl -fL \
+              -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}" \
+              -o "${LOCAL_PATH}" \
+              "${DOWNLOAD_URL}"
+
+            # ------------------------------------------------------------------
+            # Compute SHA-256 and file size
+            # ------------------------------------------------------------------
+            SHA256=$(sha256sum "${LOCAL_PATH}" | awk '{print $1}')
+            SIZE_BYTES=$(stat -c '%s' "${LOCAL_PATH}")
+            echo "  sha256:    ${SHA256}"
+            echo "  sizeBytes: ${SIZE_BYTES}"
+
+            # ------------------------------------------------------------------
+            # Upload to R2
+            # ------------------------------------------------------------------
+            S3_KEY="${R2_PREFIX}/${FILENAME}"
+            echo "Uploading to s3://${R2_BUCKET}/${S3_KEY}"
+            aws s3 cp "${LOCAL_PATH}" "s3://${R2_BUCKET}/${S3_KEY}" \
+              --endpoint-url "${R2_ENDPOINT_URL}" \
+              --no-progress
+
+            # ------------------------------------------------------------------
+            # Delete local copy to reclaim disk
+            # ------------------------------------------------------------------
+            rm -f "${LOCAL_PATH}"
+            echo "  Deleted local copy."
+
+            # ------------------------------------------------------------------
+            # Append manifest entry (JSON line)
+            # ------------------------------------------------------------------
+            jq -n \
+              --arg path "${FILENAME}" \
+              --arg sha256 "${SHA256}" \
+              --argjson sizeBytes "${SIZE_BYTES}" \
+              '{"path": $path, "sha256": $sha256, "sizeBytes": $sizeBytes}' \
+              >> "${ENTRIES_FILE}"
+
+          done < /tmp/model_files.txt
+
+          echo "All files processed."
+
+      # -----------------------------------------------------------------------
+      # Step 4: Generate manifest.json in SwiftAcervo CDNManifest v1 format
+      # -----------------------------------------------------------------------
+      - name: Generate manifest.json
+        if: steps.cdn_check.outputs.manifest_exists != 'true'
+        run: |
+          set -euo pipefail
+
+          ENTRIES_FILE="/tmp/manifest_entries.jsonl"
+          MANIFEST_FILE="/tmp/manifest.json"
+          UPDATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Build the files array from accumulated JSONL entries
+          FILES_JSON=$(jq -s '.' "${ENTRIES_FILE}")
+
+          # Compute manifestChecksum:
+          # SHA-256 of all file sha256 values sorted lexicographically, then concatenated
+          MANIFEST_CHECKSUM=$(
+            jq -r '.[].sha256' <<< "${FILES_JSON}" \
+            | sort \
+            | tr -d '\n' \
+            | sha256sum \
+            | awk '{print $1}'
+          )
+
+          echo "manifestChecksum: ${MANIFEST_CHECKSUM}"
+
+          # Assemble final manifest
+          jq -n \
+            --argjson manifestVersion 1 \
+            --arg modelId "${MODEL_REPO}" \
+            --arg slug "${MODEL_SLUG}" \
+            --arg updatedAt "${UPDATED_AT}" \
+            --argjson files "${FILES_JSON}" \
+            --arg manifestChecksum "${MANIFEST_CHECKSUM}" \
+            '{
+              manifestVersion: $manifestVersion,
+              modelId: $modelId,
+              slug: $slug,
+              updatedAt: $updatedAt,
+              files: $files,
+              manifestChecksum: $manifestChecksum
+            }' > "${MANIFEST_FILE}"
+
+          echo "Generated manifest.json:"
+          jq '{ manifestVersion, modelId, slug, updatedAt, manifestChecksum, fileCount: (.files | length) }' \
+            "${MANIFEST_FILE}"
+
+      # -----------------------------------------------------------------------
+      # Step 5: Upload manifest.json to R2
+      # -----------------------------------------------------------------------
+      - name: Upload manifest.json to R2
+        if: steps.cdn_check.outputs.manifest_exists != 'true'
+        run: |
+          set -euo pipefail
+
+          R2_ENDPOINT_URL="https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+          S3_KEY="models/${MODEL_SLUG}/manifest.json"
+
+          echo "Uploading manifest to s3://${R2_BUCKET}/${S3_KEY}"
+          aws s3 cp /tmp/manifest.json "s3://${R2_BUCKET}/${S3_KEY}" \
+            --endpoint-url "${R2_ENDPOINT_URL}" \
+            --content-type "application/json" \
+            --no-progress
+
+          echo "Manifest uploaded."
+
+      # -----------------------------------------------------------------------
+      # Step 6: Post-upload verification — fetch manifest from CDN and validate
+      # -----------------------------------------------------------------------
+      - name: Verify manifest on CDN
+        if: steps.cdn_check.outputs.manifest_exists != 'true'
+        run: |
+          set -euo pipefail
+
+          MANIFEST_URL="${CDN_BASE}/models/${MODEL_SLUG}/manifest.json"
+          EXPECTED_FILE_COUNT=$(wc -l < /tmp/model_files.txt | tr -d ' ')
+
+          echo "Fetching manifest from CDN: ${MANIFEST_URL}"
+          # Retry up to 5 times with a short delay to allow CDN propagation
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /tmp/cdn_manifest.json -w "%{http_code}" "${MANIFEST_URL}")
+            if [ "${STATUS}" = "200" ]; then
+              break
+            fi
+            echo "Attempt ${i}: HTTP ${STATUS}, retrying in 10s..."
+            sleep 10
+          done
+
+          if [ "${STATUS}" != "200" ]; then
+            echo "ERROR: Manifest not available on CDN after 5 attempts (HTTP ${STATUS})"
+            exit 1
+          fi
+
+          # Validate file count
+          CDN_FILE_COUNT=$(jq '.files | length' /tmp/cdn_manifest.json)
+          echo "Expected file count: ${EXPECTED_FILE_COUNT}"
+          echo "CDN manifest file count: ${CDN_FILE_COUNT}"
+
+          if [ "${CDN_FILE_COUNT}" != "${EXPECTED_FILE_COUNT}" ]; then
+            echo "ERROR: File count mismatch — expected ${EXPECTED_FILE_COUNT}, got ${CDN_FILE_COUNT}"
+            exit 1
+          fi
+
+          # Validate manifestVersion
+          MANIFEST_VERSION=$(jq '.manifestVersion' /tmp/cdn_manifest.json)
+          if [ "${MANIFEST_VERSION}" != "1" ]; then
+            echo "ERROR: Unexpected manifestVersion: ${MANIFEST_VERSION}"
+            exit 1
+          fi
+
+          echo "CDN verification passed: ${CDN_FILE_COUNT} files, manifestVersion=1"
