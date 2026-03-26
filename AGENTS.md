@@ -2,7 +2,7 @@
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.1.0 (February 2026)
+**Current Version**: 1.2.0 (March 2026)
 
 ---
 
@@ -18,7 +18,6 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
   - `Bruja.swift` -- Main entry point (static methods: `query`, `queryWithMetadata`, `download`, `listModels`)
   - `Core/BrujaModelManager.swift` -- Loads models into memory, validates memory
   - `Core/BrujaDownloadManager.swift` -- Thin SwiftAcervo wrapper for model download and discovery
-  - `Core/LLMModelFiles.swift` -- Required file list for LLM model downloads
   - `Core/BrujaQuery.swift` -- Query execution via MLX
   - `Core/BrujaMemory.swift` -- Memory validation and auto-tuned maxTokens
   - `Core/BrujaTypes.swift` -- `BrujaQueryResult`, `BrujaModelInfo`
@@ -32,8 +31,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 |------|---------|
 | `Bruja.swift` | Static API for queries: `query()`, `queryWithMetadata()`, `download()`, `listModels()`, `modelExists()` |
 | `BrujaModelManager.swift` | Loads models into memory, validates memory |
-| `BrujaDownloadManager.swift` | Thin SwiftAcervo wrapper for model download and discovery |
-| `LLMModelFiles.swift` | Required file list for LLM model downloads |
+| `BrujaDownloadManager.swift` | Thin SwiftAcervo wrapper for model download and discovery (passes `files: []` to download all manifest files) |
 | `BrujaQuery.swift` | Executes LLM inference via MLX, handles tokenization and generation, supports structured output via `Decodable` |
 | `BrujaMemory.swift` | Validates available memory before loading models (80% threshold), auto-tunes `maxTokens` based on memory (4096 or 8192) |
 | `BrujaTypes.swift` | `BrujaQueryResult` (response + metadata), `BrujaModelInfo` (model details) |
