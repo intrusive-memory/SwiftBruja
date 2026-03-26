@@ -1,480 +1,488 @@
-import XCTest
-@testable import SwiftBruja
 import SwiftAcervo
+import XCTest
+
+@testable import SwiftBruja
 
 final class SwiftBrujaTests: XCTestCase {
 
-    // MARK: - Bruja Static Properties
+  // MARK: - Bruja Static Properties
 
-    func testBrujaDefaultModel() {
-        XCTAssertEqual(Bruja.defaultModel, "mlx-community/Qwen3-Coder-Next-4bit")
-    }
+  func testBrujaDefaultModel() {
+    XCTAssertEqual(Bruja.defaultModel, "mlx-community/Qwen3-Coder-Next-4bit")
+  }
 
-    func testBrujaDefaultModelsDirectory() {
-        let dir = Bruja.defaultModelsDirectory
-        XCTAssertTrue(dir.path.contains("SharedModels"))
-    }
+  func testBrujaDefaultModelsDirectory() {
+    let dir = Bruja.defaultModelsDirectory
+    XCTAssertTrue(dir.path.contains("SharedModels"))
+  }
 
-    // MARK: - Bruja Model Existence Checks
+  // MARK: - Bruja Model Existence Checks
 
-    func testModelExistsAtPath_NonexistentPath() {
-        XCTAssertFalse(Bruja.modelExists(at: "/nonexistent/path/to/model"))
-    }
+  func testModelExistsAtPath_NonexistentPath() {
+    XCTAssertFalse(Bruja.modelExists(at: "/nonexistent/path/to/model"))
+  }
 
-    func testModelExistsAtPath_WithTildeExpansion() {
-        // Test that tilde paths are handled (even if model doesn't exist)
-        XCTAssertFalse(Bruja.modelExists(at: "~/nonexistent/model"))
-    }
+  func testModelExistsAtPath_WithTildeExpansion() {
+    // Test that tilde paths are handled (even if model doesn't exist)
+    XCTAssertFalse(Bruja.modelExists(at: "~/nonexistent/model"))
+  }
 
-    func testModelExistsById_NonexistentModel() {
-        XCTAssertFalse(Bruja.modelExists(id: "nonexistent/model-that-does-not-exist"))
-    }
+  func testModelExistsById_NonexistentModel() {
+    XCTAssertFalse(Bruja.modelExists(id: "nonexistent/model-that-does-not-exist"))
+  }
 
-    // MARK: - Bruja List Models
+  // MARK: - Bruja List Models
 
-    func testListModels_ReturnsArray() throws {
-        // Just verify it returns without throwing (may be empty if no models downloaded)
-        let models = try Bruja.listModels()
-        XCTAssertNotNil(models)
-    }
+  func testListModels_ReturnsArray() throws {
+    // Just verify it returns without throwing (may be empty if no models downloaded)
+    let models = try Bruja.listModels()
+    XCTAssertNotNil(models)
+  }
 }
 
 // MARK: - BrujaMemory Tests
 
 final class BrujaMemoryTests: XCTestCase {
 
-    // Uses the internal tokensForAvailableMemory helper to avoid Metal/GPU dependency.
+  // Uses the internal tokensForAvailableMemory helper to avoid Metal/GPU dependency.
 
-    func testMinimumFloor_ZeroMemoryAfterModel() {
-        // Model consumes all memory -> 0 GB remaining -> should still return 4096
-        let tokens = BrujaMemory.tokensForAvailableMemory(4_000_000_000, modelSizeBytes: 4_000_000_000)
-        XCTAssertEqual(tokens, 4096, "Minimum floor of 4096 must be enforced")
-    }
+  func testMinimumFloor_ZeroMemoryAfterModel() {
+    // Model consumes all memory -> 0 GB remaining -> should still return 4096
+    let tokens = BrujaMemory.tokensForAvailableMemory(4_000_000_000, modelSizeBytes: 4_000_000_000)
+    XCTAssertEqual(tokens, 4096, "Minimum floor of 4096 must be enforced")
+  }
 
-    func testMinimumFloor_ModelExceedsMemory() {
-        // Model is larger than available memory
-        let tokens = BrujaMemory.tokensForAvailableMemory(4_000_000_000, modelSizeBytes: 100_000_000_000)
-        XCTAssertEqual(tokens, 4096)
-    }
+  func testMinimumFloor_ModelExceedsMemory() {
+    // Model is larger than available memory
+    let tokens = BrujaMemory.tokensForAvailableMemory(
+      4_000_000_000, modelSizeBytes: 100_000_000_000)
+    XCTAssertEqual(tokens, 4096)
+  }
 
-    func testMinimumFloor_VeryLowRemainingMemory() {
-        // 1 GB remaining after model -> base tier is 512, but floor enforces 4096
-        let oneGB: UInt64 = 1 * 1024 * 1024 * 1024
-        let tokens = BrujaMemory.tokensForAvailableMemory(oneGB, modelSizeBytes: 0)
-        XCTAssertEqual(tokens, 4096)
-    }
+  func testMinimumFloor_VeryLowRemainingMemory() {
+    // 1 GB remaining after model -> base tier is 512, but floor enforces 4096
+    let oneGB: UInt64 = 1 * 1024 * 1024 * 1024
+    let tokens = BrujaMemory.tokensForAvailableMemory(oneGB, modelSizeBytes: 0)
+    XCTAssertEqual(tokens, 4096)
+  }
 
-    func testMinimumFloor_EightGBRemaining() {
-        // 10 GB remaining -> base tier is 2048, but floor enforces 4096
-        let tenGB: UInt64 = 10 * 1024 * 1024 * 1024
-        let tokens = BrujaMemory.tokensForAvailableMemory(tenGB, modelSizeBytes: 0)
-        XCTAssertEqual(tokens, 4096)
-    }
+  func testMinimumFloor_EightGBRemaining() {
+    // 10 GB remaining -> base tier is 2048, but floor enforces 4096
+    let tenGB: UInt64 = 10 * 1024 * 1024 * 1024
+    let tokens = BrujaMemory.tokensForAvailableMemory(tenGB, modelSizeBytes: 0)
+    XCTAssertEqual(tokens, 4096)
+  }
 
-    func testTier_SixteenGBRemaining() {
-        // 20 GB remaining -> base tier is 4096, matches floor
-        let twentyGB: UInt64 = 20 * 1024 * 1024 * 1024
-        let tokens = BrujaMemory.tokensForAvailableMemory(twentyGB, modelSizeBytes: 0)
-        XCTAssertEqual(tokens, 4096)
-    }
+  func testTier_SixteenGBRemaining() {
+    // 20 GB remaining -> base tier is 4096, matches floor
+    let twentyGB: UInt64 = 20 * 1024 * 1024 * 1024
+    let tokens = BrujaMemory.tokensForAvailableMemory(twentyGB, modelSizeBytes: 0)
+    XCTAssertEqual(tokens, 4096)
+  }
 
-    func testTier_AboveThirtyTwoGB() {
-        // 48 GB remaining -> should return 8192
-        let fortyEightGB: UInt64 = 48 * 1024 * 1024 * 1024
-        let tokens = BrujaMemory.tokensForAvailableMemory(fortyEightGB, modelSizeBytes: 0)
-        XCTAssertEqual(tokens, 8192)
-    }
+  func testTier_AboveThirtyTwoGB() {
+    // 48 GB remaining -> should return 8192
+    let fortyEightGB: UInt64 = 48 * 1024 * 1024 * 1024
+    let tokens = BrujaMemory.tokensForAvailableMemory(fortyEightGB, modelSizeBytes: 0)
+    XCTAssertEqual(tokens, 8192)
+  }
 
-    func testNeverBelowFloor_AllTiers() {
-        // Exhaustively check that no input produces a value below 4096
-        let sizes: [UInt64] = [0, 1_000_000_000, 4_000_000_000, 8_000_000_000, 16_000_000_000]
-        let models: [Int64] = [0, 1_000_000_000, 50_000_000_000, 200_000_000_000]
-        for avail in sizes {
-            for model in models {
-                let tokens = BrujaMemory.tokensForAvailableMemory(avail, modelSizeBytes: model)
-                XCTAssertGreaterThanOrEqual(tokens, 4096, "Failed for available=\(avail), model=\(model)")
-            }
-        }
+  func testNeverBelowFloor_AllTiers() {
+    // Exhaustively check that no input produces a value below 4096
+    let sizes: [UInt64] = [0, 1_000_000_000, 4_000_000_000, 8_000_000_000, 16_000_000_000]
+    let models: [Int64] = [0, 1_000_000_000, 50_000_000_000, 200_000_000_000]
+    for avail in sizes {
+      for model in models {
+        let tokens = BrujaMemory.tokensForAvailableMemory(avail, modelSizeBytes: model)
+        XCTAssertGreaterThanOrEqual(tokens, 4096, "Failed for available=\(avail), model=\(model)")
+      }
     }
+  }
 }
 
 // MARK: - BrujaError Tests
 
 final class BrujaErrorTests: XCTestCase {
 
-    func testModelNotDownloadedError() {
-        let error = BrujaError.modelNotDownloaded("test-model")
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("test-model"))
-        XCTAssertTrue(error.errorDescription!.contains("not downloaded"))
-    }
+  func testModelNotDownloadedError() {
+    let error = BrujaError.modelNotDownloaded("test-model")
+    XCTAssertNotNil(error.errorDescription)
+    XCTAssertTrue(error.errorDescription!.contains("test-model"))
+    XCTAssertTrue(error.errorDescription!.contains("not downloaded"))
+  }
 
-    func testModelNotFoundError() {
-        let error = BrujaError.modelNotFound("/path/to/model")
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("/path/to/model"))
-        XCTAssertTrue(error.errorDescription!.contains("not found"))
-    }
+  func testModelNotFoundError() {
+    let error = BrujaError.modelNotFound("/path/to/model")
+    XCTAssertNotNil(error.errorDescription)
+    XCTAssertTrue(error.errorDescription!.contains("/path/to/model"))
+    XCTAssertTrue(error.errorDescription!.contains("not found"))
+  }
 
-    func testModelLoadFailedError() {
-        let underlyingError = NSError(domain: "TestDomain", code: 123, userInfo: [NSLocalizedDescriptionKey: "Test failure"])
-        let error = BrujaError.modelLoadFailed(underlyingError)
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("Failed to load"))
-    }
+  func testModelLoadFailedError() {
+    let underlyingError = NSError(
+      domain: "TestDomain", code: 123, userInfo: [NSLocalizedDescriptionKey: "Test failure"])
+    let error = BrujaError.modelLoadFailed(underlyingError)
+    XCTAssertNotNil(error.errorDescription)
+    XCTAssertTrue(error.errorDescription!.contains("Failed to load"))
+  }
 
-    func testDownloadFailedError() {
-        let error = BrujaError.downloadFailed("Network timeout")
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("Network timeout"))
-        XCTAssertTrue(error.errorDescription!.contains("download failed"))
-    }
+  func testDownloadFailedError() {
+    let error = BrujaError.downloadFailed("Network timeout")
+    XCTAssertNotNil(error.errorDescription)
+    XCTAssertTrue(error.errorDescription!.contains("Network timeout"))
+    XCTAssertTrue(error.errorDescription!.contains("download failed"))
+  }
 
-    func testQueryFailedError() {
-        let error = BrujaError.queryFailed("Token limit exceeded")
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("Token limit exceeded"))
-        XCTAssertTrue(error.errorDescription!.contains("Query failed"))
-    }
+  func testQueryFailedError() {
+    let error = BrujaError.queryFailed("Token limit exceeded")
+    XCTAssertNotNil(error.errorDescription)
+    XCTAssertTrue(error.errorDescription!.contains("Token limit exceeded"))
+    XCTAssertTrue(error.errorDescription!.contains("Query failed"))
+  }
 
-    func testInvalidResponseError() {
-        let error = BrujaError.invalidResponse("Empty output")
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("Empty output"))
-        XCTAssertTrue(error.errorDescription!.contains("Invalid response"))
-    }
+  func testInvalidResponseError() {
+    let error = BrujaError.invalidResponse("Empty output")
+    XCTAssertNotNil(error.errorDescription)
+    XCTAssertTrue(error.errorDescription!.contains("Empty output"))
+    XCTAssertTrue(error.errorDescription!.contains("Invalid response"))
+  }
 
-    func testJsonParsingFailedError() {
-        let error = BrujaError.jsonParsingFailed("Unexpected token")
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("Unexpected token"))
-        XCTAssertTrue(error.errorDescription!.contains("JSON"))
-    }
+  func testJsonParsingFailedError() {
+    let error = BrujaError.jsonParsingFailed("Unexpected token")
+    XCTAssertNotNil(error.errorDescription)
+    XCTAssertTrue(error.errorDescription!.contains("Unexpected token"))
+    XCTAssertTrue(error.errorDescription!.contains("JSON"))
+  }
 
-    func testInvalidModelPathError() {
-        let error = BrujaError.invalidModelPath("bad/path")
-        XCTAssertNotNil(error.errorDescription)
-        XCTAssertTrue(error.errorDescription!.contains("bad/path"))
-        XCTAssertTrue(error.errorDescription!.contains("Invalid model path"))
-    }
+  func testInvalidModelPathError() {
+    let error = BrujaError.invalidModelPath("bad/path")
+    XCTAssertNotNil(error.errorDescription)
+    XCTAssertTrue(error.errorDescription!.contains("bad/path"))
+    XCTAssertTrue(error.errorDescription!.contains("Invalid model path"))
+  }
 
-    func testAllErrorsConformToLocalizedError() {
-        let errors: [BrujaError] = [
-            .modelNotDownloaded("test"),
-            .modelNotFound("test"),
-            .modelLoadFailed(NSError(domain: "", code: 0)),
-            .downloadFailed("test"),
-            .queryFailed("test"),
-            .invalidResponse("test"),
-            .jsonParsingFailed("test"),
-            .invalidModelPath("test")
-        ]
+  func testAllErrorsConformToLocalizedError() {
+    let errors: [BrujaError] = [
+      .modelNotDownloaded("test"),
+      .modelNotFound("test"),
+      .modelLoadFailed(NSError(domain: "", code: 0)),
+      .downloadFailed("test"),
+      .queryFailed("test"),
+      .invalidResponse("test"),
+      .jsonParsingFailed("test"),
+      .invalidModelPath("test"),
+    ]
 
-        for error in errors {
-            XCTAssertNotNil(error.errorDescription, "Error \(error) should have a description")
-            XCTAssertFalse(error.errorDescription!.isEmpty, "Error description should not be empty")
-        }
+    for error in errors {
+      XCTAssertNotNil(error.errorDescription, "Error \(error) should have a description")
+      XCTAssertFalse(error.errorDescription!.isEmpty, "Error description should not be empty")
     }
+  }
 }
 
 // MARK: - BrujaQueryResult Tests
 
 final class BrujaQueryResultTests: XCTestCase {
 
-    func testInitialization() {
-        let result = BrujaQueryResult(
-            response: "Hello, world!",
-            model: "test-model",
-            modelPath: "/path/to/model",
-            tokensGenerated: 42,
-            durationSeconds: 1.5
-        )
+  func testInitialization() {
+    let result = BrujaQueryResult(
+      response: "Hello, world!",
+      model: "test-model",
+      modelPath: "/path/to/model",
+      tokensGenerated: 42,
+      durationSeconds: 1.5
+    )
 
-        XCTAssertEqual(result.response, "Hello, world!")
-        XCTAssertEqual(result.model, "test-model")
-        XCTAssertEqual(result.modelPath, "/path/to/model")
-        XCTAssertEqual(result.tokensGenerated, 42)
-        XCTAssertEqual(result.durationSeconds, 1.5)
-    }
+    XCTAssertEqual(result.response, "Hello, world!")
+    XCTAssertEqual(result.model, "test-model")
+    XCTAssertEqual(result.modelPath, "/path/to/model")
+    XCTAssertEqual(result.tokensGenerated, 42)
+    XCTAssertEqual(result.durationSeconds, 1.5)
+  }
 
-    func testCodableRoundTrip() throws {
-        let original = BrujaQueryResult(
-            response: "Test response with special chars: e, n, zhong wen",
-            model: "mlx-community/test-model",
-            modelPath: "/Users/test/models/test",
-            tokensGenerated: 100,
-            durationSeconds: 2.345
-        )
+  func testCodableRoundTrip() throws {
+    let original = BrujaQueryResult(
+      response: "Test response with special chars: e, n, zhong wen",
+      model: "mlx-community/test-model",
+      modelPath: "/Users/test/models/test",
+      tokensGenerated: 100,
+      durationSeconds: 2.345
+    )
 
-        let encoder = JSONEncoder()
-        let data = try encoder.encode(original)
+    let encoder = JSONEncoder()
+    let data = try encoder.encode(original)
 
-        let decoder = JSONDecoder()
-        let decoded = try decoder.decode(BrujaQueryResult.self, from: data)
+    let decoder = JSONDecoder()
+    let decoded = try decoder.decode(BrujaQueryResult.self, from: data)
 
-        XCTAssertEqual(decoded.response, original.response)
-        XCTAssertEqual(decoded.model, original.model)
-        XCTAssertEqual(decoded.modelPath, original.modelPath)
-        XCTAssertEqual(decoded.tokensGenerated, original.tokensGenerated)
-        XCTAssertEqual(decoded.durationSeconds, original.durationSeconds, accuracy: 0.001)
-    }
+    XCTAssertEqual(decoded.response, original.response)
+    XCTAssertEqual(decoded.model, original.model)
+    XCTAssertEqual(decoded.modelPath, original.modelPath)
+    XCTAssertEqual(decoded.tokensGenerated, original.tokensGenerated)
+    XCTAssertEqual(decoded.durationSeconds, original.durationSeconds, accuracy: 0.001)
+  }
 
-    func testJsonSerialization() throws {
-        let result = BrujaQueryResult(
-            response: "Answer",
-            model: "model-id",
-            modelPath: "/path",
-            tokensGenerated: 10,
-            durationSeconds: 0.5
-        )
+  func testJsonSerialization() throws {
+    let result = BrujaQueryResult(
+      response: "Answer",
+      model: "model-id",
+      modelPath: "/path",
+      tokensGenerated: 10,
+      durationSeconds: 0.5
+    )
 
-        let data = try JSONEncoder().encode(result)
-        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+    let data = try JSONEncoder().encode(result)
+    let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
 
-        XCTAssertNotNil(json)
-        XCTAssertEqual(json?["response"] as? String, "Answer")
-        XCTAssertEqual(json?["model"] as? String, "model-id")
-        XCTAssertEqual(json?["modelPath"] as? String, "/path")
-        XCTAssertEqual(json?["tokensGenerated"] as? Int, 10)
-        XCTAssertEqual(json?["durationSeconds"] as? Double, 0.5)
-    }
+    XCTAssertNotNil(json)
+    XCTAssertEqual(json?["response"] as? String, "Answer")
+    XCTAssertEqual(json?["model"] as? String, "model-id")
+    XCTAssertEqual(json?["modelPath"] as? String, "/path")
+    XCTAssertEqual(json?["tokensGenerated"] as? Int, 10)
+    XCTAssertEqual(json?["durationSeconds"] as? Double, 0.5)
+  }
 
-    func testEmptyResponse() {
-        let result = BrujaQueryResult(
-            response: "",
-            model: "model",
-            modelPath: "/path",
-            tokensGenerated: 0,
-            durationSeconds: 0.0
-        )
+  func testEmptyResponse() {
+    let result = BrujaQueryResult(
+      response: "",
+      model: "model",
+      modelPath: "/path",
+      tokensGenerated: 0,
+      durationSeconds: 0.0
+    )
 
-        XCTAssertTrue(result.response.isEmpty)
-        XCTAssertEqual(result.tokensGenerated, 0)
-    }
+    XCTAssertTrue(result.response.isEmpty)
+    XCTAssertEqual(result.tokensGenerated, 0)
+  }
 }
 
 // MARK: - BrujaModelInfo Tests
 
 final class BrujaModelInfoTests: XCTestCase {
 
-    func testInitialization() {
-        let date = Date()
-        let info = BrujaModelInfo(
-            id: "mlx-community/test-model",
-            path: "/path/to/model",
-            sizeBytes: 1024 * 1024 * 500, // 500 MB
-            downloadDate: date
-        )
+  func testInitialization() {
+    let date = Date()
+    let info = BrujaModelInfo(
+      id: "mlx-community/test-model",
+      path: "/path/to/model",
+      sizeBytes: 1024 * 1024 * 500,  // 500 MB
+      downloadDate: date
+    )
 
-        XCTAssertEqual(info.id, "mlx-community/test-model")
-        XCTAssertEqual(info.path, "/path/to/model")
-        XCTAssertEqual(info.sizeBytes, 524288000)
-        XCTAssertEqual(info.downloadDate, date)
-    }
+    XCTAssertEqual(info.id, "mlx-community/test-model")
+    XCTAssertEqual(info.path, "/path/to/model")
+    XCTAssertEqual(info.sizeBytes, 524_288_000)
+    XCTAssertEqual(info.downloadDate, date)
+  }
 
-    func testCodableRoundTrip() throws {
-        let date = Date()
-        let original = BrujaModelInfo(
-            id: "test/model",
-            path: "/test/path",
-            sizeBytes: 123456789,
-            downloadDate: date
-        )
+  func testCodableRoundTrip() throws {
+    let date = Date()
+    let original = BrujaModelInfo(
+      id: "test/model",
+      path: "/test/path",
+      sizeBytes: 123_456_789,
+      downloadDate: date
+    )
 
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        let data = try encoder.encode(original)
+    let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .iso8601
+    let data = try encoder.encode(original)
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let decoded = try decoder.decode(BrujaModelInfo.self, from: data)
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+    let decoded = try decoder.decode(BrujaModelInfo.self, from: data)
 
-        XCTAssertEqual(decoded.id, original.id)
-        XCTAssertEqual(decoded.path, original.path)
-        XCTAssertEqual(decoded.sizeBytes, original.sizeBytes)
-        // Date comparison with some tolerance due to encoding precision
-        XCTAssertEqual(decoded.downloadDate.timeIntervalSince1970, original.downloadDate.timeIntervalSince1970, accuracy: 1.0)
-    }
+    XCTAssertEqual(decoded.id, original.id)
+    XCTAssertEqual(decoded.path, original.path)
+    XCTAssertEqual(decoded.sizeBytes, original.sizeBytes)
+    // Date comparison with some tolerance due to encoding precision
+    XCTAssertEqual(
+      decoded.downloadDate.timeIntervalSince1970, original.downloadDate.timeIntervalSince1970,
+      accuracy: 1.0)
+  }
 
-    func testFormattedSize_Bytes() {
-        let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 500, downloadDate: Date())
-        // ByteCountFormatter returns localized strings, so just check it's not empty
-        XCTAssertFalse(info.formattedSize.isEmpty)
-    }
+  func testFormattedSize_Bytes() {
+    let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 500, downloadDate: Date())
+    // ByteCountFormatter returns localized strings, so just check it's not empty
+    XCTAssertFalse(info.formattedSize.isEmpty)
+  }
 
-    func testFormattedSize_Kilobytes() {
-        let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 1024, downloadDate: Date())
-        XCTAssertFalse(info.formattedSize.isEmpty)
-    }
+  func testFormattedSize_Kilobytes() {
+    let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 1024, downloadDate: Date())
+    XCTAssertFalse(info.formattedSize.isEmpty)
+  }
 
-    func testFormattedSize_Megabytes() {
-        let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 1024 * 1024 * 50, downloadDate: Date())
-        XCTAssertFalse(info.formattedSize.isEmpty)
-    }
+  func testFormattedSize_Megabytes() {
+    let info = BrujaModelInfo(
+      id: "test", path: "/", sizeBytes: 1024 * 1024 * 50, downloadDate: Date())
+    XCTAssertFalse(info.formattedSize.isEmpty)
+  }
 
-    func testFormattedSize_Gigabytes() {
-        let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 1024 * 1024 * 1024 * 2, downloadDate: Date())
-        XCTAssertFalse(info.formattedSize.isEmpty)
-    }
+  func testFormattedSize_Gigabytes() {
+    let info = BrujaModelInfo(
+      id: "test", path: "/", sizeBytes: 1024 * 1024 * 1024 * 2, downloadDate: Date())
+    XCTAssertFalse(info.formattedSize.isEmpty)
+  }
 
-    func testFormattedSize_Zero() {
-        let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 0, downloadDate: Date())
-        XCTAssertFalse(info.formattedSize.isEmpty)
-    }
+  func testFormattedSize_Zero() {
+    let info = BrujaModelInfo(id: "test", path: "/", sizeBytes: 0, downloadDate: Date())
+    XCTAssertFalse(info.formattedSize.isEmpty)
+  }
 
-    func testBridgeFromAcervoModel() {
-        let date = Date()
-        let acervoModel = AcervoModel(
-            id: "mlx-community/test-model",
-            path: URL(fileURLWithPath: "/tmp/models/mlx-community_test-model"),
-            sizeBytes: 1024 * 1024,
-            downloadDate: date
-        )
+  func testBridgeFromAcervoModel() {
+    let date = Date()
+    let acervoModel = AcervoModel(
+      id: "mlx-community/test-model",
+      path: URL(fileURLWithPath: "/tmp/models/mlx-community_test-model"),
+      sizeBytes: 1024 * 1024,
+      downloadDate: date
+    )
 
-        let brujaInfo = BrujaModelInfo(from: acervoModel)
+    let brujaInfo = BrujaModelInfo(from: acervoModel)
 
-        XCTAssertEqual(brujaInfo.id, "mlx-community/test-model")
-        XCTAssertTrue(brujaInfo.path.contains("mlx-community_test-model"))
-        XCTAssertEqual(brujaInfo.sizeBytes, 1024 * 1024)
-        XCTAssertEqual(brujaInfo.downloadDate, date)
-    }
+    XCTAssertEqual(brujaInfo.id, "mlx-community/test-model")
+    XCTAssertTrue(brujaInfo.path.contains("mlx-community_test-model"))
+    XCTAssertEqual(brujaInfo.sizeBytes, 1024 * 1024)
+    XCTAssertEqual(brujaInfo.downloadDate, date)
+  }
 }
 
 // MARK: - BrujaModelManager Tests
 
 final class BrujaModelManagerTests: XCTestCase {
 
-    // MARK: - Model Directory Tests
+  // MARK: - Model Directory Tests
 
-    func testModelDirectory() throws {
-        let manager = BrujaModelManager.shared
-        let dir = try manager.modelDirectory(for: "mlx-community/test-model")
-        XCTAssertTrue(dir.path.contains("mlx-community_test-model"))
-    }
+  func testModelDirectory() throws {
+    let manager = BrujaModelManager.shared
+    let dir = try manager.modelDirectory(for: "mlx-community/test-model")
+    XCTAssertTrue(dir.path.contains("mlx-community_test-model"))
+  }
 
-    func testModelDirectory_InvalidId() {
-        let manager = BrujaModelManager.shared
-        // IDs without exactly one slash should throw via Acervo
-        XCTAssertThrowsError(try manager.modelDirectory(for: "simple-model"))
-    }
+  func testModelDirectory_InvalidId() {
+    let manager = BrujaModelManager.shared
+    // IDs without exactly one slash should throw via Acervo
+    XCTAssertThrowsError(try manager.modelDirectory(for: "simple-model"))
+  }
 
-    // MARK: - Model Availability Tests
+  // MARK: - Model Availability Tests
 
-    func testModelNotAvailableByDefault() {
-        let manager = BrujaModelManager.shared
-        XCTAssertFalse(manager.isModelAvailable("nonexistent/model"))
-    }
+  func testModelNotAvailableByDefault() {
+    let manager = BrujaModelManager.shared
+    XCTAssertFalse(manager.isModelAvailable("nonexistent/model"))
+  }
 
-    // MARK: - Models Directory Tests
+  // MARK: - Models Directory Tests
 
-    func testModelsDirectory() {
-        let manager = BrujaModelManager.shared
-        let dir = manager.modelsDirectory
-        XCTAssertTrue(dir.path.contains("SharedModels"))
-    }
+  func testModelsDirectory() {
+    let manager = BrujaModelManager.shared
+    let dir = manager.modelsDirectory
+    XCTAssertTrue(dir.path.contains("SharedModels"))
+  }
 
-    // MARK: - Unload Models Tests
+  // MARK: - Unload Models Tests
 
-    func testUnloadModel_NoError() async {
-        let manager = BrujaModelManager.shared
-        // Should not throw even if model isn't loaded
-        await manager.unloadModel("nonexistent/model")
-    }
+  func testUnloadModel_NoError() async {
+    let manager = BrujaModelManager.shared
+    // Should not throw even if model isn't loaded
+    await manager.unloadModel("nonexistent/model")
+  }
 
-    func testUnloadAllModels_NoError() async {
-        let manager = BrujaModelManager.shared
-        // Should not throw even if no models are loaded
-        await manager.unloadAllModels()
-    }
+  func testUnloadAllModels_NoError() async {
+    let manager = BrujaModelManager.shared
+    // Should not throw even if no models are loaded
+    await manager.unloadAllModels()
+  }
 
-    // MARK: - Default Model Constant
+  // MARK: - Default Model Constant
 
-    func testDefaultModelConstant() {
-        XCTAssertEqual(BrujaModelManager.defaultModel, "mlx-community/Qwen3-Coder-Next-4bit")
-    }
+  func testDefaultModelConstant() {
+    XCTAssertEqual(BrujaModelManager.defaultModel, "mlx-community/Qwen3-Coder-Next-4bit")
+  }
 }
 
 // MARK: - Path Resolution Tests
 
 final class BrujaPathResolutionTests: XCTestCase {
 
-    func testModelExistsAt_AbsolutePath() {
-        // Test with absolute path that doesn't exist
-        XCTAssertFalse(Bruja.modelExists(at: "/tmp/nonexistent-bruja-model-12345"))
-    }
+  func testModelExistsAt_AbsolutePath() {
+    // Test with absolute path that doesn't exist
+    XCTAssertFalse(Bruja.modelExists(at: "/tmp/nonexistent-bruja-model-12345"))
+  }
 
-    func testModelExistsAt_TildePath() {
-        // Test tilde expansion
-        XCTAssertFalse(Bruja.modelExists(at: "~/nonexistent-bruja-model-12345"))
-    }
+  func testModelExistsAt_TildePath() {
+    // Test tilde expansion
+    XCTAssertFalse(Bruja.modelExists(at: "~/nonexistent-bruja-model-12345"))
+  }
 
-    func testModelExistsAt_RelativePath() {
-        // Test relative path
-        XCTAssertFalse(Bruja.modelExists(at: "relative/path/model"))
-    }
+  func testModelExistsAt_RelativePath() {
+    // Test relative path
+    XCTAssertFalse(Bruja.modelExists(at: "relative/path/model"))
+  }
 
-    func testModelExistsAt_WithConfigJson() throws {
-        // Create a temp directory with config.json
-        let tempDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("BrujaPathTest-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: tempDir) }
+  func testModelExistsAt_WithConfigJson() throws {
+    // Create a temp directory with config.json
+    let tempDir = FileManager.default.temporaryDirectory
+      .appendingPathComponent("BrujaPathTest-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempDir) }
 
-        // Without config.json - should return false
-        XCTAssertFalse(Bruja.modelExists(at: tempDir.path))
+    // Without config.json - should return false
+    XCTAssertFalse(Bruja.modelExists(at: tempDir.path))
 
-        // Add config.json - should return true
-        try "{}".write(to: tempDir.appendingPathComponent("config.json"), atomically: true, encoding: .utf8)
-        XCTAssertTrue(Bruja.modelExists(at: tempDir.path))
-    }
+    // Add config.json - should return true
+    try "{}".write(
+      to: tempDir.appendingPathComponent("config.json"), atomically: true, encoding: .utf8)
+    XCTAssertTrue(Bruja.modelExists(at: tempDir.path))
+  }
 }
 
 // MARK: - Concurrent Access Tests
 
 final class BrujaConcurrencyTests: XCTestCase {
 
-    func testConcurrentModelAvailabilityChecks() async {
-        let manager = BrujaModelManager.shared
+  func testConcurrentModelAvailabilityChecks() async {
+    let manager = BrujaModelManager.shared
 
-        // Run multiple availability checks concurrently
-        await withTaskGroup(of: Bool.self) { group in
-            for i in 0..<100 {
-                group.addTask {
-                    manager.isModelAvailable("concurrent-test/model-\(i)")
-                }
-            }
-
-            var results: [Bool] = []
-            for await result in group {
-                results.append(result)
-            }
-
-            XCTAssertEqual(results.count, 100)
-            XCTAssertTrue(results.allSatisfy { $0 == false })
+    // Run multiple availability checks concurrently
+    await withTaskGroup(of: Bool.self) { group in
+      for i in 0..<100 {
+        group.addTask {
+          manager.isModelAvailable("concurrent-test/model-\(i)")
         }
+      }
+
+      var results: [Bool] = []
+      for await result in group {
+        results.append(result)
+      }
+
+      XCTAssertEqual(results.count, 100)
+      XCTAssertTrue(results.allSatisfy { $0 == false })
     }
+  }
 
-    func testConcurrentModelDirectoryAccess() async {
-        let manager = BrujaModelManager.shared
+  func testConcurrentModelDirectoryAccess() async {
+    let manager = BrujaModelManager.shared
 
-        await withTaskGroup(of: URL?.self) { group in
-            for i in 0..<100 {
-                group.addTask {
-                    try? manager.modelDirectory(for: "test/model-\(i)")
-                }
-            }
-
-            var results: [URL] = []
-            for await result in group {
-                if let url = result {
-                    results.append(url)
-                }
-            }
-
-            XCTAssertEqual(results.count, 100)
-            // Verify all paths are unique
-            let uniquePaths = Set(results.map { $0.path })
-            XCTAssertEqual(uniquePaths.count, 100)
+    await withTaskGroup(of: URL?.self) { group in
+      for i in 0..<100 {
+        group.addTask {
+          try? manager.modelDirectory(for: "test/model-\(i)")
         }
+      }
+
+      var results: [URL] = []
+      for await result in group {
+        if let url = result {
+          results.append(url)
+        }
+      }
+
+      XCTAssertEqual(results.count, 100)
+      // Verify all paths are unique
+      let uniquePaths = Set(results.map { $0.path })
+      XCTAssertEqual(uniquePaths.count, 100)
     }
+  }
 }

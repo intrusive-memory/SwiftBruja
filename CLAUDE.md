@@ -121,7 +121,6 @@ SwiftBruja/
 │   │   └── Core/
 │   │       ├── BrujaModelManager.swift  # Load models into memory, validates memory
 │   │       ├── BrujaDownloadManager.swift  # Thin SwiftAcervo wrapper for model download and discovery
-│   │       ├── LLMModelFiles.swift      # Required file list for LLM model downloads
 │   │       ├── BrujaQuery.swift         # Query execution
 │   │       ├── BrujaMemory.swift        # Memory checks & maxTokens auto-tuning
 │   │       ├── BrujaTypes.swift         # Result types

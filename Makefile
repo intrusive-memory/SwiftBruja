@@ -9,7 +9,7 @@ DESTINATION = platform=macOS,arch=arm64
 DERIVED_DATA = $(HOME)/Library/Developer/Xcode/DerivedData
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
 
-.PHONY: all build release install clean test resolve dist help
+.PHONY: all build release install clean test resolve dist lint help
 
 all: install
 
@@ -82,6 +82,10 @@ install: resolve
 test: resolve
 	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)'
 
+# Format Swift source files
+lint:
+	swift format -i -r .
+
 # Clean build artifacts
 clean:
 	xcodebuild clean -scheme $(SCHEME) -destination '$(DESTINATION)' 2>/dev/null || true
@@ -101,6 +105,7 @@ help:
 	@echo "  release  - Release build with xcodebuild + copy to ./bin"
 	@echo "  dist     - Release build + create distributable tarball in ./dist"
 	@echo "  test     - Run tests with xcodebuild"
+	@echo "  lint     - Format Swift source files"
 	@echo "  clean    - Clean build artifacts"
 	@echo "  help     - Show this help"
 	@echo ""
