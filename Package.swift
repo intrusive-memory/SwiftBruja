@@ -26,7 +26,7 @@ let package = Package(
     .package(url: "https://github.com/ml-explore/mlx-swift-lm", from: "2.30.6"),
 
     // Shared model management (download, cache, discovery)
-    .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", branch: "main"),
+    .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", from: "0.5.4"),
 
     // CLI argument parsing
     .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
