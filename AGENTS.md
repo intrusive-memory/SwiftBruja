@@ -2,7 +2,7 @@
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.2.1 (March 2026)
+**Current Version**: 1.3.0 (April 2026)
 
 ---
 
@@ -42,7 +42,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 | Command | Purpose | Key Flags |
 |---------|---------|-----------|
 | `query` | Execute LLM query | `--model`, `--max-tokens`, `--temperature` |
-| `download` | Download model from HuggingFace | `--model`, `--force` |
+| `download` | Download model from CDN | `--model`, `--force` |
 | `list` | List cached models | (none) |
 | `info` | Show model metadata | `--model` |
 
@@ -52,7 +52,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 |---------|---------|---------|
 | mlx-swift | 0.21.0+ | Core MLX framework for Apple Silicon GPU |
 | mlx-swift-lm | 2.30.6+ | LLM inference (MLXLLM, MLXLMCommon) |
-| SwiftAcervo | main | Shared model management (download, cache, discovery) |
+| SwiftAcervo | 0.6.0+ | Shared model management (CDN download, cache, discovery) |
 | swift-argument-parser | 1.3.0+ | CLI argument parsing |
 
 ## Build and Test
@@ -190,6 +190,6 @@ Integration Tests
 |-------|------|
 | `BrujaError.insufficientMemory` | Model size exceeds 80% of available memory |
 | `BrujaError.modelNotFound` | Model path doesn't exist locally |
-| `BrujaError.downloadFailed` | HuggingFace download failed |
+| `BrujaError.downloadFailed` | CDN download failed |
 | `BrujaError.invalidModel` | Model format is invalid or corrupt |
 | `BrujaError.queryFailed` | Inference failed during generation |

@@ -7,7 +7,7 @@ public enum BrujaMemory {
   /// Returns estimated available memory (total physical minus MLX active memory)
   public static func availableMemory() -> UInt64 {
     let total = ProcessInfo.processInfo.physicalMemory
-    let active = GPU.activeMemory
+    let active = Memory.activeMemory
     return total > active ? total - UInt64(active) : 0
   }
 
