@@ -44,7 +44,7 @@ brew install intrusive-memory/tap/bruja
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.2.1")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.3.0")
 ]
 ```
 
@@ -147,7 +147,7 @@ bruja "List 5 programming languages" --json
 
 #### `bruja download`
 
-Download a model from HuggingFace.
+Download a model from the CDN.
 
 ```bash
 # Download specific model
@@ -189,7 +189,7 @@ bruja info -m ~/Models/custom-model --json
 | `Bruja.query(_:model:)` | Simple text query, returns String |
 | `Bruja.query(_:as:model:)` | Structured query, returns Codable type |
 | `Bruja.queryWithMetadata(_:model:)` | Query with timing and token info |
-| `Bruja.download(model:)` | Download model from HuggingFace |
+| `Bruja.download(model:)` | Download model from CDN |
 | `Bruja.listModels()` | List downloaded models |
 | `Bruja.modelExists(at:)` | Check if model exists at path |
 | `Bruja.modelExists(id:)` | Check if model exists by HuggingFace ID |
@@ -226,7 +226,7 @@ let response = try await Bruja.query("...", model: modelId, maxTokens: 2048)
 SwiftBruja wraps the MLX ecosystem into a simple API:
 
 1. **Model Resolution**: Accepts local paths or HuggingFace model IDs
-2. **Auto-Download**: Downloads missing models from HuggingFace Hub
+2. **Auto-Download**: Downloads missing models via CDN with integrity verification
 3. **Memory Validation**: Checks available memory before loading
 4. **Model Caching**: Keeps loaded models in memory for fast subsequent queries
 5. **Token Auto-Tuning**: Sets maxTokens based on remaining memory
