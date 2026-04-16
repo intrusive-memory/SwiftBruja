@@ -14,7 +14,7 @@ struct BrujaCLI: AsyncParsableCommand {
       Bruja provides fast, private, on-device language model inference using
       Apple's MLX framework. No cloud APIs, no API keys, no network latency.
 
-      Models are automatically downloaded from HuggingFace and cached locally
+      Models are automatically downloaded from the CDN and cached locally
       in ~/Library/SharedModels/
 
       Default model: \(SwiftBruja.Bruja.defaultModel)
@@ -26,7 +26,7 @@ struct BrujaCLI: AsyncParsableCommand {
         bruja list                                 # Show downloaded models
         bruja info -m ~/Models/Phi-3              # Show model details
       """,
-    version: "1.2.1",
+    version: "1.3.0",
     subcommands: [
       DownloadCommand.self, QueryCommand.self, ChatCommand.self, ListCommand.self, InfoCommand.self,
     ],
@@ -39,9 +39,9 @@ struct BrujaCLI: AsyncParsableCommand {
 struct DownloadCommand: AsyncParsableCommand {
   static let configuration = CommandConfiguration(
     commandName: "download",
-    abstract: "Download a model from HuggingFace",
+    abstract: "Download a model for local inference",
     discussion: """
-      Downloads an MLX-compatible model from HuggingFace for local inference.
+      Downloads an MLX-compatible model from the CDN for local inference.
       Models are stored in ~/Library/SharedModels/
 
       MLX-optimized models from mlx-community are recommended for best
