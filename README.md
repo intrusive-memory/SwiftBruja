@@ -44,7 +44,7 @@ brew install intrusive-memory/tap/bruja
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.3.0")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.4.0")
 ]
 ```
 
@@ -58,7 +58,7 @@ import SwiftBruja
 // Query with auto-download (downloads model if needed)
 let response = try await Bruja.query(
     "Explain quantum computing in one sentence",
-    model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
+    model: "mlx-community/Llama-3.2-1B-Instruct-4bit"
 )
 ```
 
@@ -76,7 +76,7 @@ struct Analysis: Codable {
 let result: Analysis = try await Bruja.query(
     "Analyze: 'I love this product!'",
     as: Analysis.self,
-    model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
+    model: "mlx-community/Llama-3.2-1B-Instruct-4bit"
 )
 // result.sentiment == "positive"
 // result.confidence == 0.95
@@ -89,7 +89,7 @@ import SwiftBruja
 
 let result = try await Bruja.queryWithMetadata(
     "What is 2+2?",
-    model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
+    model: "mlx-community/Llama-3.2-1B-Instruct-4bit"
 )
 print("Response: \(result.response)")
 print("Duration: \(result.durationSeconds)s")
@@ -138,7 +138,7 @@ bruja "List 5 programming languages" --json
 
 **Options:**
 - `prompt` (argument): The prompt to send to the model
-- `-m, --model`: Model path or HuggingFace ID (default: mlx-community/Qwen3-Coder-Next-4bit)
+- `-m, --model`: Model path or HuggingFace ID (default: mlx-community/Llama-3.2-1B-Instruct-4bit)
 - `--temperature`: Sampling temperature 0.0-1.0 (default: 0.7)
 - `--max-tokens`: Maximum tokens to generate (auto-tuned by memory if omitted)
 - `--system`: System prompt to set model behavior
@@ -151,14 +151,14 @@ Download a model from the CDN.
 
 ```bash
 # Download specific model
-bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit
+bruja download -m mlx-community/Llama-3.2-1B-Instruct-4bit
 
 # Force re-download
-bruja download -m mlx-community/Phi-3-mini-4k-instruct-4bit --force
+bruja download -m mlx-community/Llama-3.2-1B-Instruct-4bit --force
 ```
 
 **Popular models:**
-- `mlx-community/Phi-3-mini-4k-instruct-4bit` (~2.15 GB, fast)
+- `mlx-community/Llama-3.2-1B-Instruct-4bit` (~679 MB, fast)
 - `mlx-community/Llama-3-8B-Instruct-4bit` (~4.5 GB, capable)
 - `mlx-community/Mistral-7B-Instruct-v0.3-4bit` (~4 GB, balanced)
 
@@ -176,7 +176,7 @@ bruja list --json             # JSON output
 Show detailed information about a model.
 
 ```bash
-bruja info -m mlx-community/Phi-3-mini-4k-instruct-4bit
+bruja info -m mlx-community/Llama-3.2-1B-Instruct-4bit
 bruja info -m ~/Models/custom-model --json
 ```
 
@@ -196,7 +196,7 @@ bruja info -m ~/Models/custom-model --json
 
 ### Default Values
 
-- **Default model**: `mlx-community/Qwen3-Coder-Next-4bit`
+- **Default model**: `mlx-community/Llama-3.2-1B-Instruct-4bit` (679 MB)
 - **Models directory**: `~/Library/SharedModels/` (shared via [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo))
 - **Temperature**: 0.7
 - **Max tokens**: Auto-tuned based on available memory (pass explicitly to override)

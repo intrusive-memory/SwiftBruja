@@ -48,14 +48,14 @@ struct DownloadCommand: AsyncParsableCommand {
       performance on Apple Silicon.
 
       Popular models:
-        mlx-community/Qwen3-Coder-Next-4bit       (80B/3B active, coding agent, default)
-        mlx-community/Qwen2.5-7B-Instruct-4bit    (~4.4 GB, general purpose)
+        mlx-community/Llama-3.2-1B-Instruct-4bit  (~679 MB, lightweight, default)
         mlx-community/Llama-3.2-3B-Instruct-4bit  (~2.1 GB, good balance)
+        mlx-community/Qwen2.5-3B-Instruct-4bit    (~1.7 GB, instruction following)
 
       Examples:
-        bruja download -m mlx-community/Qwen3-Coder-Next-4bit
+        bruja download -m mlx-community/Llama-3.2-1B-Instruct-4bit
         bruja download -m mlx-community/Llama-3.2-3B-Instruct-4bit
-        bruja download -m mlx-community/Qwen3-Coder-Next-4bit --force
+        bruja download -m mlx-community/Llama-3.2-1B-Instruct-4bit --force
       """
   )
 
@@ -335,8 +335,8 @@ struct InfoCommand: AsyncParsableCommand {
       (if already downloaded).
 
       Examples:
-        bruja info -m mlx-community/Qwen3-Coder-Next-4bit
-        bruja info -m ~/Library/SharedModels/mlx-community_Qwen3-Coder-Next
+        bruja info -m mlx-community/Llama-3.2-1B-Instruct-4bit
+        bruja info -m ~/Library/SharedModels/mlx-community_Llama-3.2-1B-Instruct-4bit
         bruja info -m ~/MyModels/custom-model --json
       """
   )
