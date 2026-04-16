@@ -145,7 +145,7 @@ SwiftBruja automatically manages memory to prevent out-of-memory errors:
 
 ## Default Values
 
-- **Default model**: `mlx-community/Qwen3-Coder-Next-4bit`
+- **Default model**: `mlx-community/Llama-3.2-1B-Instruct-4bit` (679 MB)
 - **Models directory**: `~/Library/SharedModels/`
 - **Temperature**: 0.7
 - **Max tokens**: Auto-tuned (4096 or 8192 based on memory)
@@ -159,7 +159,7 @@ All `intrusive-memory` projects share a flat model cache at `~/Library/SharedMod
 | **SwiftBruja** (LLM) | `~/Library/SharedModels/<namespace>_<repo>/` |
 | **mlx-audio-swift** (Audio) | `~/Library/SharedModels/<namespace>_<repo>/` |
 
-The `<namespace>_<repo>` directory name is the HuggingFace repo ID with `/` replaced by `_` (e.g., `mlx-community/Qwen3-Coder-Next-4bit` becomes `mlx-community_Qwen3-Coder-Next-4bit`). SwiftAcervo manages the canonical directory path. Legacy models from old cache paths are automatically migrated on first use.
+The `<namespace>_<repo>` directory name is the HuggingFace repo ID with `/` replaced by `_` (e.g., `mlx-community/Llama-3.2-1B-Instruct-4bit` becomes `mlx-community_Llama-3.2-1B-Instruct-4bit`). SwiftAcervo manages the canonical directory path. Legacy models from old cache paths are automatically migrated on first use.
 
 ## Homebrew Distribution
 

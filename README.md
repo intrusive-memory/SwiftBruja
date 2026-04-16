@@ -138,7 +138,7 @@ bruja "List 5 programming languages" --json
 
 **Options:**
 - `prompt` (argument): The prompt to send to the model
-- `-m, --model`: Model path or HuggingFace ID (default: mlx-community/Qwen3-Coder-Next-4bit)
+- `-m, --model`: Model path or HuggingFace ID (default: mlx-community/Llama-3.2-1B-Instruct-4bit)
 - `--temperature`: Sampling temperature 0.0-1.0 (default: 0.7)
 - `--max-tokens`: Maximum tokens to generate (auto-tuned by memory if omitted)
 - `--system`: System prompt to set model behavior
@@ -196,7 +196,7 @@ bruja info -m ~/Models/custom-model --json
 
 ### Default Values
 
-- **Default model**: `mlx-community/Qwen3-Coder-Next-4bit`
+- **Default model**: `mlx-community/Llama-3.2-1B-Instruct-4bit` (679 MB)
 - **Models directory**: `~/Library/SharedModels/` (shared via [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo))
 - **Temperature**: 0.7
 - **Max tokens**: Auto-tuned based on available memory (pass explicitly to override)

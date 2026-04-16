@@ -15,8 +15,8 @@ public actor BrujaModelManager {
   /// Shared instance
   public static let shared = BrujaModelManager()
 
-  /// Default model for general use (Qwen3-Coder-Next for coding agent tasks)
-  public static let defaultModel = "mlx-community/Qwen3-Coder-Next-4bit"
+  /// Default model for general use (Llama 3.2 1B for lightweight instruction following)
+  public static let defaultModel = "mlx-community/Llama-3.2-1B-Instruct-4bit"
 
   /// Storage location for downloaded models (delegates to Acervo)
   public nonisolated var modelsDirectory: URL {

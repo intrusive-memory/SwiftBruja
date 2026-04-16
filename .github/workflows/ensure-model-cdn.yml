@@ -4,10 +4,9 @@ name: Ensure Model on CDN
 # SwiftAcervo-compatible CDNManifest v1. The workflow is idempotent: if the manifest
 # already exists at {CDN_BASE}/models/{MODEL_SLUG}/manifest.json it exits immediately.
 #
-# Disk constraint: the model is ~44.8 GB across 9 sharded safetensors files. Standard
-# GitHub-hosted runners have ~14 GB free. Files are processed one at a time:
-#   download → SHA-256 → upload to R2 → delete local copy
-# This keeps peak disk usage to ~6 GB per shard (largest shard is ~5.26 GB).
+# Disk constraint: the model is ~679 MB (single safetensors file + tokenizer).
+# GitHub-hosted runners have ~14 GB free, so disk space is not a concern.
+# Files are processed one at a time: download → SHA-256 → upload to R2 → delete local copy.
 
 on:
   workflow_dispatch:
@@ -22,17 +21,17 @@ jobs:
   ensure-model-cdn:
     name: Ensure Model on CDN
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # ~6 h: 9 shards × ~25 min each (download + upload on a 1 Gbps runner)
+    timeout-minutes: 30  # ~679 MB model: download + SHA-256 + upload should complete in <10 min
 
     env:
       # -----------------------------------------------------------------------
       # MODEL_REPO must match BrujaModelManager.defaultModel in
       #   Sources/SwiftBruja/Core/BrujaModelManager.swift
-      #   public static let defaultModel = "mlx-community/Qwen3-Coder-Next-4bit"
+      #   public static let defaultModel = "mlx-community/Llama-3.2-1B-Instruct-4bit"
       # If that constant changes, update MODEL_REPO here to match.
       # -----------------------------------------------------------------------
-      MODEL_REPO: mlx-community/Qwen3-Coder-Next-4bit
-      MODEL_SLUG: mlx-community_Qwen3-Coder-Next-4bit
+      MODEL_REPO: mlx-community/Llama-3.2-1B-Instruct-4bit
+      MODEL_SLUG: mlx-community_Llama-3.2-1B-Instruct-4bit
       CDN_BASE: https://pub-8e049ed02be340cbb18f921765fd24f3.r2.dev
       R2_BUCKET: intrusive-memory-audio
       HF_API_BASE: https://huggingface.co
