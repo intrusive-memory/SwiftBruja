@@ -53,7 +53,15 @@ public enum Bruja {
     Acervo.isModelAvailable(id)
   }
 
-  /// Download a model from HuggingFace
+  /// Download a model from the CDN
+  ///
+  /// Downloads an MLX-compatible model from the CDN for local inference.
+  /// Models are stored in ~/Library/SharedModels/
+  ///
+  /// - Parameters:
+  ///   - model: HuggingFace model ID (e.g., "mlx-community/Llama-3.2-1B-Instruct-4bit")
+  ///   - force: If true, delete and re-download even if model already exists
+  ///   - progress: Closure called with download progress (0.0-1.0)
   public static func download(
     model: String,
     force: Bool = false,
@@ -61,6 +69,28 @@ public enum Bruja {
   ) async throws {
     try await BrujaDownloadManager.shared.downloadModel(
       model,
+      force: force,
+      progress: progress
+    )
+  }
+
+  /// Download a registered model component by ID
+  ///
+  /// Ensures a registered component (e.g., "qwen3-coder-next-4bit") is downloaded
+  /// and ready for use. Uses CDN for efficient delivery.
+  ///
+  /// - Parameters:
+  ///   - componentId: The registered component ID
+  ///   - force: If true, delete and re-download even if component already exists
+  ///   - progress: Closure called with download progress (0.0-1.0)
+  /// - Returns: The local URL where the model is stored
+  public static func ensureComponentReady(
+    _ componentId: String,
+    force: Bool = false,
+    progress: (@Sendable (Double) -> Void)? = nil
+  ) async throws -> URL {
+    try await BrujaDownloadManager.shared.ensureComponentReady(
+      componentId,
       force: force,
       progress: progress
     )

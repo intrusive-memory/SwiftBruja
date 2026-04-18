@@ -74,7 +74,7 @@ struct DownloadCommand: AsyncParsableCommand {
     let showProgress = !quiet
 
     if showProgress {
-      print("Downloading \(model) to \(Acervo.sharedModelsDirectory.path)...")
+      print("Downloading \(model) from CDN to \(Acervo.sharedModelsDirectory.path)...")
     }
 
     try await SwiftBruja.Bruja.download(
@@ -82,13 +82,14 @@ struct DownloadCommand: AsyncParsableCommand {
       force: force
     ) { progress in
       if showProgress {
-        print("\r\(Int(progress * 100))%", terminator: "")
+        let percentage = Int(progress * 100)
+        print("\r\u{1B}[KDownload progress: \(percentage)%", terminator: "")
         fflush(stdout)
       }
     }
 
     if showProgress {
-      print("\nDownload complete.")
+      print("\r\u{1B}[KDownload complete: \(model)")
     }
   }
 }

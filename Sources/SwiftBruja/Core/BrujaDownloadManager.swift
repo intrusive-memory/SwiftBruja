@@ -25,6 +25,14 @@ public actor BrujaDownloadManager {
   }
 
   /// Download a model if not already available
+  ///
+  /// Downloads models from the CDN using SwiftAcervo. Progress is reported as a value
+  /// between 0.0 and 1.0, suitable for displaying percentage (progress * 100).
+  ///
+  /// - Parameters:
+  ///   - modelId: The HuggingFace model ID or component ID to download
+  ///   - force: If true, delete and re-download even if model already exists
+  ///   - progress: Closure called with download progress (0.0-1.0)
   public func downloadModel(
     _ modelId: String,
     force: Bool = false,
@@ -33,12 +41,53 @@ public actor BrujaDownloadManager {
     if force {
       try? Acervo.deleteModel(modelId)
     }
+
+    // Ensure model is available via CDN, with progress callback
     try await Acervo.ensureAvailable(
       modelId,
       files: []
     ) { acervoProgress in
       progress?(acervoProgress.overallProgress)
     }
+  }
+
+  /// Download a model by component ID (e.g., "qwen3-coder-next-4bit")
+  ///
+  /// This method provides component-based downloading using registered model metadata.
+  /// It ensures all files for the component are downloaded and validated.
+  ///
+  /// - Parameters:
+  ///   - componentId: The registered component ID (e.g., "qwen3-coder-next-4bit")
+  ///   - force: If true, delete and re-download even if component already exists
+  ///   - progress: Closure called with download progress (0.0-1.0)
+  /// - Returns: The local path where model is stored
+  public func ensureComponentReady(
+    _ componentId: String,
+    force: Bool = false,
+    progress: (@Sendable (Double) -> Void)? = nil
+  ) async throws -> URL {
+    // Look up component metadata
+    guard let componentMetadata = BrujaModelManager.modelComponent(for: componentId) else {
+      throw BrujaError.modelNotFound("Component '\(componentId)' not registered")
+    }
+
+    let modelId = componentMetadata.modelId
+
+    // Delete if force re-download requested
+    if force {
+      try? Acervo.deleteModel(modelId)
+    }
+
+    // Ensure model is available from CDN
+    try await Acervo.ensureAvailable(
+      modelId,
+      files: []
+    ) { acervoProgress in
+      progress?(acervoProgress.overallProgress)
+    }
+
+    // Return the local path where model is stored
+    return try Acervo.modelDirectory(for: modelId)
   }
 
   /// List all downloaded models
