@@ -2,6 +2,7 @@ import Foundation
 import MLX
 import MLXLLM
 import MLXLMCommon
+import MLXLMTokenizers
 import SwiftAcervo
 
 // MARK: - Component Registration
@@ -99,15 +100,10 @@ public actor BrujaModelManager {
       try BrujaMemory.validateMemoryForModel(sizeBytes: modelSize)
     }
 
-    // Load model using LLMModelFactory
-    let modelConfig = ModelConfiguration(directory: modelDir)
-
+    // Load model from local directory using LLMModelFactory (mlx-swift-lm 3.x API).
+    // TokenizersLoader is supplied via MLXLMTokenizers convenience overload.
     do {
-      let container = try await LLMModelFactory.shared.loadContainer(
-        configuration: modelConfig
-      ) { _ in
-        // Progress callback (not used for loading)
-      }
+      let container = try await LLMModelFactory.shared.loadContainer(from: modelDir)
 
       loadedModels[modelId] = container
       return container
