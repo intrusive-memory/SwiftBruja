@@ -22,15 +22,15 @@ let package = Package(
   ],
   dependencies: [
     // MLX ecosystem for on-device inference
-    .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.21.0"),
-    .package(url: "https://github.com/ml-explore/mlx-swift-lm", from: "2.30.6"),
+    .package(url: "https://github.com/ml-explore/mlx-swift", .upToNextMajor(from: "0.31.3")),
+    .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "2.31.3")),
 
     // Shared model management (download, cache, discovery)
-    // v0.7.1+ required for ComponentDescriptor and withComponentAccess() API
-    .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", from: "0.7.1"),
+    .package(
+      url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.7.2")),
 
     // CLI argument parsing
-    .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
+    .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
   ],
   targets: [
     // Main library
