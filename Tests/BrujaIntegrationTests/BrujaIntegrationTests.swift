@@ -6,18 +6,18 @@ import XCTest
 ///
 /// These tests verify end-to-end functionality by:
 /// 1. Running the compiled `bruja` binary
-/// 2. Downloading an LLM model (if needed)
-/// 3. Executing queries and verifying responses
+/// 2. Executing queries with pre-downloaded models
+/// 3. Verifying responses
 ///
 /// **Requirements:**
 /// - The `bruja` binary must be built and available in `./bin/bruja`
-/// - Network access for model downloads
 /// - Apple Silicon Mac (M1/M2/M3/M4)
+/// - Default model pre-downloaded to ~/Library/SharedModels/
 ///
 /// **CI Setup:**
 /// These tests run in a separate CI job that:
 /// 1. Builds the bruja binary with `make release`
-/// 2. Downloads the default LLM model
+/// 2. Ensures the default LLM model is pre-downloaded
 /// 3. Runs these integration tests
 final class BrujaIntegrationTests: XCTestCase {
 

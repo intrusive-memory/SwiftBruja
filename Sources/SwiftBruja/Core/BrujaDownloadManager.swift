@@ -67,11 +67,12 @@ public actor BrujaDownloadManager {
     progress: (@Sendable (Double) -> Void)? = nil
   ) async throws -> URL {
     // Look up component metadata
-    guard let componentMetadata = BrujaModelManager.modelComponent(for: componentId) else {
+    guard let component = BrujaModelManager.component(for: componentId) else {
       throw BrujaError.modelNotFound("Component '\(componentId)' not registered")
     }
 
-    let modelId = componentMetadata.modelId
+    // Extract model ID from component metadata (use repoId as the identifier)
+    let modelId = component.repoId
 
     // Delete if force re-download requested
     if force {

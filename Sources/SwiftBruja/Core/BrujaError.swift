@@ -2,17 +2,11 @@ import Foundation
 
 /// Errors that can occur during SwiftBruja operations
 public enum BrujaError: LocalizedError, Sendable {
-  /// Model is not downloaded locally
-  case modelNotDownloaded(String)
-
   /// Model directory or path not found
   case modelNotFound(String)
 
   /// Model failed to load into memory
   case modelLoadFailed(Error)
-
-  /// Model download failed
-  case downloadFailed(String)
 
   /// Query execution failed
   case queryFailed(String)
@@ -31,14 +25,10 @@ public enum BrujaError: LocalizedError, Sendable {
 
   public var errorDescription: String? {
     switch self {
-    case .modelNotDownloaded(let modelId):
-      return "Model '\(modelId)' is not downloaded. Use `bruja download` to download it first."
     case .modelNotFound(let path):
-      return "Model not found at path: \(path)"
+      return "Model not found: \(path)"
     case .modelLoadFailed(let error):
       return "Failed to load model: \(error.localizedDescription)"
-    case .downloadFailed(let reason):
-      return "Model download failed: \(reason)"
     case .queryFailed(let reason):
       return "Query failed: \(reason)"
     case .invalidResponse(let reason):

@@ -2,17 +2,17 @@ import XCTest
 
 @testable import SwiftBruja
 
-/// Integration test verifying Bruja.query() successfully executes inference using the CDN-downloaded Qwen3 model.
+/// Integration test verifying Bruja.query() successfully executes inference using the Qwen3 model.
 ///
 /// This test validates the complete inference pipeline by:
-/// 1. Ensuring the Qwen3 model is available (pre-downloaded or auto-downloads)
+/// 1. Verifying the Qwen3 model is available locally (pre-downloaded)
 /// 2. Calling Bruja.query() with a simple prompt
 /// 3. Verifying the response is non-empty and valid
 /// 4. Confirming inference completes without errors or timeouts
 ///
 /// **Requirements:**
 /// - Apple Silicon Mac (M1/M2/M3/M4)
-/// - Qwen3-Coder-Next-4bit model pre-downloaded OR network access to CDN
+/// - Qwen3-Coder-Next-4bit model pre-downloaded to ~/Library/SharedModels/
 /// - MLX runtime available
 ///
 /// **Performance Notes:**
@@ -66,7 +66,7 @@ final class InferenceIntegrationTest: XCTestCase {
 
     // Verify model is registered
     XCTAssertNotNil(
-      BrujaModelManager.modelComponent(for: componentId),
+      BrujaModelManager.component(for: componentId),
       "Qwen3 model should be registered in BrujaModelManager"
     )
     print("✅ Qwen3 model is registered")

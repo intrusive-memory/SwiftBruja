@@ -47,18 +47,8 @@ public enum BrujaQuery {
     if let maxTokens {
       resolvedMaxTokens = maxTokens
     } else {
-      let modelSize: Int64
-      let url = URL(fileURLWithPath: model)
-      if FileManager.default.fileExists(atPath: url.path) {
-        // Local path: use path-based size calculation
-        modelSize = (try? pathBasedDirectorySize(url)) ?? 0
-      } else if model.hasPrefix("~") {
-        let expanded = URL(fileURLWithPath: NSString(string: model).expandingTildeInPath)
-        modelSize = (try? pathBasedDirectorySize(expanded)) ?? 0
-      } else {
-        // HuggingFace ID: use Acervo
-        modelSize = (try? Acervo.modelInfo(model).sizeBytes) ?? 0
-      }
+      // Use Acervo to get model size from downloaded model metadata
+      let modelSize = (try? Acervo.modelInfo(model).sizeBytes) ?? 0
       resolvedMaxTokens = BrujaMemory.recommendedMaxTokens(modelSizeBytes: modelSize)
     }
 
@@ -125,60 +115,27 @@ public enum BrujaQuery {
 
   // MARK: - Private Helpers
 
-  /// Resolve a model identifier or path to a loaded container
+  /// Resolve a model identifier to a loaded container
+  ///
+  /// Assumes the model is already present on the filesystem via SwiftAcervo.
+  /// Does not download — model must exist at the Acervo location.
   internal static func resolveModel(
     _ model: String
   ) async throws -> (ModelContainer, String, String) {
     let manager = BrujaModelManager.shared
 
-    // Check if it's a local path
-    let url = URL(fileURLWithPath: model)
-    if FileManager.default.fileExists(atPath: url.path) {
-      // It's a local path
-      let container = try await manager.loadModel(from: url)
-      return (container, url.path, url.lastPathComponent)
+    // Verify model exists via Acervo — assumes it was downloaded externally
+    guard Acervo.isModelAvailable(model) else {
+      throw BrujaError.modelNotFound(
+        "Model '\(model)' not found. Ensure it is pre-downloaded to \(Acervo.sharedModelsDirectory.path)"
+      )
     }
 
-    // Check if path starts with ~
-    if model.hasPrefix("~") {
-      let expanded = NSString(string: model).expandingTildeInPath
-      let expandedURL = URL(fileURLWithPath: expanded)
-      if FileManager.default.fileExists(atPath: expandedURL.path) {
-        let container = try await manager.loadModel(from: expandedURL)
-        return (container, expandedURL.path, expandedURL.lastPathComponent)
-      }
-    }
-
-    // It's a HuggingFace model ID - ensure it's downloaded via BrujaDownloadManager
-    try await BrujaDownloadManager.shared.downloadModel(model)
-
+    // Load the model
     let container = try await manager.loadModel(model)
     let modelDir = try Acervo.modelDirectory(for: model)
 
     return (container, modelDir.path, model)
-  }
-
-  /// Calculate directory size from a local path (for maxTokens auto-tuning)
-  private static func pathBasedDirectorySize(_ url: URL) throws -> Int64 {
-    var totalSize: Int64 = 0
-
-    let contents = try FileManager.default.contentsOfDirectory(
-      at: url,
-      includingPropertiesForKeys: [.fileSizeKey],
-      options: .skipsHiddenFiles
-    )
-
-    for fileURL in contents {
-      let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey])
-
-      if resourceValues.isDirectory == true {
-        totalSize += try pathBasedDirectorySize(fileURL)
-      } else if let fileSize = resourceValues.fileSize {
-        totalSize += Int64(fileSize)
-      }
-    }
-
-    return totalSize
   }
 
   /// Parse a JSON string into a Codable type
