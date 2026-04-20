@@ -23,7 +23,7 @@ let package = Package(
   dependencies: [
     // MLX ecosystem for on-device inference
     .package(url: "https://github.com/ml-explore/mlx-swift", .upToNextMajor(from: "0.31.3")),
-    .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
+    .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "2.31.3")),
 
     // Shared model management (download, cache, discovery)
     .package(

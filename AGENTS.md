@@ -53,7 +53,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 | Package | Version | Purpose |
 |---------|---------|---------|
 | mlx-swift | 0.31.3+ | Core MLX framework for Apple Silicon GPU |
-| mlx-swift-lm | 3.31.3+ | LLM inference (MLXLLM, MLXLMCommon) |
+| mlx-swift-lm | 2.31.3+ | LLM inference (MLXLLM, MLXLMCommon) |
 | SwiftAcervo | 0.7.2+ | Shared model management (CDN download, cache, discovery) |
 | swift-argument-parser | 1.7.1+ | CLI argument parsing |
 
