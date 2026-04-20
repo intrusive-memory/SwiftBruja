@@ -14,8 +14,8 @@ struct BrujaCLI: AsyncParsableCommand {
       Bruja provides fast, private, on-device language model inference using
       Apple's MLX framework. No cloud APIs, no API keys, no network latency.
 
-      Models are automatically downloaded from the CDN and cached locally
-      in ~/Library/SharedModels/
+      Models must be pre-downloaded to ~/Library/SharedModels/ before use.
+      Use the 'download' command to fetch models from the CDN.
 
       Default model: \(SwiftBruja.Bruja.defaultModel)
 
@@ -74,21 +74,23 @@ struct DownloadCommand: AsyncParsableCommand {
     let showProgress = !quiet
 
     if showProgress {
-      print("Downloading \(model) to \(Acervo.sharedModelsDirectory.path)...")
+      print("Downloading \(model) from CDN to \(Acervo.sharedModelsDirectory.path)...")
     }
 
-    try await SwiftBruja.Bruja.download(
-      model: model,
-      force: force
-    ) { progress in
+    if force {
+      try? Acervo.deleteModel(model)
+    }
+
+    try await Acervo.ensureAvailable(model, files: []) { progress in
       if showProgress {
-        print("\r\(Int(progress * 100))%", terminator: "")
+        let percentage = Int(progress.overallProgress * 100)
+        print("\r\u{1B}[KDownload progress: \(percentage)%", terminator: "")
         fflush(stdout)
       }
     }
 
     if showProgress {
-      print("\nDownload complete.")
+      print("\r\u{1B}[KDownload complete: \(model)")
     }
   }
 }
@@ -101,7 +103,7 @@ struct QueryCommand: AsyncParsableCommand {
     abstract: "Query a language model with a prompt",
     discussion: """
       Send a prompt to a local language model and receive a response.
-      If the model is not downloaded, it will be fetched automatically.
+      The model must be pre-downloaded to ~/Library/SharedModels/.
 
       The default model (\(SwiftBruja.Bruja.defaultModel)) is optimized
       for instruction-following and general Q&A tasks.

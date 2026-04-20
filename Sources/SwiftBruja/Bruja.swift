@@ -11,21 +11,14 @@ import SwiftAcervo
 /// ```swift
 /// import SwiftBruja
 ///
-/// // Simple query
-/// let response = try await Bruja.query("What is 2+2?", model: modelPath)
-///
-/// // Query with auto-download from HuggingFace
-/// let response = try await Bruja.query(
-///     "Explain Swift concurrency",
-///     model: "mlx-community/Phi-3-mini-4k-instruct-4bit"
-/// )
+/// // Simple query (model must be pre-downloaded via SwiftAcervo)
+/// let response = try await Bruja.query("What is 2+2?", model: "mlx-community/Qwen3-Coder-Next-4bit")
 ///
 /// // Structured output
 /// struct Answer: Codable { let result: Int }
-/// let answer: Answer = try await Bruja.query("What is 2+2?", as: Answer.self, model: modelPath)
+/// let answer: Answer = try await Bruja.query("What is 2+2?", as: Answer.self, model: "mlx-community/Qwen3-Coder-Next-4bit")
 ///
-/// // Download a model
-/// try await Bruja.download(model: "mlx-community/Phi-3-mini-4k-instruct-4bit")
+/// // Model management delegated to SwiftAcervo — use Acervo.download() or other download tools
 /// ```
 public enum Bruja {
 
@@ -53,18 +46,6 @@ public enum Bruja {
     Acervo.isModelAvailable(id)
   }
 
-  /// Download a model from HuggingFace
-  public static func download(
-    model: String,
-    force: Bool = false,
-    progress: (@Sendable (Double) -> Void)? = nil
-  ) async throws {
-    try await BrujaDownloadManager.shared.downloadModel(
-      model,
-      force: force,
-      progress: progress
-    )
-  }
 
   /// Get information about a model
   public static func modelInfo(at path: String) throws -> BrujaModelInfo {
@@ -98,9 +79,12 @@ public enum Bruja {
 
   /// Load a model and return its container for use with ChatSession or other APIs
   ///
+  /// Model must be pre-downloaded via SwiftAcervo to the shared models directory.
+  ///
   /// - Parameters:
-  ///   - model: Model path or HuggingFace ID (will auto-download if needed)
+  ///   - model: Model HuggingFace ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
   /// - Returns: A loaded `ModelContainer` ready for use
+  /// - Throws: `BrujaError.modelNotFound` if model is not available locally
   public static func loadModel(
     _ model: String
   ) async throws -> ModelContainer {
@@ -112,13 +96,16 @@ public enum Bruja {
 
   /// Query a model and get a text response
   ///
+  /// Model must be pre-downloaded via SwiftAcervo to the shared models directory.
+  ///
   /// - Parameters:
   ///   - prompt: The prompt to send to the model
-  ///   - model: Model path or HuggingFace ID (will auto-download if needed)
+  ///   - model: Model HuggingFace ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
   ///   - temperature: Sampling temperature (0.0-1.0, higher = more creative)
   ///   - maxTokens: Maximum tokens to generate
   ///   - system: Optional system prompt
   /// - Returns: The model's text response
+  /// - Throws: `BrujaError.modelNotFound` if model is not available locally
   public static func query(
     _ prompt: String,
     model: String,
@@ -155,15 +142,17 @@ public enum Bruja {
   /// Query a model and get a structured (typed) response
   ///
   /// The model will be instructed to return JSON that matches the expected type.
+  /// Model must be pre-downloaded via SwiftAcervo to the shared models directory.
   ///
   /// - Parameters:
   ///   - prompt: The prompt to send to the model
   ///   - type: The Codable type to decode the response into
-  ///   - model: Model path or HuggingFace ID
+  ///   - model: Model HuggingFace ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
   ///   - temperature: Sampling temperature (lower is better for structured output)
   ///   - maxTokens: Maximum tokens to generate
   ///   - system: Optional additional system prompt
   /// - Returns: The decoded response
+  /// - Throws: `BrujaError.modelNotFound` if model is not available locally
   public static func query<T: Codable>(
     _ prompt: String,
     as type: T.Type,

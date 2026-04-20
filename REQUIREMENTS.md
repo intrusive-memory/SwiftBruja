@@ -1,192 +1,333 @@
-# Requirements: CDN Model Distribution for SwiftBruja
+---
+title: "SwiftBruja Acervo v2 Integration & CDN Distribution"
+date: 2026-04-18
+source: "ACERVO_CONSUMER_AUDIT.md, Sortie 3.2"
+version: "1.0"
+status: "READY FOR EXECUTION"
+---
 
-## Goal
+# SwiftBruja — Qwen3 LLM Library
 
-Ensure SwiftBruja's default LLM model (`mlx-community/Qwen3-Coder-Next-4bit`) is available on the intrusive-memory R2 CDN, so that `Acervo.ensureAvailable()` can download it without hitting HuggingFace directly. This mirrors the pattern already used by Vinetas for image generation models.
+**Sortie**: 3.2 (Create SwiftBruja REQUIREMENTS.md)  
+**Priority**: 🔴 **HIGH**  
+**Status**: No v2 integration at all  
+**Master Index**: [SwiftAcervo Consumer Adoption](/Users/stovak/Projects/REQUIREMENTS.md)
 
 ---
 
-## Research Findings
+## Mission Statement
 
-### Model File Inventory: `mlx-community/Qwen3-Coder-Next-4bit`
+SwiftBruja requires **dual-track execution**:
 
-| File | Size |
-|------|------|
-| `config.json` | 22 KB |
-| `generation_config.json` | 214 B |
-| `tokenizer.json` | 11.4 MB |
-| `tokenizer_config.json` | 702 B |
-| `chat_template.jinja` | 6 KB |
-| `model.safetensors.index.json` | 173 KB |
-| `model-00001-of-00009.safetensors` | 5.13 GB |
-| `model-00002-of-00009.safetensors` | 5.26 GB |
-| `model-00003-of-00009.safetensors` | 5.24 GB |
-| `model-00004-of-00009.safetensors` | 5.26 GB |
-| `model-00005-of-00009.safetensors` | 5.26 GB |
-| `model-00006-of-00009.safetensors` | 5.24 GB |
-| `model-00007-of-00009.safetensors` | 5.26 GB |
-| `model-00008-of-00009.safetensors` | 5.26 GB |
-| `model-00009-of-00009.safetensors` | 2.93 GB |
+1. **Track A: Acervo v2 Integration** (Primary) — Complete ComponentDescriptor-based registration and access control
+2. **Track B: CDN Distribution** (Supporting) — Ensure Qwen3 models available on intrusive-memory R2 CDN
 
-**Total model size: ~44.8 GB** (9 sharded safetensors). No `tokenizer.model` (SentencePiece) — uses `tokenizer.json` (HuggingFace Tokenizers format).
+Both tracks must complete to achieve full integration. Completion definition: All models accessed ONLY via `withComponentAccess()` with integrity verification; zero direct file path exposure.
 
-### SwiftAcervo: Empty Files = Download All
+---
 
-`Acervo.ensureAvailable(modelId, files: [])` downloads **ALL** files from the CDN manifest. From `AcervoDownloader.swift`:
+## Audit Findings (Per ACERVO_CONSUMER_AUDIT.md, lines 55–73)
 
-```swift
-if requestedFiles.isEmpty {
-    // Download everything in the manifest
-    filesToDownload = manifest.files
-}
+| Aspect | Status | Finding | Risk |
+|--------|--------|---------|------|
+| **Component Registration** | 🔴 MISSING | No ComponentDescriptor defined; models exist as plain enums | High — violates v2 pattern |
+| **Registry Integration** | 🔴 MISSING | Never calls `Acervo.register()` | High — no registry tracking |
+| **Path-Based Access** | ✅ ACTIVE | Uses `Acervo.modelDirectory()` directly | High — bypasses Acervo integrity checks |
+| **Abstracted Access** | 🔴 MISSING | Never calls `withComponentAccess()` | High — no checksum validation |
+| **Integrity Verification** | 🔴 MISSING | No checksums declared | High — models unverified on load |
+
+---
+
+## Architecture: Current State vs Target
+
+### Current State (v1 Partial)
+```
+BrujaModelManager.loadModel()
+  └─> Acervo.modelDirectory(modelId)  [returns Path]
+       └─> App loads from disk directly [NO checksums, NO registry]
 ```
 
-This eliminates the need for `LLMModelFiles` to know about shards at all.
-
-### SwiftAcervo Already Documents SwiftBruja as Consumer
-
-- `README.md`: Section "SwiftBruja (MLX Inference)" describes SwiftBruja as a consumer for quantized language models
-- `AcervoMigration.swift`: Legacy migration includes `LLM` subdirectory for SwiftBruja/Produciesta
-
----
-
-## Current State
-
-| Component | Status |
-|-----------|--------|
-| **SwiftAcervo CDN downloads** | Working. Downloads from `https://pub-8e049ed02be340cbb18f921765fd24f3.r2.dev/models/{slug}/` |
-| **BrujaDownloadManager** | Delegates to `Acervo.ensureAvailable()` — currently passes `LLMModelFiles.required` (broken for sharded models) |
-| **CDN manifest format** | SwiftAcervo expects `CDNManifest` v1 with SHA-256 checksums |
-| **Model on CDN** | **NOT YET UPLOADED** |
-| **LLMModelFiles.required** | **BROKEN** — hardcodes `model.safetensors` but model has 9 shards |
-
-### Manifest Format: Vinetas vs SwiftAcervo
-
-The Vinetas workflow generates a simple manifest (`{name, size}`). SwiftAcervo requires CDNManifest v1 with SHA-256 checksums. The SwiftBruja workflow must generate the full format:
-
-```json
-{
-  "manifestVersion": 1,
-  "modelId": "mlx-community/Qwen3-Coder-Next-4bit",
-  "slug": "mlx-community_Qwen3-Coder-Next-4bit",
-  "updatedAt": "2026-03-25T00:00:00Z",
-  "files": [
-    {"path": "config.json", "sha256": "abc123...", "sizeBytes": 1234}
-  ],
-  "manifestChecksum": "sha256-of-sorted-concatenated-file-checksums"
-}
+### Target State (v2 Complete)
+```
+BrujaModelManager._loadModel()
+  └─> Acervo.withComponentAccess(componentId) { path, desc in
+       └─> Validate desc.integrity [SHA-256 per file]
+            └─> App loads from path [WITH checksums, WITH registry]
 ```
 
 ---
 
-## Requirements
+## Work Items: Track A (Acervo v2 Integration)
 
-### R1: GitHub Actions Workflow — `ensure-model-cdn.yml`
+### A1: Create BrujaComponents.swift
 
-Create `.github/workflows/ensure-model-cdn.yml` that:
+**Objective**: Define ComponentDescriptor for each Qwen3 model variant with SHA-256 checksums for all files.
 
-1. **Triggers on**:
-   - `workflow_dispatch` (manual)
-   - Push to `main` when the workflow file itself changes
+**Entry Criteria**:
+- SwiftBruja repository accessible at `/Users/stovak/Projects/SwiftBruja`
+- SwiftAcervo SDK available in package dependencies
+- ACERVO_CONSUMER_AUDIT.md findings reviewed
 
-2. **Checks CDN first**: Hits `{CDN_BASE}/models/{slug}/manifest.json` — skips upload if HTTP 200.
+**Exit Criteria**:
+- New file: `Sources/SwiftBruja/Core/BrujaComponents.swift`
+- Defines static var `components: [ComponentDescriptor]` for at least Qwen3-Coder-Next-4bit (primary model)
+- Each descriptor includes:
+  - `componentId` (e.g., `"qwen3-coder-next-4bit-main"`)
+  - `modelId` (e.g., `"mlx-community/Qwen3-Coder-Next-4bit"`)
+  - `files[]` with `path`, `sha256` (lowercase hex), `sizeBytes` for:
+    - `config.json`, `tokenizer.json`, `tokenizer_config.json`, `generation_config.json`, `chat_template.jinja`
+    - `model.safetensors.index.json`
+    - All 9 safetensors shards (`model-00001-of-00009.safetensors` through `model-00009-of-00009.safetensors`)
+- Checksums sourced from CDN manifest (generated by Track B) or computed locally from HuggingFace download
+- File compiles without errors
 
-3. **Downloads from HuggingFace**: Uses HF API to discover and download all relevant files:
-   - `*.json` (config, tokenizer configs, generation config, shard index)
-   - `*.safetensors` (9 sharded weight files, ~5 GB each)
-   - `*.jinja` (chat template)
-   - Excludes: `.gitattributes`, `README.md`, `*.md`, `*.txt`, `*.py`, `.git*`
-
-4. **Generates SwiftAcervo-compatible manifest** (`CDNManifest` v1):
-   - `manifestVersion: 1`
-   - `modelId`: `mlx-community/Qwen3-Coder-Next-4bit`
-   - `slug`: `mlx-community_Qwen3-Coder-Next-4bit`
-   - `updatedAt`: ISO-8601 UTC timestamp
-   - `files[]`: each with `path` (string), `sha256` (lowercase hex 64-char), `sizeBytes` (int64)
-   - `manifestChecksum`: SHA-256 of all file `sha256` values sorted lexicographically then concatenated
-
-5. **Uploads to R2**: Uses `jakejarvis/s3-sync-action` to sync to `models/mlx-community_Qwen3-Coder-Next-4bit/` in the R2 bucket.
-
-6. **Verifies**: After upload, fetches the manifest from CDN and validates file count.
-
-#### Disk Space Concern
-
-The model is ~44.8 GB. GitHub Actions `ubuntu-latest` runners have ~14 GB free disk. Options:
-- **Use a larger runner** (`ubuntu-latest-xlarge` or self-hosted) with sufficient disk
-- **Upload shards one at a time**: Download shard → compute SHA-256 → upload → delete → next shard. Build manifest incrementally. This avoids needing all files on disk at once but requires individual `aws s3 cp` calls instead of a bulk sync.
-- **Use `actions/cache` or artifact storage** as intermediate staging
-
-**Recommended**: Upload shards sequentially (download one, hash, upload, delete) to stay within standard runner limits. Generate the manifest incrementally.
-
-#### Environment & Secrets
-
-| Variable | Value |
-|----------|-------|
-| `R2_BUCKET` | `intrusive-memory-audio` |
-| `R2_ENDPOINT` | `https://{CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com` |
-| `CDN_BASE` | `https://pub-8e049ed02be340cbb18f921765fd24f3.r2.dev` |
-| `MODEL_REPO` | `mlx-community/Qwen3-Coder-Next-4bit` |
-| `MODEL_SLUG` | `mlx-community_Qwen3-Coder-Next-4bit` |
-
-| Secret | Purpose |
-|--------|---------|
-| `CLOUDFLARE_ACCOUNT_ID` | R2 endpoint construction |
-| `R2_ACCESS_KEY_ID` | R2 write access |
-| `R2_SECRET_ACCESS_KEY` | R2 write access |
-| `HF_TOKEN` | HuggingFace API access (for gated/rate-limited models) |
-
-### R2: Pass Empty Files to Download All from Manifest
-
-**Problem**: `LLMModelFiles.required` hardcodes `["config.json", "tokenizer.json", "tokenizer_config.json", "model.safetensors"]`. The default model has 9 sharded safetensors, not a single `model.safetensors`.
-
-**Solution**: Pass an empty `files` array to `Acervo.ensureAvailable()`. Acervo will download all files listed in the CDN manifest. This:
-- Eliminates the need to know shard names at compile time
-- Works for any model regardless of sharding strategy
-- Leverages Acervo's existing "download everything" behavior
-
-**Changes**:
-- `BrujaDownloadManager.downloadModel()`: Change `files: LLMModelFiles.required` → `files: []`
-- `LLMModelFiles.swift`: Delete (no longer needed) or repurpose as validation-only
-
-### R3: No Changes to CDN Download Path
-
-`Acervo.ensureAvailable()` already handles:
-1. Fetch manifest from CDN
-2. Validate integrity (checksums, version)
-3. Download files with per-file SHA-256 verification
-4. `SecureDownloadSession` rejects non-CDN redirects
-
-No changes needed to SwiftAcervo.
-
-### R4: Workflow Must Be Idempotent
-
-- Manifest exists on CDN → skip entirely (no re-download, no re-upload)
-- Re-run after partial failure → re-download and re-upload cleanly
-- Must not corrupt existing CDN state on partial upload
-
-### R5: Default Model Constant as Single Source of Truth
-
-The model repo ID is defined in:
-- `BrujaModelManager.defaultModel` → `"mlx-community/Qwen3-Coder-Next-4bit"`
-- Workflow `MODEL_REPO` env var
-
-Add a comment in the workflow referencing the Swift constant to keep them in sync.
+**Acceptance**:
+- Component descriptor matches CDN manifest files exactly
+- No hardcoded model paths
+- Checksum format validated (64-char lowercase hex)
 
 ---
 
-## Files to Create/Modify
+### A2: Implement Module-Level Registration
 
-| File | Action | Description |
-|------|--------|-------------|
-| `.github/workflows/ensure-model-cdn.yml` | **Create** | Workflow to upload model to R2 CDN with SwiftAcervo-compatible manifest |
-| `Sources/SwiftBruja/Core/BrujaDownloadManager.swift` | **Modify** | Change `files: LLMModelFiles.required` → `files: []` |
-| `Sources/SwiftBruja/Core/LLMModelFiles.swift` | **Delete** | No longer needed — Acervo downloads all files from manifest |
+**Objective**: Register BrujaComponents at module initialization via `Acervo.register()`.
+
+**Entry Criteria**:
+- A1 complete (BrujaComponents.swift exists with descriptors)
+- SwiftBruja module initialization file identified (likely `Sources/SwiftBruja/SwiftBruja.swift` or equivalent)
+
+**Exit Criteria**:
+- Module init contains:
+  ```swift
+  // Register Qwen3 components with Acervo
+  for component in BrujaComponents.components {
+      try? Acervo.register(component)
+  }
+  ```
+- Registration happens at module load time (before any caller attempts to load models)
+- No errors on module import
+- Acervo registry contains all Bruja components (verifiable via `Acervo.descriptor(componentId:)`)
+
+**Acceptance**:
+- Module initializes without warnings
+- Components appear in Acervo registry after import
+- Documentation link to Acervo.register() flow added
 
 ---
 
-## Implementation Order
+### A3: Refactor BrujaModelManager.loadModel() to Use withComponentAccess()
 
-1. **Create the workflow** (R1) — get the model onto CDN with a valid manifest
-2. **Update BrujaDownloadManager** (R2) — pass empty files to download all from manifest
-3. **Delete LLMModelFiles.swift** (R2) — remove dead code
-4. **Verify end-to-end** — confirm `bruja download --model mlx-community/Qwen3-Coder-Next-4bit` works against CDN
+**Objective**: Replace direct `Acervo.modelDirectory()` access with `withComponentAccess()` closure.
+
+**Entry Criteria**:
+- A2 complete (registration working)
+- Current `BrujaModelManager.loadModel()` implementation reviewed
+- Understand model loading pipeline (tokenizer + weights loading)
+
+**Exit Criteria**:
+- New private method `_loadModel(componentId:)` implemented:
+  ```swift
+  private func _loadModel(componentId: String) throws -> BrujaModel {
+      var model: BrujaModel?
+      try Acervo.withComponentAccess(componentId: componentId) { path, descriptor in
+          // Validation happens inside withComponentAccess
+          // Load tokenizer from path
+          // Load model weights from path
+          model = BrujaModel(...)
+      }
+      return model ?? throw BrujaError.failedToLoadModel
+  }
+  ```
+- Public `loadModel(modelId:)` delegates to `_loadModel(componentId:map(modelId))`
+- All model file access flows through the closure
+- Checksums validated by Acervo (not manually)
+- No direct calls to `Acervo.modelDirectory()` remain in load path
+
+**Acceptance**:
+- Model loads successfully via new path
+- Tokenizer accessible and functional
+- Weights loaded without errors
+- Checksum verification logged (if debug enabled)
+
+---
+
+### A4: Remove Public Path-Returning Methods
+
+**Objective**: Eliminate public APIs that expose `Acervo.modelDirectory()` paths.
+
+**Entry Criteria**:
+- A3 complete (withComponentAccess integration working)
+- Audit of all public BrujaModelManager methods completed
+- Callers of path methods identified
+
+**Exit Criteria**:
+- Methods removed:
+  - Any `public func modelDirectory(modelId:) -> URL`
+  - Any `public func tokenizePath(modelId:) -> URL`
+  - Any similar path-exposing methods
+- Callers updated to use new `_loadModel()` approach
+- Public API provides model handles/instances only (not paths)
+- No test failures
+
+**Acceptance**:
+- Zero public methods return file paths
+- All model access mediated through manager
+- Code review confirms no path leakage
+- Tests pass
+
+---
+
+## Work Items: Track B (CDN Distribution)
+
+### B1: Generate SwiftAcervo-Compatible CDN Manifest
+
+**Objective**: Create manifest with SHA-256 checksums and upload model to intrusive-memory R2 CDN.
+
+**Entry Criteria**:
+- GitHub Actions workflow framework available (`.github/workflows/`)
+- R2 bucket secrets configured (CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, HF_TOKEN)
+- Disk space available for ~45 GB download (or ability to stream)
+- BrujaComponents.swift checksums finalized (A1 complete)
+
+**Exit Criteria**:
+- Workflow file created: `.github/workflows/ensure-model-cdn.yml`
+- Manifest generated at `models/mlx-community_Qwen3-Coder-Next-4bit/manifest.json` with:
+  - `manifestVersion: 1`
+  - `modelId: "mlx-community/Qwen3-Coder-Next-4bit"`
+  - `slug: "mlx-community_Qwen3-Coder-Next-4bit"`
+  - `files[]` with `path`, `sha256`, `sizeBytes` for all files
+  - `manifestChecksum` (SHA-256 of sorted concatenated file checksums)
+  - `updatedAt` (ISO-8601 UTC)
+- All model files uploaded to R2 at `https://pub-8e049ed02be340cbb18f921765fd24f3.r2.dev/models/mlx-community_Qwen3-Coder-Next-4bit/`
+- Manifest checksums match A1 descriptors
+- Workflow idempotent (re-run after partial failure succeeds)
+- Disk space managed (stream or delete shards after upload)
+
+**Acceptance**:
+- CDN accessible and serves manifest + all files
+- BrujaComponents.swift checksums match CDN manifest
+- Workflow completes in <30 min (streaming) or uses self-hosted runner for full download
+
+---
+
+### B2: Update BrujaDownloadManager to Use CDN Manifest
+
+**Objective**: Ensure `BrujaDownloadManager.downloadModel()` downloads from CDN via SwiftAcervo.
+
+**Entry Criteria**:
+- B1 complete (manifest on CDN)
+- Current `BrujaDownloadManager` implementation reviewed
+- Understand which files it currently attempts to download
+
+**Exit Criteria**:
+- `downloadModel(modelId:)` calls:
+  ```swift
+  try await Acervo.ensureAvailable(modelId, files: [])
+  ```
+  (Empty files array = download all from manifest)
+- No hardcoded file list (old `LLMModelFiles.required` removed or unused)
+- Download verified to pull from CDN, not HuggingFace
+- Integration test confirms full model downloads + checksums validate
+
+**Acceptance**:
+- Model downloads entirely from CDN
+- Per-file SHA-256 verification automatic
+- No direct HuggingFace API calls in download path
+- Tests pass
+
+---
+
+## Dependencies & Sequencing
+
+```
+A1 (BrujaComponents.swift)  ──┐
+                               │
+A2 (Module Registration)  ◄────┤ (depends on A1)
+                               │
+A3 (withComponentAccess)  ◄────┤ (depends on A2)
+                               │
+A4 (Remove Paths)  ◄────────────┤ (depends on A3)
+
+B1 (CDN Manifest)  ◄─────┐
+                          │ (independent, references A1 checksums)
+B2 (Download Manager)  ◄──┤ (depends on B1)
+
+Final: All A items complete + All B items complete = ✅ Full v2 Integration
+```
+
+---
+
+## Sorties (Atomic Execution Units)
+
+| Sortie | Objective | Entry | Exit | Est. Effort |
+|--------|-----------|-------|------|------------|
+| **3.2a** | Audit & spec BrujaComponents.swift | Audit findings reviewed | Spec doc with all descriptor fields, checksums sourced | 1–2 hrs |
+| **3.2b** | Implement A1 (BrujaComponents.swift) | Spec complete | File created, compiles, 100% checksums | 2–3 hrs |
+| **3.2c** | Implement A2 (Module registration) | 3.2b complete | Module init registers all components | 1 hr |
+| **3.2d** | Implement A3 (withComponentAccess refactor) | 3.2c complete | `_loadModel()` working, checksums validated | 3–4 hrs |
+| **3.2e** | Implement A4 (Remove path methods) | 3.2d complete | All public path methods removed, callers updated | 1–2 hrs |
+| **3.2f** | Implement B1 (CDN manifest + workflow) | B entry criteria met | Workflow file created, manifest on CDN, idempotent | 4–6 hrs |
+| **3.2g** | Implement B2 (Download manager update) | 3.2f complete | Download uses CDN, no HF fallback | 1–2 hrs |
+| **3.2h** | End-to-end validation | All sorties complete | Models load via withComponentAccess, CDN manifest checksums match descriptors, zero direct path access | 1–2 hrs |
+
+---
+
+## Success Criteria
+
+- ✅ BrujaComponents.swift defines all model variants with SHA-256 checksums
+- ✅ `Acervo.register()` called at module init
+- ✅ All model loading flows through `withComponentAccess()`
+- ✅ Zero public methods returning file paths
+- ✅ CDN manifest on intrusive-memory R2 with all files + checksums
+- ✅ BrujaDownloadManager uses `Acervo.ensureAvailable()`
+- ✅ Integration test confirms end-to-end: download → validate → load → use
+- ✅ Code review confirms no integrity leaks
+
+---
+
+## Known Issues & Decisions
+
+### Issue: Qwen3 Sharded Model (9 safetensors files)
+
+**Challenge**: Model is split across 9 files (~5 GB each). Previous implementation hardcoded `model.safetensors` (single file).
+
+**Decision**: 
+- A1 includes all 9 shards in ComponentDescriptor.files[]
+- B1 generates checksums for all 9
+- B2 passes empty files array to `Acervo.ensureAvailable()`, which downloads all files from manifest
+- This eliminates need to know shard strategy at compile time
+
+**Outcome**: Implementation agnostic to sharding; works for monolithic or sharded models.
+
+---
+
+### Issue: R2 Bucket Disk Space (43.8 GB model)
+
+**Challenge**: GitHub Actions `ubuntu-latest` runners have ~14 GB free disk; model is ~44 GB.
+
+**Options**:
+1. Use `ubuntu-latest-xlarge` or self-hosted runner with sufficient disk
+2. Stream: Download shard → hash → upload → delete → repeat
+3. Cache intermediate (slower, more complex)
+
+**Decision**: Implement streaming approach in B1 workflow to avoid runner limits. Sequential shard download/hash/upload stays within standard runner constraints.
+
+---
+
+## References
+
+- **Master REQUIREMENTS Index**: `/Users/stovak/Projects/REQUIREMENTS.md`
+- **Audit Document**: `/Users/stovak/Projects/ACERVO_CONSUMER_AUDIT.md` (lines 55–73)
+- **SwiftAcervo SDK**: ComponentDescriptor, Acervo.register(), withComponentAccess()
+- **Execution Plan**: `EXECUTION_PLAN.md`
+
+---
+
+## Sign-Off
+
+- **Sortie Owner**: (To be assigned)
+- **Briefing Date**: 2026-04-18
+- **Target Completion**: 2026-04-25
+- **Status**: READY FOR EXECUTION
+
+Next: Assign sorties 3.2a–3.2h to execution agents.

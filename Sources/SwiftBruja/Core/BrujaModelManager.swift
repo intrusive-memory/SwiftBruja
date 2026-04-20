@@ -4,6 +4,20 @@ import MLXLLM
 import MLXLMCommon
 import SwiftAcervo
 
+// MARK: - Component Registration
+
+/// Initialize SwiftBruja components at module load time.
+/// This ensures all Qwen3 models are registered with Acervo
+/// before any component queries occur.
+private func initializeBrujaComponents() {
+  registerBrujaComponents()
+}
+
+// Called once when this module loads
+private let _initBrujaComponents: () = initializeBrujaComponents()
+
+// MARK: - BrujaModelManager
+
 /// Manages loading LLM models into memory for inference.
 ///
 /// Download, list, info, and delete responsibilities are handled by
@@ -54,14 +68,12 @@ public actor BrujaModelManager {
     Acervo.isModelAvailable(modelId)
   }
 
-  /// Get the local directory for a model
-  public nonisolated func modelDirectory(for modelId: String) throws -> URL {
-    try Acervo.modelDirectory(for: modelId)
-  }
-
   // MARK: - Model Loading
 
-  /// Load a model into memory for inference
+  /// Load a model into memory for inference.
+  ///
+  /// Loads the specified model from its downloaded location and caches the
+  /// container for reuse. Models must be downloaded first via BrujaDownloadManager.
   public func loadModel(_ modelId: String) async throws -> ModelContainer {
     // Run one-shot migration on first load
     migrateIfNeeded()
@@ -71,11 +83,14 @@ public actor BrujaModelManager {
       return cached
     }
 
-    // Ensure model is downloaded
+    // Verify model is available locally
     guard isModelAvailable(modelId) else {
-      throw BrujaError.modelNotDownloaded(modelId)
+      throw BrujaError.modelNotFound(
+        "Model '\(modelId)' not found at \(Acervo.sharedModelsDirectory.path). Ensure it is pre-downloaded."
+      )
     }
 
+    // Get model directory and load
     let modelDir = try Acervo.modelDirectory(for: modelId)
 
     // Validate memory before loading
@@ -101,40 +116,6 @@ public actor BrujaModelManager {
     }
   }
 
-  /// Load a model from a specific path
-  public func loadModel(from path: URL) async throws -> ModelContainer {
-    let modelId = path.lastPathComponent
-
-    // Return cached model if already loaded
-    if let cached = loadedModels[modelId] {
-      return cached
-    }
-
-    // Check model exists
-    guard FileManager.default.fileExists(atPath: path.appendingPathComponent("config.json").path)
-    else {
-      throw BrujaError.modelNotFound(path.path)
-    }
-
-    // Validate memory before loading
-    let modelSize = try calculateDirectorySize(path)
-    try BrujaMemory.validateMemoryForModel(sizeBytes: modelSize)
-
-    // Load model
-    let modelConfig = ModelConfiguration(directory: path)
-
-    do {
-      let container = try await LLMModelFactory.shared.loadContainer(
-        configuration: modelConfig
-      ) { _ in }
-
-      loadedModels[modelId] = container
-      return container
-    } catch {
-      throw BrujaError.modelLoadFailed(error)
-    }
-  }
-
   /// Unload a model to free memory
   public func unloadModel(_ modelId: String) {
     loadedModels.removeValue(forKey: modelId)
@@ -145,28 +126,21 @@ public actor BrujaModelManager {
     loadedModels.removeAll()
   }
 
-  // MARK: - Private Helpers
+  // MARK: - Component Discovery
 
-  /// Calculate directory size (used only for path-based loading where Acervo info is unavailable)
-  private nonisolated func calculateDirectorySize(_ url: URL) throws -> Int64 {
-    var totalSize: Int64 = 0
+  /// Get all registered model components from Acervo.
+  /// Returns only language models (LLMs) supported by Bruja.
+  public nonisolated static var registeredComponents: [ComponentDescriptor] {
+    Acervo.registeredComponents(ofType: .languageModel)
+  }
 
-    let contents = try FileManager.default.contentsOfDirectory(
-      at: url,
-      includingPropertiesForKeys: [.fileSizeKey],
-      options: .skipsHiddenFiles
-    )
+  /// Check if a component is registered
+  public nonisolated static func isComponentRegistered(_ componentId: String) -> Bool {
+    Acervo.component(componentId) != nil
+  }
 
-    for fileURL in contents {
-      let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey])
-
-      if resourceValues.isDirectory == true {
-        totalSize += try calculateDirectorySize(fileURL)
-      } else if let fileSize = resourceValues.fileSize {
-        totalSize += Int64(fileSize)
-      }
-    }
-
-    return totalSize
+  /// Retrieve a registered component by ID
+  public nonisolated static func component(for componentId: String) -> ComponentDescriptor? {
+    Acervo.component(componentId)
   }
 }

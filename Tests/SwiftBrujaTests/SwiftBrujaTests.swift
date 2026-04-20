@@ -104,13 +104,6 @@ final class BrujaMemoryTests: XCTestCase {
 
 final class BrujaErrorTests: XCTestCase {
 
-  func testModelNotDownloadedError() {
-    let error = BrujaError.modelNotDownloaded("test-model")
-    XCTAssertNotNil(error.errorDescription)
-    XCTAssertTrue(error.errorDescription!.contains("test-model"))
-    XCTAssertTrue(error.errorDescription!.contains("not downloaded"))
-  }
-
   func testModelNotFoundError() {
     let error = BrujaError.modelNotFound("/path/to/model")
     XCTAssertNotNil(error.errorDescription)
@@ -124,13 +117,6 @@ final class BrujaErrorTests: XCTestCase {
     let error = BrujaError.modelLoadFailed(underlyingError)
     XCTAssertNotNil(error.errorDescription)
     XCTAssertTrue(error.errorDescription!.contains("Failed to load"))
-  }
-
-  func testDownloadFailedError() {
-    let error = BrujaError.downloadFailed("Network timeout")
-    XCTAssertNotNil(error.errorDescription)
-    XCTAssertTrue(error.errorDescription!.contains("Network timeout"))
-    XCTAssertTrue(error.errorDescription!.contains("download failed"))
   }
 
   func testQueryFailedError() {
@@ -163,10 +149,8 @@ final class BrujaErrorTests: XCTestCase {
 
   func testAllErrorsConformToLocalizedError() {
     let errors: [BrujaError] = [
-      .modelNotDownloaded("test"),
       .modelNotFound("test"),
       .modelLoadFailed(NSError(domain: "", code: 0)),
-      .downloadFailed("test"),
       .queryFailed("test"),
       .invalidResponse("test"),
       .jsonParsingFailed("test"),
@@ -351,18 +335,24 @@ final class BrujaModelInfoTests: XCTestCase {
 
 final class BrujaModelManagerTests: XCTestCase {
 
-  // MARK: - Model Directory Tests
+  // MARK: - Component Registration Tests
 
-  func testModelDirectory() throws {
-    let manager = BrujaModelManager.shared
-    let dir = try manager.modelDirectory(for: "mlx-community/test-model")
-    XCTAssertTrue(dir.path.contains("mlx-community_test-model"))
+  func testRegisteredComponentsNotEmpty() {
+    let components = BrujaModelManager.registeredComponents
+    XCTAssertFalse(components.isEmpty, "At least the built-in Qwen3 models should be registered")
   }
 
-  func testModelDirectory_InvalidId() {
-    let manager = BrujaModelManager.shared
-    // IDs without exactly one slash should throw via Acervo
-    XCTAssertThrowsError(try manager.modelDirectory(for: "simple-model"))
+  func testQwen3CoderNextComponentIsRegistered() {
+    XCTAssertTrue(
+      BrujaModelManager.isComponentRegistered("qwen3-coder-next-4bit"),
+      "Qwen3-Coder-Next should be registered at module init"
+    )
+  }
+
+  func testComponentRetrievalByID() {
+    let component = BrujaModelManager.component(for: "qwen3-coder-next-4bit")
+    XCTAssertNotNil(component)
+    XCTAssertEqual(component?.displayName, "Qwen3-Coder-Next (4-bit)")
   }
 
   // MARK: - Model Availability Tests
@@ -462,27 +452,23 @@ final class BrujaConcurrencyTests: XCTestCase {
     }
   }
 
-  func testConcurrentModelDirectoryAccess() async {
-    let manager = BrujaModelManager.shared
-
-    await withTaskGroup(of: URL?.self) { group in
-      for i in 0..<100 {
+  func testConcurrentComponentRegistryAccess() async {
+    // Run multiple component registry queries concurrently
+    await withTaskGroup(of: [ComponentDescriptor].self) { group in
+      for _ in 0..<50 {
         group.addTask {
-          try? manager.modelDirectory(for: "test/model-\(i)")
+          BrujaModelManager.registeredComponents
         }
       }
 
-      var results: [URL] = []
-      for await result in group {
-        if let url = result {
-          results.append(url)
-        }
+      var resultCounts: [Int] = []
+      for await results in group {
+        resultCounts.append(results.count)
       }
 
-      XCTAssertEqual(results.count, 100)
-      // Verify all paths are unique
-      let uniquePaths = Set(results.map { $0.path })
-      XCTAssertEqual(uniquePaths.count, 100)
+      XCTAssertEqual(resultCounts.count, 50)
+      // All should return the same components
+      XCTAssertTrue(resultCounts.allSatisfy { $0 == resultCounts[0] })
     }
   }
 }
