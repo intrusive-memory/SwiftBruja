@@ -8,41 +8,43 @@ This file provides comprehensive documentation for AI agents working with the Sw
 
 ## Project Overview
 
-SwiftBruja makes local LLM queries as simple as possible. One import, one line of code, and you have on-device AI inference on Apple Silicon with automatic model downloading, GPU acceleration, and zero configuration.
+SwiftBruja makes local LLM queries as simple as possible. One import, one line of code, and you have on-device AI inference on Apple Silicon with GPU acceleration.
 
-**Design Philosophy**: Simplicity over flexibility. No cloud APIs, no API keys, no network latency - just fast, private, on-device AI.
+**Design Philosophy**: Simplicity over inference. Models are pre-downloaded via SwiftAcervo. No cloud APIs, no API keys, no network latency - just fast, private, on-device AI.
 
 ## Project Structure
 
 - `Sources/SwiftBruja/` -- Library target with static `Bruja` API
-  - `Bruja.swift` -- Main entry point (static methods: `query`, `queryWithMetadata`, `download`, `listModels`)
+  - `Bruja.swift` -- Main entry point (static methods: `query`, `queryWithMetadata`, `listModels`)
   - `Core/BrujaModelManager.swift` -- Loads models into memory, validates memory
-  - `Core/BrujaDownloadManager.swift` -- Thin SwiftAcervo wrapper for model download and discovery
-  - `Core/BrujaQuery.swift` -- Query execution via MLX
+  - `Core/BrujaComponents.swift` -- Model component registry (SwiftAcervo manifest)
+  - `Core/BrujaQuery.swift` -- Query execution via MLX, resolves models via SwiftAcervo
   - `Core/BrujaMemory.swift` -- Memory validation and auto-tuned maxTokens
   - `Core/BrujaTypes.swift` -- `BrujaQueryResult`, `BrujaModelInfo`
   - `Core/BrujaError.swift` -- Error types
-- `Sources/bruja/` -- CLI executable target
+- `Sources/bruja/` -- CLI executable target (uses SwiftAcervo for downloads)
 - `Tests/SwiftBrujaTests/` -- Unit tests
+- `Tests/BrujaIntegrationTests/` -- Integration tests (inference only, no downloads)
 
 ## Key Components
 
 | File | Purpose |
 |------|---------|
-| `Bruja.swift` | Static API for queries: `query()`, `queryWithMetadata()`, `download()`, `listModels()`, `modelExists()` |
-| `BrujaModelManager.swift` | Loads models into memory, validates memory |
-| `BrujaDownloadManager.swift` | Thin SwiftAcervo wrapper for model download and discovery (passes `files: []` to download all manifest files) |
-| `BrujaQuery.swift` | Executes LLM inference via MLX, handles tokenization and generation, supports structured output via `Decodable` |
+| `Bruja.swift` | Static API for queries: `query()`, `queryWithMetadata()`, `listModels()`, `modelExists()` |
+| `BrujaModelManager.swift` | Loads models into memory, validates memory, resolves models via SwiftAcervo |
+| `BrujaComponents.swift` | Model component registry with SwiftAcervo manifest (SHA-256 checksums, file metadata) |
+| `BrujaQuery.swift` | Executes LLM inference via MLX, resolves models via SwiftAcervo, supports structured output via `Decodable` |
 | `BrujaMemory.swift` | Validates available memory before loading models (80% threshold), auto-tunes `maxTokens` based on memory (4096 or 8192) |
 | `BrujaTypes.swift` | `BrujaQueryResult` (response + metadata), `BrujaModelInfo` (model details) |
-| `BrujaError.swift` | `insufficientMemory`, `modelNotFound`, `downloadFailed`, `invalidModel`, `queryFailed` |
+| `BrujaError.swift` | `insufficientMemory`, `modelNotFound`, `modelLoadFailed`, `queryFailed`, `jsonParsingFailed` |
 
 ## CLI Commands
 
 | Command | Purpose | Key Flags |
 |---------|---------|-----------|
-| `query` | Execute LLM query | `--model`, `--max-tokens`, `--temperature` |
-| `download` | Download model from CDN | `--model`, `--force` |
+| `query` | Execute LLM query with pre-downloaded model | `--model`, `--max-tokens`, `--temperature`, `--system` |
+| `download` | Download model from SwiftAcervo CDN | `--model`, `--force` (delegates to SwiftAcervo) |
+| `chat` | Interactive multi-turn chat session | `--model`, `--temperature` |
 | `list` | List cached models | (none) |
 | `info` | Show model metadata | `--model` |
 
@@ -84,11 +86,12 @@ xcodebuild test -scheme SwiftBruja-Package -destination 'platform=macOS'
 ## Design Patterns
 
 - **Static API**: `Bruja.query()` provides a simple entry point without instantiation
-- **Auto-download**: Pass HuggingFace model ID, downloads automatically if not cached
+- **Pre-downloaded models**: Models must exist locally via SwiftAcervo; Bruja verifies and loads them
 - **Structured output**: `Bruja.query(as: MyType.self)` returns typed responses via `Decodable`
 - **Memory-aware**: Pre-load validation (80% threshold), auto-tuned `maxTokens` based on available memory
-- **Shared cache**: All models stored in `~/Library/SharedModels/<namespace>_<repo>/`
+- **Shared cache**: All models stored in `~/Library/SharedModels/<namespace>_<repo>/` via SwiftAcervo
 - **Swift 6 concurrency**: Async/await throughout, `Sendable` types, actor isolation
+- **Model distribution delegated**: SwiftAcervo handles CDN downloads, manifest validation, caching
 
 ## API Usage
 
@@ -189,7 +192,7 @@ Integration Tests
 | Error | When |
 |-------|------|
 | `BrujaError.insufficientMemory` | Model size exceeds 80% of available memory |
-| `BrujaError.modelNotFound` | Model path doesn't exist locally |
-| `BrujaError.downloadFailed` | CDN download failed |
-| `BrujaError.invalidModel` | Model format is invalid or corrupt |
+| `BrujaError.modelNotFound` | Model not found in SwiftAcervo cache (must be pre-downloaded) |
+| `BrujaError.modelLoadFailed` | Model failed to load into memory |
 | `BrujaError.queryFailed` | Inference failed during generation |
+| `BrujaError.jsonParsingFailed` | Structured output parsing failed |
