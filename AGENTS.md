@@ -2,7 +2,7 @@
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.4.0 (April 2026)
+**Current Version**: 1.5.0 (April 2026)
 
 ---
 
@@ -52,10 +52,10 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| mlx-swift | 0.21.0+ | Core MLX framework for Apple Silicon GPU |
-| mlx-swift-lm | 2.30.6+ | LLM inference (MLXLLM, MLXLMCommon) |
-| SwiftAcervo | 0.6.0+ | Shared model management (CDN download, cache, discovery) |
-| swift-argument-parser | 1.3.0+ | CLI argument parsing |
+| mlx-swift | 0.31.3+ | Core MLX framework for Apple Silicon GPU |
+| mlx-swift-lm | 3.31.3+ | LLM inference (MLXLLM, MLXLMCommon) |
+| SwiftAcervo | 0.7.2+ | Shared model management (CDN download, cache, discovery) |
+| swift-argument-parser | 1.7.1+ | CLI argument parsing |
 
 ## Build and Test
 
