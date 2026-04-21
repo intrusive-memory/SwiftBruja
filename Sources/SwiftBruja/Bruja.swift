@@ -23,7 +23,7 @@ import SwiftAcervo
 public enum Bruja {
 
   /// Library version
-  public static let version = "1.4.0"
+  public static let version = "1.5.1"
 
   /// Default model for general use
   public static let defaultModel = BrujaModelManager.defaultModel
@@ -45,7 +45,6 @@ public enum Bruja {
   public static func modelExists(id: String) -> Bool {
     Acervo.isModelAvailable(id)
   }
-
 
   /// Get information about a model
   public static func modelInfo(at path: String) throws -> BrujaModelInfo {

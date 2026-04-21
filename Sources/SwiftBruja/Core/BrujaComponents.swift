@@ -106,8 +106,8 @@ let qwen3CoderNext4bitDescriptor = ComponentDescriptor(
       sha256: "933efe2e2f28f97b9b851839c43fca0d6742b26c9ff9df1fd0e427712246553c"
     ),
   ],
-  estimatedSizeBytes: 41_780_000_000, // 41.78 GB
-  minimumMemoryBytes: 16_000_000_000, // 16 GB RAM
+  estimatedSizeBytes: 41_780_000_000,  // 41.78 GB
+  minimumMemoryBytes: 16_000_000_000,  // 16 GB RAM
   metadata: [
     "quantization": "4-bit",
     "architecture": "Qwen3",

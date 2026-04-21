@@ -22,14 +22,14 @@ let package = Package(
   ],
   dependencies: [
     // MLX ecosystem for on-device inference
-    .package(url: "https://github.com/ml-explore/mlx-swift", .upToNextMinor(from: "0.31.3")),
+    .package(url: "https://github.com/ml-explore/mlx-swift", .upToNextMajor(from: "0.31.3")),
     .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
 
     // Tokenizer adapter for mlx-swift-lm 3.x (replaces bundled swift-transformers dep).
     // Explicit Swift trait avoids pulling the Rust backend (binary xcframework).
     .package(
       url: "https://github.com/DePasqualeOrg/swift-tokenizers-mlx",
-      .upToNextMinor(from: "0.2.0"),
+      .upToNextMajor(from: "0.2.0"),
       traits: ["Swift"]),
 
     // Shared model management (download, cache, discovery)
