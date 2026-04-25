@@ -1,4 +1,5 @@
 import ArgumentParser
+import BrujaHelpers
 import Foundation
 import MLXLMCommon
 import SwiftAcervo
@@ -71,9 +72,9 @@ struct DownloadCommand: AsyncParsableCommand {
   var quiet = false
 
   func run() async throws {
-    let showProgress = !quiet
+    let renderer = ProgressRenderer(quiet: quiet)
 
-    if showProgress {
+    if !quiet {
       print("Downloading \(model) from CDN to \(Acervo.sharedModelsDirectory.path)...")
     }
 
@@ -81,17 +82,12 @@ struct DownloadCommand: AsyncParsableCommand {
       try? Acervo.deleteModel(model)
     }
 
-    try await Acervo.ensureAvailable(model, files: []) { progress in
-      if showProgress {
-        let percentage = Int(progress.overallProgress * 100)
-        print("\r\u{1B}[KDownload progress: \(percentage)%", terminator: "")
-        fflush(stdout)
-      }
+    let progressCallback = renderer.makeProgressCallback()
+    try await Acervo.ensureAvailable(model, files: []) { acervoProgress in
+      progressCallback(acervoProgress.overallProgress)
     }
 
-    if showProgress {
-      print("\r\u{1B}[KDownload complete: \(model)")
-    }
+    await renderer.reportCompletion(modelId: model)
   }
 }
 
