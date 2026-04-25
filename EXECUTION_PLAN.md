@@ -1,3 +1,11 @@
+---
+feature_name: OPERATION LIGHTHOUSE PLUMBING
+starting_point_commit: cee9757a48b259fbaa6b6da66ac606e23756f094
+mission_branch: mission/lighthouse-plumbing/01
+iteration: 1
+mission_started: 2026-04-25
+---
+
 # EXECUTION_PLAN.md — SwiftBruja Reference Implementation for SwiftAcervo 0.8
 
 **Source:** `REQUIREMENTS.md` v2.0 (2026-04-24, updated 2026-04-25)
