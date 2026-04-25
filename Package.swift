@@ -38,11 +38,11 @@ let package = Package(
       traits: ["Swift"]),
 
     // Shared model management (download, cache, discovery).
-    // Floor pinned at 0.8.1 — that release ships the ACERVO_OFFLINE env-var
+    // Floor pinned at 0.8.2 — 0.8.1 first shipped the ACERVO_OFFLINE env-var
     // gate required by `make reference-check`'s offline-load test
-    // (REQUIREMENTS.md §"Offline-Mode Contract").
+    // (REQUIREMENTS.md §"Offline-Mode Contract"); 0.8.2 is the current patch.
     .package(
-      url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.8.1")),
+      url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.8.2")),
 
     // CLI argument parsing
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
