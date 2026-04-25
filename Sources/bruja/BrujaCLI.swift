@@ -387,7 +387,8 @@ struct InfoCommand: AsyncParsableCommand {
 
       if remote {
         // --remote: fetch manifest from CDN without downloading any files
-        let files = try await BrujaDownloadManager.shared.manifestFiles(for: model)
+        let manifest = try await fetchManifestForBrujaId(model)
+        let files = manifest.files
         let totalBytes = files.reduce(Int64(0)) { $0 + $1.sizeBytes }
         print("Remote: \(model)")
         print("Files: \(files.count)")

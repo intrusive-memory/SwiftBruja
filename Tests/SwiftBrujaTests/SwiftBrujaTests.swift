@@ -578,8 +578,8 @@ final class BrujaDownloadManagerManifestTests: XCTestCase {
     let before = snapshotDirectory(sharedModelsDir)
 
     // Call under test — must not throw and must return > 0
-    let sizeBytes = try await BrujaDownloadManager.shared.estimatedSize(
-      for: Self.productionModelId)
+    let sizeBytes = try await fetchManifestForBrujaId(Self.productionModelId).files
+      .reduce(Int64(0)) { $0 + $1.sizeBytes }
 
     XCTAssertGreaterThan(
       sizeBytes, 0,
@@ -600,8 +600,7 @@ final class BrujaDownloadManagerManifestTests: XCTestCase {
     let sharedModelsDir = Acervo.sharedModelsDirectory
     let before = snapshotDirectory(sharedModelsDir)
 
-    let files = try await BrujaDownloadManager.shared.manifestFiles(
-      for: Self.smallFixtureModelId)
+    let files = try await fetchManifestForBrujaId(Self.smallFixtureModelId).files
 
     XCTAssertFalse(
       files.isEmpty,
