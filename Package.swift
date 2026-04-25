@@ -14,6 +14,11 @@ let package = Package(
       name: "SwiftBruja",
       targets: ["SwiftBruja"]
     ),
+    // CLI helper utilities (ProgressRenderer, etc.) — reusable by tests
+    .library(
+      name: "BrujaHelpers",
+      targets: ["BrujaHelpers"]
+    ),
     // CLI executable
     .executable(
       name: "bruja",
@@ -57,11 +62,18 @@ let package = Package(
       ]
     ),
 
+    // CLI helper utilities (ProgressRenderer, etc.)
+    .target(
+      name: "BrujaHelpers",
+      dependencies: []
+    ),
+
     // CLI executable
     .executableTarget(
       name: "bruja",
       dependencies: [
         "SwiftBruja",
+        "BrujaHelpers",
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
         .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
@@ -80,7 +92,16 @@ let package = Package(
     // Integration Tests (requires built binary and LLM model)
     .testTarget(
       name: "BrujaIntegrationTests",
-      dependencies: ["SwiftBruja"]
+      dependencies: [
+        "SwiftBruja",
+        .product(name: "SwiftAcervo", package: "SwiftAcervo"),
+      ]
+    ),
+
+    // Unit tests for ProgressRenderer (no binary or model required)
+    .testTarget(
+      name: "ProgressRendererTests",
+      dependencies: ["BrujaHelpers"]
     ),
   ]
 )

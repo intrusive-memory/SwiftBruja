@@ -1,4 +1,5 @@
 import ArgumentParser
+import BrujaHelpers
 import Foundation
 import MLXLMCommon
 import SwiftAcervo
@@ -71,26 +72,29 @@ struct DownloadCommand: AsyncParsableCommand {
   var quiet = false
 
   func run() async throws {
-    let showProgress = !quiet
+    try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
 
-    if showProgress {
-      print("Downloading \(model) from CDN to \(Acervo.sharedModelsDirectory.path)...")
-    }
-
-    if force {
-      try? Acervo.deleteModel(model)
-    }
-
-    try await Acervo.ensureAvailable(model, files: []) { progress in
-      if showProgress {
-        let percentage = Int(progress.overallProgress * 100)
-        print("\r\u{1B}[KDownload progress: \(percentage)%", terminator: "")
-        fflush(stdout)
+      if !quiet {
+        print("Downloading \(model) from CDN to \(Acervo.sharedModelsDirectory.path)...")
       }
-    }
 
-    if showProgress {
-      print("\r\u{1B}[KDownload complete: \(model)")
+      if force {
+        try? Acervo.deleteModel(model)
+      }
+
+      let progressCallback = renderer.makeProgressCallback()
+      do {
+        try await Acervo.ensureAvailable(model, files: []) { acervoProgress in
+          progressCallback(acervoProgress.overallProgress)
+        }
+      } catch AcervoError.manifestDownloadFailed(let statusCode) where statusCode == 404 {
+        // The CDN returns 404 when a model has no manifest — treat as "not published".
+        throw CLIError("Model '\(model)' is not published on the CDN.")
+      }
+
+      await renderer.reportCompletion(modelId: model)
     }
   }
 }
@@ -146,21 +150,26 @@ struct QueryCommand: AsyncParsableCommand {
   var quiet = false
 
   func run() async throws {
-    let result = try await SwiftBruja.Bruja.queryWithMetadata(
-      prompt,
-      model: model,
-      temperature: temperature,
-      maxTokens: maxTokens,
-      system: system
-    )
+    try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
 
-    if json {
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-      let data = try encoder.encode(result)
-      print(String(data: data, encoding: .utf8)!)
-    } else {
-      print(result.response)
+      let result = try await SwiftBruja.Bruja.queryWithMetadata(
+        prompt,
+        model: model,
+        temperature: temperature,
+        maxTokens: maxTokens,
+        system: system
+      )
+
+      if json {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let data = try encoder.encode(result)
+        print(String(data: data, encoding: .utf8)!)
+      } else {
+        print(result.response)
+      }
     }
   }
 }
@@ -201,76 +210,84 @@ struct ChatCommand: AsyncParsableCommand {
   @Option(name: .long, help: "System prompt to set model behavior/persona")
   var system: String?
 
+  @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
+  var quiet = false
+
   func run() async throws {
-    // Resolve maxTokens
-    let resolvedMaxTokens: Int
-    if let maxTokens {
-      resolvedMaxTokens = maxTokens
-    } else {
-      let modelSize = (try? SwiftBruja.Bruja.modelInfo(at: model).sizeBytes) ?? 0
-      resolvedMaxTokens = SwiftBruja.BrujaMemory.recommendedMaxTokens(modelSizeBytes: modelSize)
-    }
+    try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
 
-    print("Loading model: \(model)...")
-    let container = try await SwiftBruja.Bruja.loadModel(model)
-
-    let instructions =
-      system ?? "You are a helpful AI assistant. Be concise and direct in your responses."
-    var session = ChatSession(
-      container,
-      instructions: instructions,
-      generateParameters: GenerateParameters(maxTokens: resolvedMaxTokens, temperature: temperature)
-    )
-
-    let modelShort = model.components(separatedBy: "/").last ?? model
-    print("Model loaded: \(modelShort) (maxTokens: \(resolvedMaxTokens))")
-    print("Type /quit to exit, /clear to reset conversation.\n")
-
-    while true {
-      print("> ", terminator: "")
-      fflush(stdout)
-
-      guard let input = readLine() else {
-        // EOF (Ctrl+D)
-        print("")
-        break
+      // Resolve maxTokens
+      let resolvedMaxTokens: Int
+      if let maxTokens {
+        resolvedMaxTokens = maxTokens
+      } else {
+        let modelSize = (try? SwiftBruja.Bruja.modelInfo(at: model).sizeBytes) ?? 0
+        resolvedMaxTokens = SwiftBruja.BrujaMemory.recommendedMaxTokens(modelSizeBytes: modelSize)
       }
 
-      let trimmed = input.trimmingCharacters(in: .whitespaces)
+      print("Loading model: \(model)...")
+      let container = try await SwiftBruja.Bruja.loadModel(model)
 
-      if trimmed.isEmpty {
-        continue
-      }
+      let instructions =
+        system ?? "You are a helpful AI assistant. Be concise and direct in your responses."
+      var session = ChatSession(
+        container,
+        instructions: instructions,
+        generateParameters: GenerateParameters(maxTokens: resolvedMaxTokens, temperature: temperature)
+      )
 
-      if trimmed.lowercased() == "/quit" {
-        break
-      }
+      let modelShort = model.components(separatedBy: "/").last ?? model
+      print("Model loaded: \(modelShort) (maxTokens: \(resolvedMaxTokens))")
+      print("Type /quit to exit, /clear to reset conversation.\n")
 
-      if trimmed.lowercased() == "/clear" {
-        await session.clear()
-        session = ChatSession(
-          container,
-          instructions: instructions,
-          generateParameters: GenerateParameters(
-            maxTokens: resolvedMaxTokens, temperature: temperature)
-        )
-        print("[Conversation cleared]\n")
-        continue
-      }
+      while true {
+        print("> ", terminator: "")
+        fflush(stdout)
 
-      let stream = session.streamResponse(to: trimmed)
-      do {
-        for try await chunk in stream {
-          print(chunk, terminator: "")
-          fflush(stdout)
+        guard let input = readLine() else {
+          // EOF (Ctrl+D)
+          print("")
+          break
         }
-        print("\n")
-      } catch {
-        print("\n[Error: \(error.localizedDescription)]\n")
-      }
-    }
 
-    await session.synchronize()
+        let trimmed = input.trimmingCharacters(in: .whitespaces)
+
+        if trimmed.isEmpty {
+          continue
+        }
+
+        if trimmed.lowercased() == "/quit" {
+          break
+        }
+
+        if trimmed.lowercased() == "/clear" {
+          await session.clear()
+          session = ChatSession(
+            container,
+            instructions: instructions,
+            generateParameters: GenerateParameters(
+              maxTokens: resolvedMaxTokens, temperature: temperature)
+          )
+          print("[Conversation cleared]\n")
+          continue
+        }
+
+        let stream = session.streamResponse(to: trimmed)
+        do {
+          for try await chunk in stream {
+            print(chunk, terminator: "")
+            fflush(stdout)
+          }
+          print("\n")
+        } catch {
+          print("\n[Error: \(error.localizedDescription)]\n")
+        }
+      }
+
+      await session.synchronize()
+    }
   }
 }
 
@@ -296,21 +313,29 @@ struct ListCommand: AsyncParsableCommand {
   @Flag(name: .long, help: "Output as JSON with full metadata")
   var json = false
 
-  func run() async throws {
-    let models = try SwiftBruja.Bruja.listModels()
+  @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
+  var quiet = false
 
-    if json {
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = [.prettyPrinted]
-      let data = try encoder.encode(models)
-      print(String(data: data, encoding: .utf8)!)
-    } else {
-      if models.isEmpty {
-        print("No models found in \(Acervo.sharedModelsDirectory.path)")
+  func run() async throws {
+    try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
+
+      let models = try SwiftBruja.Bruja.listModels()
+
+      if json {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted]
+        let data = try encoder.encode(models)
+        print(String(data: data, encoding: .utf8)!)
       } else {
-        print("Downloaded models in \(Acervo.sharedModelsDirectory.path):\n")
-        for model in models {
-          print("• \(model.id) (\(formatBytes(model.sizeBytes)))")
+        if models.isEmpty {
+          print("No models found in \(Acervo.sharedModelsDirectory.path)")
+        } else {
+          print("Downloaded models in \(Acervo.sharedModelsDirectory.path):\n")
+          for model in models {
+            print("• \(model.id) (\(formatBytes(model.sizeBytes)))")
+          }
         }
       }
     }
@@ -349,20 +374,40 @@ struct InfoCommand: AsyncParsableCommand {
   @Flag(name: .long, help: "Output as JSON with full metadata")
   var json = false
 
-  func run() async throws {
-    let info = try SwiftBruja.Bruja.modelInfo(at: model)
+  @Flag(name: .long, help: "Fetch manifest from CDN (no download); prints Remote/Files/Size")
+  var remote: Bool = false
 
-    if json {
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = [.prettyPrinted]
-      encoder.dateEncodingStrategy = .iso8601
-      let data = try encoder.encode(info)
-      print(String(data: data, encoding: .utf8)!)
-    } else {
-      print("Model: \(info.id)")
-      print("Path: \(info.path)")
-      print("Size: \(formatBytes(info.sizeBytes))")
-      print("Downloaded: \(info.downloadDate)")
+  @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
+  var quiet = false
+
+  func run() async throws {
+    try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
+
+      if remote {
+        // --remote: fetch manifest from CDN without downloading any files
+        let files = try await BrujaDownloadManager.shared.manifestFiles(for: model)
+        let totalBytes = files.reduce(Int64(0)) { $0 + $1.sizeBytes }
+        print("Remote: \(model)")
+        print("Files: \(files.count)")
+        print("Size: \(formatBytes(totalBytes))")
+      } else {
+        let info = try SwiftBruja.Bruja.modelInfo(at: model)
+
+        if json {
+          let encoder = JSONEncoder()
+          encoder.outputFormatting = [.prettyPrinted]
+          encoder.dateEncodingStrategy = .iso8601
+          let data = try encoder.encode(info)
+          print(String(data: data, encoding: .utf8)!)
+        } else {
+          print("Model: \(info.id)")
+          print("Path: \(info.path)")
+          print("Size: \(formatBytes(info.sizeBytes))")
+          print("Downloaded: \(info.downloadDate)")
+        }
+      }
     }
   }
 
