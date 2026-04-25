@@ -30,7 +30,7 @@ build: resolve
 release: resolve
 	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' -configuration Release build
 	@mkdir -p $(BIN_DIR)
-	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/SwiftBruja-*/Build/Products/Release $(DERIVED_DATA)/agent-*/Build/Products/Release -name $(BINARY) -type f 2>/dev/null | xargs ls -t 2>/dev/null | head -1 | xargs dirname 2>/dev/null); \
+	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/SwiftBruja-*/Build/Products/Release $(DERIVED_DATA)/agent-*/Build/Products/Release -maxdepth 1 -name $(BINARY) -type f 2>/dev/null | xargs ls -t 2>/dev/null | head -1 | xargs dirname 2>/dev/null); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
 		cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
 		if [ -d "$$PRODUCT_DIR/mlx-swift_Cmlx.bundle" ]; then \
@@ -66,7 +66,7 @@ dist: release
 install: resolve
 	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' build
 	@mkdir -p $(BIN_DIR)
-	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/SwiftBruja-*/Build/Products/Debug $(DERIVED_DATA)/agent-*/Build/Products/Debug -name $(BINARY) -type f 2>/dev/null | xargs ls -t 2>/dev/null | head -1 | xargs dirname 2>/dev/null); \
+	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/SwiftBruja-*/Build/Products/Debug $(DERIVED_DATA)/agent-*/Build/Products/Debug -maxdepth 1 -name $(BINARY) -type f 2>/dev/null | xargs ls -t 2>/dev/null | head -1 | xargs dirname 2>/dev/null); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
 		cp "$$PRODUCT_DIR/$(BINARY)" $(BIN_DIR)/; \
 		if [ -d "$$PRODUCT_DIR/mlx-swift_Cmlx.bundle" ]; then \
