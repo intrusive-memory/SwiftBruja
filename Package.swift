@@ -14,6 +14,11 @@ let package = Package(
       name: "SwiftBruja",
       targets: ["SwiftBruja"]
     ),
+    // CLI helper utilities (ProgressRenderer, etc.) — reusable by tests
+    .library(
+      name: "BrujaHelpers",
+      targets: ["BrujaHelpers"]
+    ),
     // CLI executable
     .executable(
       name: "bruja",
@@ -32,9 +37,12 @@ let package = Package(
       .upToNextMajor(from: "0.2.0"),
       traits: ["Swift"]),
 
-    // Shared model management (download, cache, discovery)
+    // Shared model management (download, cache, discovery).
+    // Floor pinned at 0.8.2 — 0.8.1 first shipped the ACERVO_OFFLINE env-var
+    // gate required by `make reference-check`'s offline-load test
+    // (REQUIREMENTS.md §"Offline-Mode Contract"); 0.8.2 is the current patch.
     .package(
-      url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.7.2")),
+      url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.8.2")),
 
     // CLI argument parsing
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
@@ -54,11 +62,18 @@ let package = Package(
       ]
     ),
 
+    // CLI helper utilities (ProgressRenderer, etc.)
+    .target(
+      name: "BrujaHelpers",
+      dependencies: []
+    ),
+
     // CLI executable
     .executableTarget(
       name: "bruja",
       dependencies: [
         "SwiftBruja",
+        "BrujaHelpers",
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
         .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
@@ -77,7 +92,16 @@ let package = Package(
     // Integration Tests (requires built binary and LLM model)
     .testTarget(
       name: "BrujaIntegrationTests",
-      dependencies: ["SwiftBruja"]
+      dependencies: [
+        "SwiftBruja",
+        .product(name: "SwiftAcervo", package: "SwiftAcervo"),
+      ]
+    ),
+
+    // Unit tests for ProgressRenderer (no binary or model required)
+    .testTarget(
+      name: "ProgressRendererTests",
+      dependencies: ["BrujaHelpers"]
     ),
   ]
 )

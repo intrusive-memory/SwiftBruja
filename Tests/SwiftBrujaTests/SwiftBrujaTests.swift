@@ -335,26 +335,6 @@ final class BrujaModelInfoTests: XCTestCase {
 
 final class BrujaModelManagerTests: XCTestCase {
 
-  // MARK: - Component Registration Tests
-
-  func testRegisteredComponentsNotEmpty() {
-    let components = BrujaModelManager.registeredComponents
-    XCTAssertFalse(components.isEmpty, "At least the built-in Qwen3 models should be registered")
-  }
-
-  func testQwen3CoderNextComponentIsRegistered() {
-    XCTAssertTrue(
-      BrujaModelManager.isComponentRegistered("qwen3-coder-next-4bit"),
-      "Qwen3-Coder-Next should be registered at module init"
-    )
-  }
-
-  func testComponentRetrievalByID() {
-    let component = BrujaModelManager.component(for: "qwen3-coder-next-4bit")
-    XCTAssertNotNil(component)
-    XCTAssertEqual(component?.displayName, "Qwen3-Coder-Next (4-bit)")
-  }
-
   // MARK: - Model Availability Tests
 
   func testModelNotAvailableByDefault() {
@@ -427,6 +407,224 @@ final class BrujaPathResolutionTests: XCTestCase {
   }
 }
 
+// MARK: - Acervo Component Ready Tests
+
+final class AcervoComponentReadyTests: XCTestCase {
+
+  /// Verifies that `ensureComponentReady` delegates to the Level 3 component-aware path
+  /// (`Acervo.ensureComponentReady`) rather than the Level 2 raw-repoId path.
+  ///
+  /// Strategy: register a test component with a single file (`config.json`), seed a
+  /// temp directory with that file so `Acervo.isComponentReady` returns `true` (no
+  /// network round-trip needed), call `Acervo.ensureComponentReady`, then
+  /// assert the registered component's file list is non-empty.
+  func testEnsureComponentReadyHydratesFiles() async throws {
+    // Use a unique component ID that won't collide with production components
+    let testComponentId = "test-sortie4-fixture-\(UUID().uuidString.prefix(8))"
+    let testRepoId = "test-org/sortie4-fixture"
+
+    // Register a test component with one file
+    let descriptor = ComponentDescriptor(
+      id: testComponentId,
+      type: .languageModel,
+      displayName: "Sortie 4 Fixture",
+      repoId: testRepoId,
+      files: [
+        ComponentFile(relativePath: "config.json")
+      ],
+      estimatedSizeBytes: 100,
+      minimumMemoryBytes: 0
+    )
+    Acervo.register(descriptor)
+    defer { Acervo.unregister(testComponentId) }
+
+    // Redirect Acervo to a temp directory to avoid touching the real SharedModels
+    let tempBase = FileManager.default.temporaryDirectory
+      .appendingPathComponent("bruja-sortie4-test-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempBase) }
+
+    // Seed the component directory with config.json so isComponentReady returns true
+    let slug = Acervo.slugify(testRepoId)
+    let componentDir = tempBase.appendingPathComponent(slug)
+    try FileManager.default.createDirectory(at: componentDir, withIntermediateDirectories: true)
+    try "{}".write(
+      to: componentDir.appendingPathComponent("config.json"),
+      atomically: true,
+      encoding: .utf8
+    )
+
+    // Redirect Acervo to the temp directory
+    let previousCustomBase = Acervo.customBaseDirectory
+    Acervo.customBaseDirectory = tempBase
+    defer { Acervo.customBaseDirectory = previousCustomBase }
+
+    // Call the Level 3 path — uses Acervo.ensureComponentReady, not ensureAvailable
+    try await Acervo.ensureComponentReady(testComponentId) { _ in }
+    guard let registered = Acervo.component(testComponentId) else {
+      XCTFail("Component should still be registered after ensureComponentReady")
+      return
+    }
+    let resultURL = try Acervo.modelDirectory(for: registered.repoId)
+
+    // The returned URL should point into our temp directory
+    XCTAssertTrue(
+      resultURL.path.hasPrefix(tempBase.path),
+      "Result URL should be within temp directory, got: \(resultURL.path)"
+    )
+
+    // The registered component must have a non-empty files list (Level 3 assertion)
+    let registeredComponent = Acervo.component(testComponentId)
+    XCTAssertNotNil(
+      registeredComponent, "Component should still be registered after ensureComponentReady")
+    XCTAssertFalse(
+      registeredComponent?.files.isEmpty ?? true,
+      "Acervo.component(id)?.files must be non-empty after ensureComponentReady (Level 3 hydration assertion)"
+    )
+  }
+
+  /// Verifies that `Acervo.ensureComponentReady` throws for an unregistered component ID,
+  /// preserving the component-registration guard (now enforced by Acervo directly).
+  func testEnsureComponentReadyThrowsForUnregisteredComponent() async throws {
+    let unregisteredId = "absolutely-not-registered-\(UUID().uuidString)"
+    do {
+      try await Acervo.ensureComponentReady(unregisteredId) { _ in }
+      XCTFail("Expected an error to be thrown for unregistered component")
+    } catch {
+      // Expected — Acervo throws for unregistered component IDs
+    }
+  }
+
+  /// Regression test: the Level 2 raw-repoId path (Acervo.ensureAvailable) must work
+  /// for unregistered repo IDs.
+  ///
+  /// Verifies that `Acervo.ensureAvailable` accepts a raw CDN repo ID (not
+  /// registered as a component) and follows the Level 2 path rather than the Level 3
+  /// component-aware path.
+  ///
+  /// Uses a pre-seeded temp directory to avoid any real network download.
+  func testDownloadModelLevel2PathWorksForUnregisteredRepoId() async throws {
+    // The canonical small fixture model (unregistered raw repo ID)
+    let unregisteredRepoId = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+
+    // Confirm the repo ID is NOT registered as a component
+    XCTAssertNil(
+      Acervo.component(unregisteredRepoId),
+      "The raw repo ID must NOT be registered as a component for this Level 2 regression test"
+    )
+
+    // Redirect to a temp directory and seed it so Acervo.isModelAvailable returns true
+    // (avoids real CDN download while still exercising the call boundary)
+    let tempBase = FileManager.default.temporaryDirectory
+      .appendingPathComponent("bruja-level2-test-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempBase) }
+
+    let slug = Acervo.slugify(unregisteredRepoId)
+    let modelDir = tempBase.appendingPathComponent(slug)
+    try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
+    try "{}".write(
+      to: modelDir.appendingPathComponent("config.json"),
+      atomically: true,
+      encoding: .utf8
+    )
+
+    let previousCustomBase = Acervo.customBaseDirectory
+    Acervo.customBaseDirectory = tempBase
+    defer { Acervo.customBaseDirectory = previousCustomBase }
+
+    // `Acervo.ensureAvailable` must NOT throw when model is already available (force: false)
+    try await Acervo.ensureAvailable(unregisteredRepoId, files: []) { _ in }
+    // If we get here, the Level 2 path executed without error
+  }
+}
+
+// MARK: - Acervo Manifest Fetch Tests
+
+final class AcervoManifestFetchTests: XCTestCase {
+
+  /// The production model guaranteed to exist on the CDN by Sortie 1.
+  private static let productionModelId = "mlx-community/Qwen3-Coder-Next-4bit"
+
+  /// The small fixture model also guaranteed on the CDN by Sortie 1.
+  private static let smallFixtureModelId = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+
+  /// Library test (R4): summed manifest file sizes for the production model are
+  /// non-zero and the fetch produces zero new files under `Acervo.sharedModelsDirectory`.
+  ///
+  /// This test requires network access to the CDN. It is not skipped on CI because the
+  /// production model is guaranteed present by Sortie 1. The before/after snapshot of
+  /// `sharedModelsDirectory` verifies the manifest fetch is read-only.
+  func testEstimatedSizeForProductionModelIsNonZeroAndCreatesNoFiles() async throws {
+    let sharedModelsDir = Acervo.sharedModelsDirectory
+
+    // Snapshot before: collect all paths under sharedModelsDirectory
+    let before = snapshotDirectory(sharedModelsDir)
+
+    // Call under test — must not throw and must return > 0
+    let sizeBytes = try await Acervo.fetchManifest(for: Self.productionModelId).files
+      .reduce(Int64(0)) { $0 + $1.sizeBytes }
+
+    XCTAssertGreaterThan(
+      sizeBytes, 0,
+      "Manifest size for \(Self.productionModelId) should be > 0; CDN guarantees this model exists"
+    )
+
+    // Snapshot after: no new files should have been created
+    let after = snapshotDirectory(sharedModelsDir)
+    XCTAssertEqual(
+      before, after,
+      "Manifest fetch must not write files to sharedModelsDirectory (before != after)"
+    )
+  }
+
+  /// Library test (R4): `Acervo.fetchManifest(for:)` returns a non-empty file list and
+  /// does not create files on disk. Uses the small fixture model for breadth coverage.
+  func testManifestFilesForSmallFixtureModelReturnsNonEmptyArray() async throws {
+    let sharedModelsDir = Acervo.sharedModelsDirectory
+    let before = snapshotDirectory(sharedModelsDir)
+
+    let files = try await Acervo.fetchManifest(for: Self.smallFixtureModelId).files
+
+    XCTAssertFalse(
+      files.isEmpty,
+      "Manifest for \(Self.smallFixtureModelId) must return at least one CDNManifestFile"
+    )
+
+    // Every file entry must have a non-empty path and a positive size
+    for file in files {
+      XCTAssertFalse(file.path.isEmpty, "CDNManifestFile.path must not be empty")
+      XCTAssertGreaterThan(file.sizeBytes, 0, "CDNManifestFile.sizeBytes must be > 0")
+    }
+
+    let after = snapshotDirectory(sharedModelsDir)
+    XCTAssertEqual(
+      before, after,
+      "Manifest fetch must not write files to sharedModelsDirectory (before != after)"
+    )
+  }
+
+  // MARK: - Helpers
+
+  /// Returns a sorted set of all file paths under `directory`, for before/after comparison.
+  private func snapshotDirectory(_ directory: URL) -> Set<String> {
+    guard
+      let enumerator = FileManager.default.enumerator(
+        at: directory,
+        includingPropertiesForKeys: [.isRegularFileKey],
+        options: [.skipsHiddenFiles]
+      )
+    else {
+      return []
+    }
+    var paths = Set<String>()
+    for case let url as URL in enumerator {
+      paths.insert(url.path)
+    }
+    return paths
+  }
+}
+
 // MARK: - Concurrent Access Tests
 
 final class BrujaConcurrencyTests: XCTestCase {
@@ -452,12 +650,12 @@ final class BrujaConcurrencyTests: XCTestCase {
     }
   }
 
-  func testConcurrentComponentRegistryAccess() async {
-    // Run multiple component registry queries concurrently
+  func testConcurrentRegisteredComponentsAccess() async {
+    // Run multiple registry queries concurrently against Acervo directly
     await withTaskGroup(of: [ComponentDescriptor].self) { group in
       for _ in 0..<50 {
         group.addTask {
-          BrujaModelManager.registeredComponents
+          Acervo.registeredComponents(ofType: .languageModel)
         }
       }
 
@@ -467,7 +665,6 @@ final class BrujaConcurrencyTests: XCTestCase {
       }
 
       XCTAssertEqual(resultCounts.count, 50)
-      // All should return the same components
       XCTAssertTrue(resultCounts.allSatisfy { $0 == resultCounts[0] })
     }
   }

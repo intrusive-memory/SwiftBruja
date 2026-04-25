@@ -6,7 +6,7 @@
 
 **One import. One line. Local LLM queries on Apple Silicon.**
 
-SwiftBruja wraps the complexity of MLX, model downloading, and inference into a single, simple API. No cloud APIs, no API keys, no network latency - just fast, private, on-device AI.
+SwiftBruja wraps the complexity of MLX and inference into a single, simple API. Models are managed by SwiftAcervo, which handles downloading, caching, and storage. No cloud APIs, no API keys, no network latency - just fast, private, on-device AI.
 
 ```swift
 import SwiftBruja
@@ -17,9 +17,9 @@ let response = try await Bruja.query("What is the capital of France?")
 
 ## Why SwiftBruja?
 
-- **Single Import**: One package gives you everything - model management, downloading, and inference
+- **Single Import**: One package gives you everything - inference on Apple Silicon
 - **One-Line Queries**: `Bruja.query()` handles model loading, tokenization, and generation
-- **Auto-Download**: Pass a HuggingFace model ID and it downloads automatically
+- **Model Lifecycle Delegated**: SwiftAcervo handles model downloads, caching, and storage
 - **Structured Output**: Get typed responses with `Bruja.query(as: MyType.self)`
 - **Memory-Aware**: Automatically adjusts token limits based on available memory
 - **No Cloud Required**: Runs entirely on-device using Apple Silicon GPU
@@ -44,7 +44,7 @@ brew install intrusive-memory/tap/bruja
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.5.1")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.6.0")
 ]
 ```
 
@@ -189,7 +189,7 @@ bruja info -m ~/Models/custom-model --json
 | `Bruja.query(_:model:)` | Simple text query, returns String |
 | `Bruja.query(_:as:model:)` | Structured query, returns Codable type |
 | `Bruja.queryWithMetadata(_:model:)` | Query with timing and token info |
-| `Bruja.download(model:)` | Download model from CDN |
+| `Bruja.download(model:)` | Ensure model is available via SwiftAcervo |
 | `Bruja.listModels()` | List downloaded models |
 | `Bruja.modelExists(at:)` | Check if model exists at path |
 | `Bruja.modelExists(id:)` | Check if model exists by HuggingFace ID |
@@ -223,10 +223,10 @@ let response = try await Bruja.query("...", model: modelId, maxTokens: 2048)
 
 ## How It Works
 
-SwiftBruja wraps the MLX ecosystem into a simple API:
+SwiftBruja is a consumer of SwiftAcervo's storage, providing a simple inference API:
 
-1. **Model Resolution**: Accepts local paths or HuggingFace model IDs
-2. **Auto-Download**: Downloads missing models via CDN with integrity verification
+1. **Model Resolution**: Accepts local paths or HuggingFace model IDs (delegates to SwiftAcervo)
+2. **Model Availability**: Ensures models are available via SwiftAcervo (which handles CDN downloads and integrity verification)
 3. **Memory Validation**: Checks available memory before loading
 4. **Model Caching**: Keeps loaded models in memory for fast subsequent queries
 5. **Token Auto-Tuning**: Sets maxTokens based on remaining memory
@@ -249,6 +249,41 @@ make test
 ```
 
 **Note:** Metal shaders require `xcodebuild` or `make install`. Using `swift build` alone will compile but shaders won't load at runtime.
+
+## App Group Entitlement
+
+To integrate SwiftBruja into a host iOS or macOS app, the app must declare the App Group entitlement `group.intrusive-memory.models`. This allows SwiftBruja's shared model cache (via [SwiftAcervo](../SwiftAcervo/USAGE.md)) to be accessible to your app when it imports the SwiftBruja library.
+
+### Xcode Setup
+
+1. **Signing & Capabilities** → **+ Capability** → search for and select **App Groups**
+2. Enter the group identifier: `group.intrusive-memory.models`
+3. Repeat for all targets that import SwiftBruja (e.g., main app target, any app extensions)
+
+### Entitlements File
+
+If you manage entitlements via `.entitlements` files instead of Xcode UI, add the following snippet:
+
+```xml
+<key>com.apple.security.application-groups</key>
+<array>
+    <string>group.intrusive-memory.models</string>
+</array>
+```
+
+### Self-Diagnostic
+
+If `[bruja] SharedModels:` shows a path under `Application Support/SwiftAcervo/SharedModels`, the capability is missing from the host target. The stderr line logs the shared models directory on every CLI invocation:
+
+```
+[bruja] SharedModels: /Users/you/Library/Application Support/SwiftAcervo/SharedModels/...
+```
+
+If the path points to a fallback location (e.g., a temporary directory or app-specific sandbox), ensure the entitlement is present and code-signed correctly.
+
+**Note:** The `bruja` CLI binary itself is unsigned and legitimately uses the fallback path — this is expected, not a bug.
+
+For the full integration checklist and App Group setup guidance, see [SwiftAcervo USAGE.md](../SwiftAcervo/USAGE.md).
 
 ## License
 

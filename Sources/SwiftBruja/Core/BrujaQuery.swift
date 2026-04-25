@@ -53,7 +53,8 @@ public enum BrujaQuery {
     }
 
     // Log the resolved maxTokens for user awareness
-    print("[SwiftBruja] maxTokens set to \(resolvedMaxTokens) for this query")
+    FileHandle.standardError.write(
+      Data("[SwiftBruja] maxTokens set to \(resolvedMaxTokens) for this query\n".utf8))
 
     // Create chat session with optional system prompt
     let instructions =
