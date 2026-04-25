@@ -112,7 +112,6 @@ reference-check: install
 	@echo ""
 	@echo "--- Step 1: unit + integration tests ---"
 	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' \
-		-skip-testing:BrujaIntegrationTests/ErrorReportingSmokeTest \
 		-skip-testing:BrujaIntegrationTests/InferenceIntegrationTest \
 		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testComponentRetrievalByID \
 		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testQwen3CoderNextComponentIsRegistered \
