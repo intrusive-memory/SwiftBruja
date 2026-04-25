@@ -374,6 +374,9 @@ struct InfoCommand: AsyncParsableCommand {
   @Flag(name: .long, help: "Output as JSON with full metadata")
   var json = false
 
+  @Flag(name: .long, help: "Fetch manifest from CDN (no download); prints Remote/Files/Size")
+  var remote: Bool = false
+
   @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
   var quiet = false
 
@@ -382,19 +385,28 @@ struct InfoCommand: AsyncParsableCommand {
       let renderer = ProgressRenderer(quiet: quiet)
       await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
 
-      let info = try SwiftBruja.Bruja.modelInfo(at: model)
-
-      if json {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted]
-        encoder.dateEncodingStrategy = .iso8601
-        let data = try encoder.encode(info)
-        print(String(data: data, encoding: .utf8)!)
+      if remote {
+        // --remote: fetch manifest from CDN without downloading any files
+        let files = try await BrujaDownloadManager.shared.manifestFiles(for: model)
+        let totalBytes = files.reduce(Int64(0)) { $0 + $1.sizeBytes }
+        print("Remote: \(model)")
+        print("Files: \(files.count)")
+        print("Size: \(formatBytes(totalBytes))")
       } else {
-        print("Model: \(info.id)")
-        print("Path: \(info.path)")
-        print("Size: \(formatBytes(info.sizeBytes))")
-        print("Downloaded: \(info.downloadDate)")
+        let info = try SwiftBruja.Bruja.modelInfo(at: model)
+
+        if json {
+          let encoder = JSONEncoder()
+          encoder.outputFormatting = [.prettyPrinted]
+          encoder.dateEncodingStrategy = .iso8601
+          let data = try encoder.encode(info)
+          print(String(data: data, encoding: .utf8)!)
+        } else {
+          print("Model: \(info.id)")
+          print("Path: \(info.path)")
+          print("Size: \(formatBytes(info.sizeBytes))")
+          print("Downloaded: \(info.downloadDate)")
+        }
       }
     }
   }

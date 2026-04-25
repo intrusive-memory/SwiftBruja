@@ -555,6 +555,93 @@ final class BrujaDownloadManagerTests: XCTestCase {
   }
 }
 
+// MARK: - BrujaDownloadManager Pre-flight Manifest Tests (Sortie 5: R4)
+
+final class BrujaDownloadManagerManifestTests: XCTestCase {
+
+  /// The production model guaranteed to exist on the CDN by Sortie 1.
+  private static let productionModelId = "mlx-community/Qwen3-Coder-Next-4bit"
+
+  /// The small fixture model also guaranteed on the CDN by Sortie 1.
+  private static let smallFixtureModelId = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+
+  /// Library test (R4): `estimatedSize(for:)` returns a non-zero value for the production
+  /// model and produces zero new files under `Acervo.sharedModelsDirectory`.
+  ///
+  /// This test requires network access to the CDN. It is not skipped on CI because the
+  /// production model is guaranteed present by Sortie 1. The before/after snapshot of
+  /// `sharedModelsDirectory` verifies the manifest fetch is read-only.
+  func testEstimatedSizeForProductionModelIsNonZeroAndCreatesNoFiles() async throws {
+    let sharedModelsDir = Acervo.sharedModelsDirectory
+
+    // Snapshot before: collect all paths under sharedModelsDirectory
+    let before = snapshotDirectory(sharedModelsDir)
+
+    // Call under test — must not throw and must return > 0
+    let sizeBytes = try await BrujaDownloadManager.shared.estimatedSize(
+      for: Self.productionModelId)
+
+    XCTAssertGreaterThan(
+      sizeBytes, 0,
+      "estimatedSize(for: \(Self.productionModelId)) should be > 0; CDN guarantees this model exists"
+    )
+
+    // Snapshot after: no new files should have been created
+    let after = snapshotDirectory(sharedModelsDir)
+    XCTAssertEqual(
+      before, after,
+      "estimatedSize must not write files to sharedModelsDirectory (before != after)"
+    )
+  }
+
+  /// Library test (R4): `manifestFiles(for:)` returns a non-empty array and does not
+  /// create files on disk. Uses the small fixture model for breadth coverage.
+  func testManifestFilesForSmallFixtureModelReturnsNonEmptyArray() async throws {
+    let sharedModelsDir = Acervo.sharedModelsDirectory
+    let before = snapshotDirectory(sharedModelsDir)
+
+    let files = try await BrujaDownloadManager.shared.manifestFiles(
+      for: Self.smallFixtureModelId)
+
+    XCTAssertFalse(
+      files.isEmpty,
+      "manifestFiles(for: \(Self.smallFixtureModelId)) must return at least one CDNManifestFile"
+    )
+
+    // Every file entry must have a non-empty path and a positive size
+    for file in files {
+      XCTAssertFalse(file.path.isEmpty, "CDNManifestFile.path must not be empty")
+      XCTAssertGreaterThan(file.sizeBytes, 0, "CDNManifestFile.sizeBytes must be > 0")
+    }
+
+    let after = snapshotDirectory(sharedModelsDir)
+    XCTAssertEqual(
+      before, after,
+      "manifestFiles must not write files to sharedModelsDirectory (before != after)"
+    )
+  }
+
+  // MARK: - Helpers
+
+  /// Returns a sorted set of all file paths under `directory`, for before/after comparison.
+  private func snapshotDirectory(_ directory: URL) -> Set<String> {
+    guard
+      let enumerator = FileManager.default.enumerator(
+        at: directory,
+        includingPropertiesForKeys: [.isRegularFileKey],
+        options: [.skipsHiddenFiles]
+      )
+    else {
+      return []
+    }
+    var paths = Set<String>()
+    for case let url as URL in enumerator {
+      paths.insert(url.path)
+    }
+    return paths
+  }
+}
+
 // MARK: - Concurrent Access Tests
 
 final class BrujaConcurrencyTests: XCTestCase {
