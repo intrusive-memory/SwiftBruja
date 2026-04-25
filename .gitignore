@@ -27,3 +27,6 @@ Carthage/Build/
 *.profraw
 bin/*
 dist/*
+
+# Mission artifacts (agent-local, not committed)
+.mission/
