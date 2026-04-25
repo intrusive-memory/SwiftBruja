@@ -5,18 +5,6 @@ import MLXLMCommon
 import MLXLMTokenizers
 import SwiftAcervo
 
-// MARK: - Component Registration
-
-/// Initialize SwiftBruja components at module load time.
-/// This ensures all Qwen3 models are registered with Acervo
-/// before any component queries occur.
-private func initializeBrujaComponents() {
-  registerBrujaComponents()
-}
-
-// Called once when this module loads
-private let _initBrujaComponents: () = initializeBrujaComponents()
-
 // MARK: - BrujaModelManager
 
 /// Manages loading LLM models into memory for inference.
@@ -48,17 +36,23 @@ public actor BrujaModelManager {
 
   // MARK: - Migration
 
-  /// Migrate models from legacy cache paths to ~/Library/SharedModels/ (one-shot per session)
+  /// Migrate models from legacy cache paths to ~/Library/SharedModels/ (one-shot per session).
+  ///
+  /// Status messages go to stderr so they don't corrupt `--json` stdout from `bruja query`.
   func migrateIfNeeded() {
     guard !migrationAttempted else { return }
     migrationAttempted = true
     do {
       let migrated = try Acervo.migrateFromLegacyPaths()
       if !migrated.isEmpty {
-        print("[SwiftBruja] Migrated \(migrated.count) model(s) to ~/Library/SharedModels/")
+        FileHandle.standardError.write(
+          Data("[SwiftBruja] Migrated \(migrated.count) model(s) to ~/Library/SharedModels/\n".utf8)
+        )
       }
     } catch {
-      print("[SwiftBruja] Warning: legacy migration failed: \(error.localizedDescription)")
+      FileHandle.standardError.write(
+        Data("[SwiftBruja] Warning: legacy migration failed: \(error.localizedDescription)\n".utf8)
+      )
     }
   }
 
@@ -121,23 +115,5 @@ public actor BrujaModelManager {
   /// Unload all models
   public func unloadAllModels() {
     loadedModels.removeAll()
-  }
-
-  // MARK: - Component Discovery
-
-  /// Get all registered model components from Acervo.
-  /// Returns only language models (LLMs) supported by Bruja.
-  public nonisolated static var registeredComponents: [ComponentDescriptor] {
-    Acervo.registeredComponents(ofType: .languageModel)
-  }
-
-  /// Check if a component is registered
-  public nonisolated static func isComponentRegistered(_ componentId: String) -> Bool {
-    Acervo.component(componentId) != nil
-  }
-
-  /// Retrieve a registered component by ID
-  public nonisolated static func component(for componentId: String) -> ComponentDescriptor? {
-    Acervo.component(componentId)
   }
 }

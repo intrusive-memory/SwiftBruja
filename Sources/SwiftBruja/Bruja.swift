@@ -81,7 +81,7 @@ public enum Bruja {
   /// Model must be pre-downloaded via SwiftAcervo to the shared models directory.
   ///
   /// - Parameters:
-  ///   - model: Model HuggingFace ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
+  ///   - model: Model ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
   /// - Returns: A loaded `ModelContainer` ready for use
   /// - Throws: `BrujaError.modelNotFound` if model is not available locally
   public static func loadModel(
@@ -99,7 +99,7 @@ public enum Bruja {
   ///
   /// - Parameters:
   ///   - prompt: The prompt to send to the model
-  ///   - model: Model HuggingFace ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
+  ///   - model: Model ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
   ///   - temperature: Sampling temperature (0.0-1.0, higher = more creative)
   ///   - maxTokens: Maximum tokens to generate
   ///   - system: Optional system prompt
@@ -146,7 +146,7 @@ public enum Bruja {
   /// - Parameters:
   ///   - prompt: The prompt to send to the model
   ///   - type: The Codable type to decode the response into
-  ///   - model: Model HuggingFace ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
+  ///   - model: Model ID (e.g., "mlx-community/Qwen3-Coder-Next-4bit")
   ///   - temperature: Sampling temperature (lower is better for structured output)
   ///   - maxTokens: Maximum tokens to generate
   ///   - system: Optional additional system prompt

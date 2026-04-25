@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **`BrujaModelManager` component-registry shim** — the static `registeredComponents`, `isComponentRegistered`, and `component(for:)` helpers have been removed. Call `Acervo.registeredComponents(ofType:)`, `Acervo.component(_:)` directly.
+- **`BrujaComponents.swift`** — the bundled `qwen3-coder-next-4bit` `ComponentDescriptor` registration is gone. The CLI accepts raw repo IDs only; consumers that want a curated catalog should register their own descriptors with `Acervo.register(_:)`.
+- **`fetchManifestForBrujaId(_:)` (`ManifestDispatcher.swift`)** — replaced by direct `Acervo.fetchManifest(for:)` calls. The `bruja info --remote` command was rewired in place.
+
+### Changed
+
+- **`BrujaModelManager.migrateIfNeeded()` logs to stderr** instead of stdout, so `bruja query --json` output stays machine-parseable when a legacy migration runs.
+- **CLI help wording**: "HuggingFace ID" → "model ID" / "model path or ID" across `download`, `query`, `chat`, and `info`. The CDN is the source of truth, not the HuggingFace Hub.
+
+---
+
+## [1.5.x] - 2026-04
+
+Library matured around the SwiftAcervo 0.8.x manifest-driven hydration pattern. `BrujaDownloadManager` was deleted in favor of direct `Acervo.*` calls; the CLI gained `chat`, `info --remote`, and stderr-routed `[bruja] SharedModels:` startup diagnostics. Memory auto-tuning, structured-output query, and `MLXLMTokenizers`-based mlx-swift-lm 3.x integration all stabilized in this range.
+
 ---
 
 ## [1.0.10] - 2026-01-31

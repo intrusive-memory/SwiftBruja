@@ -40,10 +40,15 @@ struct BrujaCLI: AsyncParsableCommand {
 struct DownloadCommand: AsyncParsableCommand {
   static let configuration = CommandConfiguration(
     commandName: "download",
-    abstract: "Download a model for local inference",
+    abstract: "Download one or more models for local inference",
     discussion: """
-      Downloads an MLX-compatible model from the CDN for local inference.
+      Downloads MLX-compatible models from the CDN for local inference.
       Models are stored in ~/Library/SharedModels/
+
+      Pass `-m` once per model. With a single model, the SwiftAcervo Level 2
+      API (`Acervo.ensureAvailable`) is used. With two or more, the Level 1
+      batch API (`ModelDownloadManager.ensureModelsAvailable`) is used so
+      progress is reported as a cumulative byte fraction across the whole batch.
 
       MLX-optimized models from mlx-community are recommended for best
       performance on Apple Silicon.
@@ -55,15 +60,17 @@ struct DownloadCommand: AsyncParsableCommand {
 
       Examples:
         bruja download -m mlx-community/Llama-3.2-1B-Instruct-4bit
-        bruja download -m mlx-community/Llama-3.2-3B-Instruct-4bit
         bruja download -m mlx-community/Llama-3.2-1B-Instruct-4bit --force
+        bruja download -m mlx-community/Llama-3.2-1B-Instruct-4bit \\
+                       -m mlx-community/Qwen2.5-3B-Instruct-4bit
       """
   )
 
   @Option(
     name: [.short, .long],
-    help: "HuggingFace model ID (e.g., mlx-community/Phi-3-mini-4k-instruct-4bit)")
-  var model: String
+    parsing: .singleValue,
+    help: "Model ID (repeatable, e.g., -m mlx-community/Phi-3-mini-4k-instruct-4bit)")
+  var model: [String]
 
   @Flag(name: .long, help: "Force re-download even if model already exists locally")
   var force = false
@@ -71,31 +78,64 @@ struct DownloadCommand: AsyncParsableCommand {
   @Flag(name: .shortAndLong, help: "Suppress progress output")
   var quiet = false
 
+  func validate() throws {
+    guard !model.isEmpty else {
+      throw ValidationError("At least one --model/-m is required.")
+    }
+  }
+
   func run() async throws {
     try await runCLI {
       let renderer = ProgressRenderer(quiet: quiet)
       await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
 
-      if !quiet {
-        print("Downloading \(model) from CDN to \(Acervo.sharedModelsDirectory.path)...")
-      }
-
       if force {
-        try? Acervo.deleteModel(model)
-      }
-
-      let progressCallback = renderer.makeProgressCallback()
-      do {
-        try await Acervo.ensureAvailable(model, files: []) { acervoProgress in
-          progressCallback(acervoProgress.overallProgress)
+        for modelId in model {
+          try? Acervo.deleteModel(modelId)
         }
-      } catch AcervoError.manifestDownloadFailed(let statusCode) where statusCode == 404 {
-        // The CDN returns 404 when a model has no manifest — treat as "not published".
-        throw CLIError("Model '\(model)' is not published on the CDN.")
       }
 
-      await renderer.reportCompletion(modelId: model)
+      if model.count == 1 {
+        try await runSingleModel(model[0], renderer: renderer)
+      } else {
+        try await runBatch(model, renderer: renderer)
+      }
     }
+  }
+
+  private func runSingleModel(_ modelId: String, renderer: ProgressRenderer) async throws {
+    if !quiet {
+      print("Downloading \(modelId) from CDN to \(Acervo.sharedModelsDirectory.path)...")
+    }
+
+    let progressCallback = renderer.makeProgressCallback()
+    do {
+      try await Acervo.ensureAvailable(modelId, files: []) { acervoProgress in
+        progressCallback(acervoProgress.overallProgress)
+      }
+    } catch AcervoError.manifestDownloadFailed(let statusCode) where statusCode == 404 {
+      // The CDN returns 404 when a model has no manifest — treat as "not published".
+      throw CLIError("Model '\(modelId)' is not published on the CDN.")
+    }
+
+    await renderer.reportCompletion(modelId: modelId)
+  }
+
+  private func runBatch(_ modelIds: [String], renderer: ProgressRenderer) async throws {
+    if !quiet {
+      print("Downloading \(modelIds.count) models from CDN to \(Acervo.sharedModelsDirectory.path)...")
+    }
+
+    let progressCallback = renderer.makeProgressCallback()
+    do {
+      try await ModelDownloadManager.shared.ensureModelsAvailable(modelIds) { progress in
+        progressCallback(progress.fraction)
+      }
+    } catch AcervoError.manifestDownloadFailed(let statusCode) where statusCode == 404 {
+      throw CLIError("One of the requested models is not published on the CDN (HTTP 404).")
+    }
+
+    await renderer.reportCompletion(modelId: modelIds.joined(separator: ", "))
   }
 }
 
@@ -131,7 +171,7 @@ struct QueryCommand: AsyncParsableCommand {
 
   @Option(
     name: [.short, .long],
-    help: "Model path or HuggingFace ID (default: \(SwiftBruja.Bruja.defaultModel))")
+    help: "Model path or ID (default: \(SwiftBruja.Bruja.defaultModel))")
   var model: String = SwiftBruja.Bruja.defaultModel
 
   @Option(name: .long, help: "Sampling temperature (0.0-1.0, default: 0.7)")
@@ -198,7 +238,7 @@ struct ChatCommand: AsyncParsableCommand {
 
   @Option(
     name: [.short, .long],
-    help: "Model path or HuggingFace ID (default: \(SwiftBruja.Bruja.defaultModel))")
+    help: "Model path or ID (default: \(SwiftBruja.Bruja.defaultModel))")
   var model: String = SwiftBruja.Bruja.defaultModel
 
   @Option(name: .long, help: "Sampling temperature (0.0-1.0, default: 0.7)")
@@ -358,7 +398,7 @@ struct InfoCommand: AsyncParsableCommand {
       Displays metadata about a specific downloaded model including its
       ID, file path, size on disk, and download date.
 
-      You can specify the model by its local path or HuggingFace ID
+      You can specify the model by its local path or model ID
       (if already downloaded).
 
       Examples:
@@ -368,7 +408,7 @@ struct InfoCommand: AsyncParsableCommand {
       """
   )
 
-  @Option(name: [.short, .long], help: "Model path or HuggingFace ID")
+  @Option(name: [.short, .long], help: "Model path or ID")
   var model: String
 
   @Flag(name: .long, help: "Output as JSON with full metadata")
@@ -387,7 +427,7 @@ struct InfoCommand: AsyncParsableCommand {
 
       if remote {
         // --remote: fetch manifest from CDN without downloading any files
-        let manifest = try await fetchManifestForBrujaId(model)
+        let manifest = try await Acervo.fetchManifest(for: model)
         let files = manifest.files
         let totalBytes = files.reduce(Int64(0)) { $0 + $1.sizeBytes }
         print("Remote: \(model)")

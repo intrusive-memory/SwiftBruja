@@ -14,14 +14,13 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 
 ## Breaking Changes
 
-**Breaking change in 2.0.0**: `BrujaDownloadManager` has been removed — call `Acervo.*` directly for model lifecycle operations. See `REQUIREMENTS_NEXT.md` for the full migration mapping.
+**`BrujaDownloadManager` has been removed** — call `Acervo.*` directly for model lifecycle operations (download, list, info, delete, manifest fetch). The component-registry shim in `BrujaModelManager` (static `registeredComponents` / `isComponentRegistered` / `component(for:)`) and the `fetchManifestForBrujaId` dispatcher have also been removed; use `Acervo.registeredComponents(ofType:)`, `Acervo.component(_:)`, and `Acervo.fetchManifest(for:)` directly.
 
 ## Project Structure
 
 - `Sources/SwiftBruja/` -- Library target with static `Bruja` API
   - `Bruja.swift` -- Main entry point (static methods: `query`, `queryWithMetadata`, `listModels`)
   - `Core/BrujaModelManager.swift` -- Loads models into memory, validates memory
-  - `Core/BrujaComponents.swift` -- Model component registry (SwiftAcervo manifest)
   - `Core/BrujaQuery.swift` -- Query execution via MLX, resolves models via SwiftAcervo
   - `Core/BrujaMemory.swift` -- Memory validation and auto-tuned maxTokens
   - `Core/BrujaTypes.swift` -- `BrujaQueryResult`, `BrujaModelInfo`
@@ -36,7 +35,6 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 |------|---------|
 | `Bruja.swift` | Static API for queries: `query()`, `queryWithMetadata()`, `listModels()`, `modelExists()` |
 | `BrujaModelManager.swift` | Loads models into memory, validates memory, resolves models via SwiftAcervo |
-| `BrujaComponents.swift` | Model component registry with SwiftAcervo manifest (SHA-256 checksums, file metadata) |
 | `BrujaQuery.swift` | Executes LLM inference via MLX, resolves models via SwiftAcervo, supports structured output via `Decodable` |
 | `BrujaMemory.swift` | Validates available memory before loading models (80% threshold), auto-tunes `maxTokens` based on memory (4096 or 8192) |
 | `BrujaTypes.swift` | `BrujaQueryResult` (response + metadata), `BrujaModelInfo` (model details) |
@@ -59,7 +57,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 | mlx-swift | 0.31.3+ | Core MLX framework for Apple Silicon GPU |
 | mlx-swift-lm | 3.31.3+ | LLM inference (MLXLLM, MLXLMCommon); 3.x decouples tokenizer/downloader |
 | swift-tokenizers-mlx | 0.2.0+ | Tokenizer adapter for mlx-swift-lm 3.x (MLXLMTokenizers, Swift trait) |
-| SwiftAcervo | 0.7.2+ | Shared model management (CDN download, cache, discovery) |
+| SwiftAcervo | 0.8.2+ | Shared model management (CDN download, cache, discovery, manifest-driven hydration) |
 | swift-argument-parser | 1.7.1+ | CLI argument parsing |
 
 ## Build and Test

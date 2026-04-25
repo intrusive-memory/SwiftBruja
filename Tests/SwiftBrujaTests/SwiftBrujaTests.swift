@@ -335,26 +335,6 @@ final class BrujaModelInfoTests: XCTestCase {
 
 final class BrujaModelManagerTests: XCTestCase {
 
-  // MARK: - Component Registration Tests
-
-  func testRegisteredComponentsNotEmpty() {
-    let components = BrujaModelManager.registeredComponents
-    XCTAssertFalse(components.isEmpty, "At least the built-in Qwen3 models should be registered")
-  }
-
-  func testQwen3CoderNextComponentIsRegistered() {
-    XCTAssertTrue(
-      BrujaModelManager.isComponentRegistered("qwen3-coder-next-4bit"),
-      "Qwen3-Coder-Next should be registered at module init"
-    )
-  }
-
-  func testComponentRetrievalByID() {
-    let component = BrujaModelManager.component(for: "qwen3-coder-next-4bit")
-    XCTAssertNotNil(component)
-    XCTAssertEqual(component?.displayName, "Qwen3-Coder-Next (4-bit)")
-  }
-
   // MARK: - Model Availability Tests
 
   func testModelNotAvailableByDefault() {
@@ -481,11 +461,11 @@ final class AcervoComponentReadyTests: XCTestCase {
 
     // Call the Level 3 path — uses Acervo.ensureComponentReady, not ensureAvailable
     try await Acervo.ensureComponentReady(testComponentId) { _ in }
-    guard let component = Acervo.component(testComponentId) else {
+    guard let registered = Acervo.component(testComponentId) else {
       XCTFail("Component should still be registered after ensureComponentReady")
       return
     }
-    let resultURL = try Acervo.modelDirectory(for: component.repoId)
+    let resultURL = try Acervo.modelDirectory(for: registered.repoId)
 
     // The returned URL should point into our temp directory
     XCTAssertTrue(
@@ -517,7 +497,7 @@ final class AcervoComponentReadyTests: XCTestCase {
   /// Regression test: the Level 2 raw-repoId path (Acervo.ensureAvailable) must work
   /// for unregistered repo IDs.
   ///
-  /// Verifies that `Acervo.ensureAvailable` accepts a raw HuggingFace repo ID (not
+  /// Verifies that `Acervo.ensureAvailable` accepts a raw CDN repo ID (not
   /// registered as a component) and follows the Level 2 path rather than the Level 3
   /// component-aware path.
   ///
@@ -528,7 +508,7 @@ final class AcervoComponentReadyTests: XCTestCase {
 
     // Confirm the repo ID is NOT registered as a component
     XCTAssertNil(
-      BrujaModelManager.component(for: unregisteredRepoId),
+      Acervo.component(unregisteredRepoId),
       "The raw repo ID must NOT be registered as a component for this Level 2 regression test"
     )
 
@@ -558,9 +538,9 @@ final class AcervoComponentReadyTests: XCTestCase {
   }
 }
 
-// MARK: - Acervo Manifest Dispatcher Tests
+// MARK: - Acervo Manifest Fetch Tests
 
-final class AcervoManifestDispatcherTests: XCTestCase {
+final class AcervoManifestFetchTests: XCTestCase {
 
   /// The production model guaranteed to exist on the CDN by Sortie 1.
   private static let productionModelId = "mlx-community/Qwen3-Coder-Next-4bit"
@@ -568,8 +548,8 @@ final class AcervoManifestDispatcherTests: XCTestCase {
   /// The small fixture model also guaranteed on the CDN by Sortie 1.
   private static let smallFixtureModelId = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
 
-  /// Library test (R4): `estimatedSize(for:)` returns a non-zero value for the production
-  /// model and produces zero new files under `Acervo.sharedModelsDirectory`.
+  /// Library test (R4): summed manifest file sizes for the production model are
+  /// non-zero and the fetch produces zero new files under `Acervo.sharedModelsDirectory`.
   ///
   /// This test requires network access to the CDN. It is not skipped on CI because the
   /// production model is guaranteed present by Sortie 1. The before/after snapshot of
@@ -581,33 +561,33 @@ final class AcervoManifestDispatcherTests: XCTestCase {
     let before = snapshotDirectory(sharedModelsDir)
 
     // Call under test — must not throw and must return > 0
-    let sizeBytes = try await fetchManifestForBrujaId(Self.productionModelId).files
+    let sizeBytes = try await Acervo.fetchManifest(for: Self.productionModelId).files
       .reduce(Int64(0)) { $0 + $1.sizeBytes }
 
     XCTAssertGreaterThan(
       sizeBytes, 0,
-      "estimatedSize(for: \(Self.productionModelId)) should be > 0; CDN guarantees this model exists"
+      "Manifest size for \(Self.productionModelId) should be > 0; CDN guarantees this model exists"
     )
 
     // Snapshot after: no new files should have been created
     let after = snapshotDirectory(sharedModelsDir)
     XCTAssertEqual(
       before, after,
-      "estimatedSize must not write files to sharedModelsDirectory (before != after)"
+      "Manifest fetch must not write files to sharedModelsDirectory (before != after)"
     )
   }
 
-  /// Library test (R4): `manifestFiles(for:)` returns a non-empty array and does not
-  /// create files on disk. Uses the small fixture model for breadth coverage.
+  /// Library test (R4): `Acervo.fetchManifest(for:)` returns a non-empty file list and
+  /// does not create files on disk. Uses the small fixture model for breadth coverage.
   func testManifestFilesForSmallFixtureModelReturnsNonEmptyArray() async throws {
     let sharedModelsDir = Acervo.sharedModelsDirectory
     let before = snapshotDirectory(sharedModelsDir)
 
-    let files = try await fetchManifestForBrujaId(Self.smallFixtureModelId).files
+    let files = try await Acervo.fetchManifest(for: Self.smallFixtureModelId).files
 
     XCTAssertFalse(
       files.isEmpty,
-      "manifestFiles(for: \(Self.smallFixtureModelId)) must return at least one CDNManifestFile"
+      "Manifest for \(Self.smallFixtureModelId) must return at least one CDNManifestFile"
     )
 
     // Every file entry must have a non-empty path and a positive size
@@ -619,7 +599,7 @@ final class AcervoManifestDispatcherTests: XCTestCase {
     let after = snapshotDirectory(sharedModelsDir)
     XCTAssertEqual(
       before, after,
-      "manifestFiles must not write files to sharedModelsDirectory (before != after)"
+      "Manifest fetch must not write files to sharedModelsDirectory (before != after)"
     )
   }
 
@@ -669,12 +649,12 @@ final class BrujaConcurrencyTests: XCTestCase {
     }
   }
 
-  func testConcurrentComponentRegistryAccess() async {
-    // Run multiple component registry queries concurrently
+  func testConcurrentRegisteredComponentsAccess() async {
+    // Run multiple registry queries concurrently against Acervo directly
     await withTaskGroup(of: [ComponentDescriptor].self) { group in
       for _ in 0..<50 {
         group.addTask {
-          BrujaModelManager.registeredComponents
+          Acervo.registeredComponents(ofType: .languageModel)
         }
       }
 
@@ -684,7 +664,6 @@ final class BrujaConcurrencyTests: XCTestCase {
       }
 
       XCTAssertEqual(resultCounts.count, 50)
-      // All should return the same components
       XCTAssertTrue(resultCounts.allSatisfy { $0 == resultCounts[0] })
     }
   }

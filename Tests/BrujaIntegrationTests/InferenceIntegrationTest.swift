@@ -23,10 +23,7 @@ final class InferenceIntegrationTest: XCTestCase {
 
   // MARK: - Test Constants
 
-  /// Component ID for Qwen3-Coder-Next 4-bit model
-  private let componentId = "qwen3-coder-next-4bit"
-
-  /// Full HuggingFace model ID for Qwen3
+  /// Full model ID for Qwen3-Coder-Next 4-bit (CDN repo ID)
   private let modelId = "mlx-community/Qwen3-Coder-Next-4bit"
 
   /// Simple prompt for inference test
@@ -63,13 +60,6 @@ final class InferenceIntegrationTest: XCTestCase {
   func testBrujaQueryWithQwen3ModelExecutesInference() async throws {
     print("\n📌 TEST: Bruja.query() executes inference with Qwen3 model")
     print("Prompt: \(testPrompt)")
-
-    // Verify model is registered
-    XCTAssertNotNil(
-      BrujaModelManager.component(for: componentId),
-      "Qwen3 model should be registered in BrujaModelManager"
-    )
-    print("✅ Qwen3 model is registered")
 
     // Execute inference
     print("🔄 Executing inference...")
