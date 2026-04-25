@@ -6,7 +6,7 @@
 
 **One import. One line. Local LLM queries on Apple Silicon.**
 
-SwiftBruja wraps the complexity of MLX, model downloading, and inference into a single, simple API. No cloud APIs, no API keys, no network latency - just fast, private, on-device AI.
+SwiftBruja wraps the complexity of MLX and inference into a single, simple API. Models are managed by SwiftAcervo, which handles downloading, caching, and storage. No cloud APIs, no API keys, no network latency - just fast, private, on-device AI.
 
 ```swift
 import SwiftBruja
@@ -17,9 +17,9 @@ let response = try await Bruja.query("What is the capital of France?")
 
 ## Why SwiftBruja?
 
-- **Single Import**: One package gives you everything - model management, downloading, and inference
+- **Single Import**: One package gives you everything - inference on Apple Silicon
 - **One-Line Queries**: `Bruja.query()` handles model loading, tokenization, and generation
-- **Auto-Download**: Pass a HuggingFace model ID and it downloads automatically
+- **Model Lifecycle Delegated**: SwiftAcervo handles model downloads, caching, and storage
 - **Structured Output**: Get typed responses with `Bruja.query(as: MyType.self)`
 - **Memory-Aware**: Automatically adjusts token limits based on available memory
 - **No Cloud Required**: Runs entirely on-device using Apple Silicon GPU
@@ -189,7 +189,7 @@ bruja info -m ~/Models/custom-model --json
 | `Bruja.query(_:model:)` | Simple text query, returns String |
 | `Bruja.query(_:as:model:)` | Structured query, returns Codable type |
 | `Bruja.queryWithMetadata(_:model:)` | Query with timing and token info |
-| `Bruja.download(model:)` | Download model from CDN |
+| `Bruja.download(model:)` | Ensure model is available via SwiftAcervo |
 | `Bruja.listModels()` | List downloaded models |
 | `Bruja.modelExists(at:)` | Check if model exists at path |
 | `Bruja.modelExists(id:)` | Check if model exists by HuggingFace ID |
@@ -223,10 +223,10 @@ let response = try await Bruja.query("...", model: modelId, maxTokens: 2048)
 
 ## How It Works
 
-SwiftBruja wraps the MLX ecosystem into a simple API:
+SwiftBruja is a consumer of SwiftAcervo's storage, providing a simple inference API:
 
-1. **Model Resolution**: Accepts local paths or HuggingFace model IDs
-2. **Auto-Download**: Downloads missing models via CDN with integrity verification
+1. **Model Resolution**: Accepts local paths or HuggingFace model IDs (delegates to SwiftAcervo)
+2. **Model Availability**: Ensures models are available via SwiftAcervo (which handles CDN downloads and integrity verification)
 3. **Memory Validation**: Checks available memory before loading
 4. **Model Caching**: Keeps loaded models in memory for fast subsequent queries
 5. **Token Auto-Tuning**: Sets maxTokens based on remaining memory

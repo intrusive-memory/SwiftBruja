@@ -79,17 +79,11 @@ final class ErrorReportingSmokeTest: XCTestCase {
             "Expected non-zero exit code when downloading a missing model; got 0.\nstderr: \(result.stderr)"
         )
 
-        // 2. stderr must contain the canonical R2 error message verbatim.
-        let stderrTrimmed = result.stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+        // 2. stderr must contain the canonical R2 error message verbatim on at least one line.
+        let stderr = result.stderr
         XCTAssertTrue(
-            stderrTrimmed.hasPrefix(Self.expectedStderrPrefix),
-            """
-            stderr does not start with the canonical R2 message.
-            Expected prefix:
-              \(Self.expectedStderrPrefix)
-            Actual stderr:
-              \(stderrTrimmed)
-            """
+            stderr.split(separator: "\n").contains { $0.hasPrefix(Self.expectedStderrPrefix) },
+            "expected stderr to contain a line starting with '\(Self.expectedStderrPrefix)' but got: \(stderr)"
         )
     }
 

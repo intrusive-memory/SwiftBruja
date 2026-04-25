@@ -1,17 +1,17 @@
 ---
-feature_name: OPERATION LIGHTHOUSE PLUMBING
-starting_point_commit: cee9757a48b259fbaa6b6da66ac606e23756f094
-mission_branch: mission/lighthouse-plumbing/01
+feature_name: OPERATION SNAKESKIN MOLT
+mission_branch: mission/snakeskin-molt/01
+starting_point_commit: dd32e95b97e50e880d960cb598bd0602d8ef9a4e
 iteration: 1
 mission_started: 2026-04-25
 ---
 
-# EXECUTION_PLAN.md — SwiftBruja Reference Implementation for SwiftAcervo 0.8
+# EXECUTION_PLAN.md — SwiftBruja: Shed the Download Manager Wrapper
 
-**Source:** `REQUIREMENTS.md` v2.0 (2026-04-24, updated 2026-04-25)
-**SwiftAcervo version:** `≥ 0.8.1` (0.8.1 ships the `ACERVO_OFFLINE` gate required by Sortie 8)
-**Canonical reference:** `../SwiftAcervo/USAGE.md`
-**Refined:** 2026-04-24 (initial 4 passes); 2026-04-25 (re-refined post-OQ-3 resolution; OQ-7 collapsed under assumption that SwiftAcervo 0.8.1 ships the offline gate)
+**Source:** `REQUIREMENTS_NEXT.md` (2026-04-25 draft)
+**Predecessor:** OPERATION LIGHTHOUSE PLUMBING (iteration 1) — archived at `docs/complete/lighthouse-plumbing-01-execution-plan.md`
+**SwiftAcervo version:** `≥ 0.8.2`
+**SemVer impact:** **MAJOR** — deletes public APIs on `BrujaDownloadManager`. Next SwiftBruja release after this mission must be `2.0.0`.
 
 ## Terminology
 
@@ -25,29 +25,51 @@ mission_started: 2026-04-25
 
 ## Mission Overview
 
-Close the gap between SwiftBruja's current code and the behavior `USAGE.md` advertises for the canonical reference consumer of SwiftAcervo 0.8. Eight requirements (R1–R8) detected; R1–R6 are in-scope for this mission, R7 is optional, R8 is deferred (explicitly "do not build until a caller exists").
+Make SwiftBruja a pure consumer of SwiftAcervo's storage. Delete `BrujaDownloadManager` entirely (Shape A from REQUIREMENTS_NEXT.md). Migrate every caller (CLI subcommands, tests) to call `Acervo.*` directly. After this mission, SwiftBruja's domain is:
 
-### Non-Goals (from requirements, do NOT do)
+- **Component registry** — `Sources/SwiftBruja/Core/BrujaComponents.swift`
+- **Inference orchestration** — `BrujaModelManager.loadModel`/`query`/`chat`
+- **Memory validation** — `BrujaMemory`
+- **CLI UX** — `Sources/bruja/`
 
-- Do NOT pin file subsets (`files: [concrete list]`) — `USAGE.md` forbids
-- Do NOT add custom retry loops — Acervo already resumes partial downloads
-- Do NOT add `withLocalAccess` / LoRA flows — no caller exists
-- Do NOT remove `BrujaDownloadManager.downloadModel` (Level 2 raw-repo path)
-- Do NOT re-bake SHA-256 checksums into `BrujaComponents.swift`
+LIGHTHOUSE PLUMBING's behavior contracts (R1 Level-3 delegation, R2 error mapping, R3 ProgressRenderer, R4 pre-flight, R5 SharedModels stderr, R6 docs) all survive — they live in CLI code and `Acervo.ensureComponentReady`, not in `BrujaDownloadManager`.
 
 ---
 
-## Shared Fixtures
+## Decisions Locked at Breakdown / Refine
 
-> **Purpose**: Canonical model IDs referenced by multiple sorties. Sortie 1 validates all of these exist on the ACERVO CDN and ships them via `acervo` if missing.
+The Open Questions in `REQUIREMENTS_NEXT.md` are decided here so sortie agents do not re-litigate them.
 
-| Fixture | Purpose | Canonical ID | Source |
-|---------|---------|-------------|--------|
-| `BRUJA_PRODUCTION_MODEL` | The registered Bruja component (sole entry in `BrujaComponents.swift`) | `mlx-community/Qwen3-Coder-Next-4bit` | `Sources/SwiftBruja/Core/BrujaComponents.swift` `qwen3CoderNext4bitDescriptor` |
-| `SMALL_FIXTURE_MODEL` | Smoke-test download target for R3 tests and `make reference-check` step 2/3 (< 2 GB for CI budget) | `mlx-community/Qwen2.5-0.5B-Instruct-4bit` | Defined here; Sortie 1 verifies CDN availability and ships if missing |
-| `MISSING_MODEL_ID` | R2 canonical error-mapping target (MUST NOT exist on CDN) | `mlx-community/does-not-exist` | Defined here |
+| Open Question | Decision | Rationale |
+|---|---|---|
+| **OQ-1** Shape A vs Shape B | **Shape A — delete `BrujaDownloadManager` entirely.** | Per REQUIREMENTS_NEXT.md recommendation. The `--force` composite (`try? Acervo.deleteModel(...)` then ensure) at each CLI call site is honest and SemVer-stable. When upstream `force:` lands, call sites collapse to one arg with no Bruja-side change. |
+| **OQ-2** Dispatcher placement | **Free function inside SwiftBruja** at exact path `Sources/SwiftBruja/Core/ManifestDispatcher.swift`. | Avoids extending `Acervo` from a downstream package; SemVer-isolated; doesn't depend on upstream changes. |
+| **OQ-3** Keep `bruja download` subcommand | **Yes, keep.** | Explicit pre-fetch UX is useful even when `query`/`chat` would auto-materialize. |
+| **OQ-4** (refine) `--json` banner suppression strategy (Option A vs B in S5) | **Option A — route `[SwiftBruja] maxTokens …` print through `FileHandle.standardError` unconditionally.** | Simpler; addresses pollution at the source; no library API change; no flag plumbing; non-`--json` UX is a library-internal banner that legitimately belongs on stderr. |
+| **OQ-5** (refine) S4 "pre-existing environmental failures" | Resolved via positive-list verification: confirm `make test` exits 0 with `BrujaIntegrationTests/ErrorReportingSmokeTest` running and passing (the LIGHTHOUSE skip is gone after S1). Any other environmental failures must be enumerated by name in the sortie completion notes — vague hand-waving is not acceptable. | Removes the loophole that "make test passes if it more or less passes." |
 
-All sorties that reference `<small-fixture-model>` MUST resolve to `SMALL_FIXTURE_MODEL` above. If either production or fixture ID changes, update this table, Sortie 1's manifest, and the R2/R3/reference-check tests in lockstep.
+---
+
+## Non-Goals
+
+Inherited verbatim from `REQUIREMENTS_NEXT.md` § Non-Goals:
+
+- Do NOT change SwiftAcervo's public API in this mission.
+- Do NOT touch `BrujaModelManager.loadModel` / inference flow.
+- Do NOT alter component registration in `BrujaComponents.swift`.
+- Do NOT alter App Group entitlement docs (LIGHTHOUSE Sortie 9).
+- Do NOT pin a new SwiftAcervo version unless the upstream `force:` overload lands during the mission window.
+
+---
+
+## Filed Upstream (Advisory)
+
+These are tracked separately in `intrusive-memory/SwiftAcervo` and are NOT mission deliverables here:
+
+- Add `force:` parameter to `Acervo.ensureComponentReady`
+- Add `async` overload of `Acervo.withModelAccess`
+
+If either lands during the mission, fold the integration into the relevant sortie via `/mission-supervisor refine`.
 
 ---
 
@@ -55,295 +77,217 @@ All sorties that reference `<small-fixture-model>` MUST resolve to `SMALL_FIXTUR
 
 | Work Unit | Directory | Sorties | Layer | Dependencies |
 |-----------|-----------|---------|-------|-------------|
-| SwiftBruja | `.` | 9 | 0–2 | none |
+| SwiftBruja | `.` | 6 | 0 | none |
 
-Single project; all work lands on the current branch (`development`) via Makefile-driven build/test (`make build`, `make test`).
-
----
-
-## Sortie 1: CDN availability validation & shipping (pre-flight infrastructure)
-
-**Priority**: 20 — Pre-flight infrastructure; dep-depth 1 (blocks Sortie 8 `make reference-check`); foundation 1 (establishes CDN coverage for the mission); moderate risk (external CDN + `acervo` CLI). Runs BEFORE any CI tests that expect models on the CDN.
-**Agent**: supervising agent (runs `acervo` CLI + may trigger uploads).
-**Layer**: 0 (parallel-eligible with Sorties 2–6). **Must complete before Sortie 8 dispatches.**
-
-**Entry criteria**:
-- [ ] `acervo` CLI is installed and authenticated (Cloudflare R2 credentials present in env — see `../ACERVO_CDN_UPLOAD_PATTERN.md` § GitHub Organization Secrets for variable names).
-- [ ] Read `Sources/SwiftBruja/Core/BrujaComponents.swift` to enumerate registered descriptors (currently: `qwen3-coder-next-4bit` / `mlx-community/Qwen3-Coder-Next-4bit`).
-
-**Tasks**:
-1. **Build the required-models list** from two sources:
-   - Every `repoId` in `BrujaComponents.swift` descriptors (production models the library registers).
-   - Every fixture ID in the Shared Fixtures table above except `MISSING_MODEL_ID` (which is intentionally absent).
-   Current list: `mlx-community/Qwen3-Coder-Next-4bit`, `mlx-community/Qwen2.5-0.5B-Instruct-4bit`.
-2. For each required model, call `Acervo.fetchManifest(for: slug)` from a one-off Swift snippet (or `acervo manifest check <slug>` if the CLI exposes it) to verify the CDN has a valid manifest. Use `CDNManifest`'s `.files: [CDNManifestFile]` to confirm the file list is non-empty.
-3. If a manifest is **missing or invalid**, ship the model to the CDN using `acervo ship <slug>` (or `acervo upload` per `../ACERVO_CDN_UPLOAD_PATTERN.md`). Capture the upload log.
-4. Re-verify each model's manifest after shipping; the sortie is not done until every required slug returns a valid non-empty manifest.
-5. Produce a coverage report at `.mission/cdn-coverage.md` listing, for each slug: initial state (present/missing), action taken (none/shipped), final manifest file count, and total size bytes. This file is consumed by Sortie 8's reference-check entry criterion and is git-ignored (add `.mission/` to `.gitignore` if not present).
-6. Do NOT register `MISSING_MODEL_ID` or attempt to ship it — Sortie 3 (R2) relies on its absence.
-
-**Exit criteria**:
-- [ ] `.mission/cdn-coverage.md` exists and contains one row per required slug, each with `final_state = present` and `files > 0`.
-- [ ] For every slug in the Shared Fixtures table (except `MISSING_MODEL_ID`): a Swift snippet calling `try await Acervo.fetchManifest(for: slug)` completes without throwing, and `manifest.files.isEmpty == false`.
-- [ ] `acervo` CLI exits 0 for a verification invocation against each slug (whatever form — `acervo manifest`, `acervo verify`, or equivalent — the agent MUST pick one consistent verb and document it in the coverage report).
-- [ ] `grep -q '^.mission/' .gitignore` passes.
-- [ ] No commits touching `Sources/` or `Tests/` from this sortie (this is infra-only).
-
----
-
-## Sortie 2: ProgressRenderer helper (R3)
-
-**Priority**: 22.5 — R3 High; dep-depth 3 (blocks Sorties 7, 8, 9 via Sortie 7); foundation score 1 (helper reused by R5); concurrency + TTY risk.
-**Agent**: supervising agent (has `make build`).
-**Layer**: 0.
-
-**Entry criteria**:
-- [ ] No prerequisites — runs in parallel with Sorties 1, 3, 4, 5, 6
-
-**Tasks**:
-1. Create `Sources/bruja/ProgressRenderer.swift` with a `ProgressRenderer` type that detects `isatty(fileno(stdout)) != 0` once at construction.
-2. Implement TTY rendering path: preserve current `\r\u{1B}[K` redraw behavior from `DownloadCommand.run`.
-3. Implement non-TTY rendering path: emit one `Download progress: N%` line per 10-percent increment (`0%, 10%, …, 100%`), newline-terminated, no ANSI escapes.
-4. Honor `--quiet` by short-circuiting both paths.
-5. Make the type Sendable-safe for `@Sendable` download callbacks — either declare it as an `actor`, or use `nonisolated(unsafe)` last-percent cache guarded by `OSAllocatedUnfairLock`.
-6. Expose a `logStartup(_ message: String)` (or similarly named) method that writes to **stderr** honoring `--quiet`, so Sortie 7 (R5) can reuse this renderer for the `[bruja] SharedModels:` line.
-7. Refactor `DownloadCommand.run` in `Sources/bruja/BrujaCLI.swift` to delegate progress output to the new renderer.
-8. Add unit/integration tests covering TTY redraw, non-TTY line-oriented output, and `--quiet` suppression.
-
-**Exit criteria**:
-- [ ] `Sources/bruja/ProgressRenderer.swift` exists and compiles.
-- [ ] `make build` succeeds.
-- [ ] Test: `bruja download -m $SMALL_FIXTURE_MODEL > /tmp/log.txt` produces ≤ 11 lines and `! grep -q $'\x1b' /tmp/log.txt` passes (no ANSI bytes).
-- [ ] Test: `bruja download -m $SMALL_FIXTURE_MODEL --quiet > /tmp/log.txt` produces zero progress lines.
-- [ ] `ProgressRenderer` exposes a public stderr-logging method (for R5 reuse); signature committed to source.
-- [ ] `make test` passes.
-
----
-
-## Sortie 3: ErrorReporting helper (R2)
-
-**Priority**: 7.875 — R2 High; dep-depth 0; foundation score 1 (CLI-wide pattern); moderate risk (exhaustive enum).
-**Agent**: supervising agent (has `make build`).
-**Layer**: 0 (parallel-eligible with Sorties 1, 2, 4, 5, 6).
-
-**Entry criteria**:
-- [ ] No prerequisites — runs in parallel with Sorties 1, 2, 4, 5, 6
-
-**Tasks**:
-1. Create `Sources/bruja/ErrorReporting.swift` with `CLIError: Error, CustomStringConvertible` and a generic `runCLI<T>(_ body: () async throws -> T) async throws -> T` wrapper.
-2. Implement `humanReadable(_ error: AcervoError) -> String` with a branch for every currently-shipping `AcervoError` case: `.modelNotFound`, `.manifestDownloadFailed`, `.manifestIntegrityFailed`, `.downloadFailed`, `.integrityCheckFailed`, `.downloadSizeMismatch`, `.fileNotInManifest`, `.componentNotRegistered`, plus `@unknown default`.
-3. Wrap every subcommand body in `Sources/bruja/BrujaCLI.swift` (`DownloadCommand`, `InfoCommand`, `ListCommand`, `QueryCommand`, `ChatCommand`, and any others) with `try await runCLI { ... }`.
-4. Add a smoke test asserting `bruja download -m mlx-community/does-not-exist` exits non-zero and stderr matches `Error: Model 'mlx-community/does-not-exist' is not published on the CDN.` verbatim.
-
-**Exit criteria**:
-- [ ] `Sources/bruja/ErrorReporting.swift` exists and compiles.
-- [ ] `make build` succeeds.
-- [ ] `grep -c 'try await runCLI' Sources/bruja/BrujaCLI.swift` returns at least 5 (one per subcommand).
-- [ ] Smoke test for unknown model produces the canonical R2 message verbatim and exits non-zero.
-- [ ] `make test` passes.
-
----
-
-## Sortie 4: Level 3 delegation in `ensureComponentReady` (R1)
-
-**Priority**: 4.5 — R1 High; dep-depth 0; foundation 0; moderate risk (file I/O + Acervo API).
-**Agent**: supervising agent (has `make build`).
-**Layer**: 0 (parallel-eligible with Sorties 1, 2, 3, 5, 6).
-
-**Entry criteria**:
-- [ ] No prerequisites — runs in parallel with Sorties 1, 2, 3, 5, 6
-
-**Tasks**:
-1. In `Sources/SwiftBruja/Core/BrujaDownloadManager.swift`, replace the `Acervo.ensureAvailable(modelId, files: [])` call inside `ensureComponentReady(_:force:progress:)` with `try await Acervo.ensureComponentReady(componentId) { acervoProgress in progress?(acervoProgress.overallProgress) }` followed by `return try Acervo.modelDirectory(for: component.repoId)`.
-2. Preserve the `force` branch (`Acervo.deleteModel(component.repoId)` before the ensure call) and the component-registration guard (`BrujaModelManager.component(for: componentId) == nil` → `BrujaError.modelNotFound`).
-3. Do NOT modify `downloadModel(_:force:progress:)` — the raw-repoId Level 2 path must keep working for unregistered repo IDs.
-4. Add a unit test: register a bare `ComponentDescriptor` (no `files:`), call `BrujaDownloadManager.shared.ensureComponentReady(id)` against a fixture manifest, assert `Acervo.component(id)?.files.isEmpty == false` after the call.
-5. Add/verify a regression test confirming `bruja download -m mlx-community/<repo>` still works against an unregistered repo ID (Level 2 path).
-
-**Exit criteria**:
-- [ ] `grep -q 'Acervo.ensureComponentReady' Sources/SwiftBruja/Core/BrujaDownloadManager.swift` passes.
-- [ ] `! grep -q 'Acervo.ensureAvailable' Sources/SwiftBruja/Core/BrujaDownloadManager.swift` passes (old call removed).
-- [ ] `git diff Sources/SwiftBruja/Core/BrujaDownloadManager.swift` shows NO changes to `downloadModel(_:force:progress:)` body.
-- [ ] New hydration test passes (named e.g. `testEnsureComponentReadyHydratesFiles`).
-- [ ] Existing Level 2 CLI test passes.
-- [ ] `make build` and `make test` pass.
-
----
-
-## Sortie 5: Pre-flight manifest API (R4)
-
-**Priority**: 4.5 — R4 Medium; dep-depth 0; foundation 0; highest risk (new public API + external manifest fetch).
-**Agent**: supervising agent (has `make build`).
-**Layer**: 0 (parallel-eligible with Sorties 1, 2, 3, 4, 6).
-
-**Entry criteria**:
-- [ ] No prerequisites — runs in parallel with Sorties 1, 2, 3, 4, 6
-
-**Tasks**:
-1. Add `public nonisolated func estimatedSize(for modelOrComponentId: String) async throws -> Int64` to `BrujaDownloadManager`, implemented as `manifestFiles(for:).reduce(0) { $0 + $1.sizeBytes }`.
-2. Add `public nonisolated func manifestFiles(for modelOrComponentId: String) async throws -> [CDNManifestFile]` that dispatches to `Acervo.fetchManifest(forComponent:)` for registered components and `Acervo.fetchManifest(for:)` for raw IDs, selected via `BrujaModelManager.component(for:) != nil`. Both call sites return `CDNManifest`; map `.files` through. (SwiftAcervo 0.8 uses `CDNManifest` / `CDNManifestFile` as the public types — confirmed in `../SwiftAcervo/Sources/SwiftAcervo/CDNManifest.swift`.)
-3. Extend `InfoCommand` in `Sources/bruja/BrujaCLI.swift` with a `--remote` flag.
-4. When `--remote` is set, call `estimatedSize` and `manifestFiles` (NOT `Acervo.modelInfo`) and print `Remote: <modelId>` / `Files: <N>` / `Size: <formatted bytes>`. Without `--remote`, behavior is unchanged.
-5. Add a library test: `estimatedSize(for:)` returns a non-zero value for `$BRUJA_PRODUCTION_MODEL` (guaranteed on CDN by Sortie 1) and produces no files on disk under `Acervo.sharedModelsDirectory`.
-6. Add an integration test: `bruja info -m $SMALL_FIXTURE_MODEL --remote` succeeds on a machine where the model is not downloaded and creates no files under `Acervo.sharedModelsDirectory`.
-
-**Exit criteria**:
-- [ ] `estimatedSize(for:)` and `manifestFiles(for:)` compile and are declared `public nonisolated`.
-- [ ] `grep -q 'struct InfoCommand' Sources/bruja/BrujaCLI.swift` confirms `--remote` flag is wired (via `@Flag`).
-- [ ] `bruja info -m $SMALL_FIXTURE_MODEL --remote` prints the three-line format: `Remote: ...`, `Files: <N>`, `Size: <bytes>`.
-- [ ] Library and integration tests both pass with zero new files created under `Acervo.sharedModelsDirectory` (verified via `find` before/after snapshot).
-- [ ] `make build` and `make test` pass.
-
----
-
-## Sortie 6: `withModelAccess` wrapping `loadContainer` (R7)
-
-**Priority**: 1.375 — R7 Low (explicitly optional in REQUIREMENTS.md); dep-depth 0; foundation 0; moderate risk (concurrency).
-**Agent**: supervising agent (has `make build`).
-**Layer**: 0 (parallel-eligible with Sorties 1, 2, 3, 4, 5). **Optional** — mission may ship without this sortie; dispatch last within Layer 0.
-
-**Entry criteria**:
-- [ ] No prerequisites — runs in parallel with Sorties 1, 2, 3, 4, 5
-
-**Tasks**:
-1. In `Sources/SwiftBruja/Core/BrujaModelManager.swift`, replace the direct `Acervo.modelDirectory(for:)` + `LLMModelFactory.shared.loadContainer(from:)` sequence inside `loadModel(_:)` with `let container = try await AcervoManager.shared.withModelAccess(modelId) { dir in try await LLMModelFactory.shared.loadContainer(from: dir) }`.
-2. Keep `BrujaMemory.validateMemoryForModel` outside the closure — it uses the size from `Acervo.modelInfo` and does not need the URL.
-3. Add a concurrent test: `loadModel` + `deleteModel` of the same ID must serialize (one waits on the other) rather than race.
-
-**Exit criteria**:
-- [ ] `! grep -q 'Acervo.modelDirectory(for:' Sources/SwiftBruja/Core/BrujaModelManager.swift` inside the `loadModel` function body (verify with focused grep or AST check).
-- [ ] `grep -q 'AcervoManager.shared.withModelAccess' Sources/SwiftBruja/Core/BrujaModelManager.swift` passes.
-- [ ] Existing query/chat tests pass unchanged.
-- [ ] New concurrent `loadModel`+`deleteModel` test passes (named e.g. `testLoadAndDeleteSerialized`).
-- [ ] `make build` and `make test` pass.
-
----
-
-## Sortie 7: SharedModels stderr logging across all CLI subcommands (R5)
-
-**Priority**: 8 — R5 Medium; dep-depth 2 (blocks Sorties 8 and 9); foundation 0; low risk.
-**Agent**: supervising agent (has `make build`).
-**Layer**: 1 (depends on Sortie 2).
-
-**Entry criteria**:
-- [ ] Sortie 2 complete — `ProgressRenderer` exposes a public stderr-logging method that honors `--quiet`
-
-**Tasks**:
-1. Before the first line of user-facing output in every subcommand (`DownloadCommand`, `InfoCommand`, `ListCommand`, `QueryCommand`, `ChatCommand`), emit `[bruja] SharedModels: <Acervo.sharedModelsDirectory.path>` to **stderr** (never stdout, to keep `--json` parseable).
-2. Route the stderr line through the `ProgressRenderer` stderr-logging method from Sortie 2 so `--quiet` suppresses it uniformly.
-3. Add a test: `bruja query "hi" --json 2>/dev/null | jq .` exits 0 (still parses as JSON).
-4. Add a test: `bruja query "hi" 2>&1 >/dev/null | grep -q '\[bruja\] SharedModels:'` exits 0 on a default install.
-5. Add a test: `bruja query "hi" --quiet 2>&1 >/dev/null | grep -q '\[bruja\] SharedModels:'` exits NON-zero (no match).
-
-**Exit criteria**:
-- [ ] Every subcommand `run()` in `BrujaCLI.swift` invokes the ProgressRenderer stderr-logging method before any stdout output (verified: `grep -c 'logStartup\|logSharedModels' Sources/bruja/BrujaCLI.swift` ≥ 5).
-- [ ] `--json` output on stdout remains machine-parseable (`bruja query "hi" --json 2>/dev/null | jq .` exits 0).
-- [ ] All three R5 grep tests behave as specified above.
-- [ ] `make build` and `make test` pass.
-
----
-
-## Sortie 8: `make reference-check` verification target
-
-**Priority**: 3 — infra; dep-depth 0; foundation 0; moderate risk (composes R1–R5 tests).
-**Agent**: supervising agent (has `make build`).
-**Layer**: 2 (depends on Sorties 1 and 7; transitively 2–5).
-
-**Entry criteria**:
-- [ ] Sorties 2, 3, 4, 5, 7 complete (target composes tests created by R1–R5)
-- [ ] Sortie 1 complete — `.mission/cdn-coverage.md` confirms `$SMALL_FIXTURE_MODEL` is on the CDN
-- [ ] `Package.swift` pins SwiftAcervo at `≥ 0.8.1` and `make build` resolves the dependency cleanly. Verifiable via `grep -E '"0\\.8\\.1"|from: "0\\.8\\.1"' Package.swift` plus `make build` exit 0. (0.8.1 is the version that ships the `ACERVO_OFFLINE` env-var gate.)
-
-**Tasks**:
-1. Add a `reference-check` target to the `Makefile` that sequences the five verification steps in order and fails fast on the first non-zero exit.
-2. Step 1: run the existing unit + integration suite via the project's existing `make test` entry point (reuse, do not duplicate).
-3. Step 2: offline-load test — first invocation `bruja download -m $SMALL_FIXTURE_MODEL` (network on); second invocation `ACERVO_OFFLINE=1 bruja query "hi" -m $SMALL_FIXTURE_MODEL` and assert exit 0. Per REQUIREMENTS.md §"Offline-Mode Contract" (honored by SwiftAcervo ≥ 0.8.1), `ACERVO_OFFLINE=1` makes SwiftAcervo refuse new HTTP fetches and serve only from `sharedModelsDirectory`; the cached query path must succeed, and any regression that reintroduces a fetch in the query path will surface as a non-zero exit.
-4. Step 3: TTY guard test — run `script -q /dev/null bruja download -m $SMALL_FIXTURE_MODEL` (TTY path) and `bruja download -m $SMALL_FIXTURE_MODEL > log.txt` (non-TTY path); assert the output shapes specified in R3 (≤11 lines on redirect, no `0x1B` bytes on redirect, redraw on TTY).
-5. Step 4: error-mapping smoke test — `bruja download -m mlx-community/__nope__` exits non-zero and stderr matches the exact R2 canonical message.
-6. Step 5: pre-flight smoke test — `bruja info -m <undownloaded-fixture> --remote` prints a non-zero size and produces no new files under `Acervo.sharedModelsDirectory`.
-
-**Exit criteria**:
-- [ ] `grep -q '^reference-check:' Makefile` passes.
-- [ ] `make help` lists `reference-check` (or `grep -q 'reference-check' Makefile` in the help block).
-- [ ] All five verification steps invoke commands traceable to `REQUIREMENTS.md` §"Verification Plan".
-- [ ] `make reference-check` exits 0 on a clean checkout with all preceding sorties complete.
-
----
-
-## Sortie 9: App Group documentation (R6)
-
-**Priority**: 1.75 — R6 Medium; dep-depth 0; foundation 0; docs only.
-**Agent**: **sub-agent eligible** (no build step — the only pure-docs sortie in the plan).
-**Layer**: 2 (depends on Sortie 7).
-
-**Entry criteria**:
-- [ ] Sortie 7 complete — the self-diagnostic stderr line exists and can be referenced
-
-**Tasks**:
-1. Add an `## App Group Entitlement` section to `README.md` naming `group.intrusive-memory.models` verbatim and linking to `../SwiftAcervo/USAGE.md` (or the canonical upstream URL) for the full integration checklist.
-2. Document the Xcode capability steps ("Signing & Capabilities → + Capability → App Groups → add `group.intrusive-memory.models`") and provide an equivalent `.entitlements` snippet.
-3. Reference the R5 stderr line as the self-diagnostic: "If `[bruja] SharedModels:` shows a path under `Application Support/SwiftAcervo/SharedModels`, the capability is missing from the host target."
-4. Call out that the `bruja` CLI binary itself is unsigned and legitimately uses the fallback path — not a bug.
-5. Add a one-liner to `AGENTS.md` pointing future agents at the new README section.
-
-**Exit criteria**:
-- [ ] `grep -F 'group.intrusive-memory.models' README.md` matches.
-- [ ] `README.md` contains a link to `USAGE.md` (or canonical upstream URL) in the new section (`grep -F 'USAGE.md' README.md` matches in App Group section).
-- [ ] `grep -F '[bruja] SharedModels:' README.md` matches (self-diagnostic reference).
-- [ ] `grep -F 'unsigned' README.md` matches in App Group section (unsigned-CLI-binary note).
-- [ ] `grep -F 'App Group' AGENTS.md` matches (cross-reference).
+Single-project mission; all sorties land on the mission branch via the supervisor.
 
 ---
 
 ## Parallelism Structure
 
-**Critical Path**: Sortie 2 → Sortie 7 → Sortie 8 (length: 3 sorties). Sortie 2 → Sortie 7 → Sortie 9 is an alternate path of equal length. Sortie 1 (CDN validation) must complete before Sortie 8 but runs parallel with Sorties 2–6.
+**Critical Path**: S1 → S2 → S3 → S4 (length: 4 sorties). S5 (optional) tail-appends after S3 if scoped in. S6 parallels S4.
 
 **Parallel Execution Groups**:
-
-- **Group 1 — Layer 0 (all parallel-eligible)**:
-  - Sortie 1 (CDN validation & shipping) — **SUPERVISING AGENT ONLY** (runs `acervo` CLI + uploads; gates Sortie 8)
-  - Sortie 2 (R3 ProgressRenderer) — **SUPERVISING AGENT ONLY** (build step; foundational for Sortie 7)
-  - Sortie 3 (R2 ErrorReporting) — **SUPERVISING AGENT ONLY** (build step)
-  - Sortie 4 (R1 Level 3 delegation) — **SUPERVISING AGENT ONLY** (build step)
-  - Sortie 5 (R4 pre-flight manifest) — **SUPERVISING AGENT ONLY** (build step)
-  - Sortie 6 (R7 withModelAccess, optional) — **SUPERVISING AGENT ONLY** (build step)
-
-- **Group 2 — Layer 1 (depends on Sortie 2)**:
-  - Sortie 7 (R5 SharedModels logging) — **SUPERVISING AGENT ONLY** (build step)
-
-- **Group 3 — Layer 2 (depends on Sortie 7; Sortie 8 also depends on Sortie 1)**:
-  - Sortie 8 (`make reference-check`) — **SUPERVISING AGENT ONLY** (build step; composes R1–R5 tests; needs CDN coverage from Sortie 1)
-  - Sortie 9 (R6 App Group docs) — **SUB-AGENT ELIGIBLE** (no build; README + AGENTS.md only)
+- **Group 1** (sequential): S1 — supervising agent (runs `make test`, `make reference-check`).
+- **Group 2** (sequential, after S1): S2 — supervising agent (runs `make build`, `make test`).
+- **Group 3** (sequential, after S2): S3 — supervising agent (runs `make build` + 7 CLI smoke invocations against CDN).
+- **Group 4** (parallel, after S3):
+  - S4 — **supervising agent only** (runs `make test`).
+  - S6 — **sub-agent eligible** (pure docs editing; verification is `grep` only, no build).
+- **Group 5** (sequential, after S3, optional): S5 — supervising agent (runs `bruja query` smoke checks).
 
 **Agent Constraints**:
+- **Supervising agent**: handles every sortie that runs `make build`, `make test`, `make reference-check`, or `bruja` CLI invocations (S1, S2, S3, S4, S5).
+- **Sub-agents (max 4)**: only S6 qualifies — its exit criteria are grep-only and require no build artifacts. The supervisor may dispatch S6 in parallel with S4 to shave wall-clock time.
 
-- **Supervising agent**: 8 of 9 sorties (7 with `make build`; Sortie 1 runs `acervo` CLI / uploads).
-- **Sub-agents**: 1 of 9 sorties eligible (Sortie 9, pure docs). Sub-agent budget (4 max) is under-utilized because this plan is build-heavy by nature; this is expected for a Swift refactor mission.
-- **Practical parallelism**: Group 1 can dispatch 6 agents concurrently, but their `make build` / `acervo` calls serialize through the supervising agent for verification. Real wall-clock speedup comes from: (a) dispatching Sortie 9 as a sub-agent in parallel with Sortie 8, and (b) dispatching Layer 0 sorties to separate agent contexts even if their builds serialize.
+**Parallelism metrics**:
+- Critical path length: 4 sorties (5 with S5).
+- Maximum concurrency: 2 agents (1 supervising + 1 sub-agent during Group 4).
+- Missed-opportunity audit: S5 was originally gated only on S1 — could in principle parallelize with S2/S3, but its verification depends on the post-S3 binary surface (no `BrujaDownloadManager` in CLI), so deferring to Group 5 avoids re-running checks on a transitional binary.
 
-**Missed Opportunities**: None — all parallelism the dependency graph admits has been surfaced. The build-heavy nature is a hard constraint of Swift/Makefile projects.
+---
+
+### Sortie 1: Fix `ErrorReportingSmokeTest` regression and remove Makefile skip (R4)
+
+**Priority**: 18.5 — critical-path foundation. Unblocks 5 downstream sorties; the test suite must be green before any deletion-heavy work begins. Risk is low; complexity is low; foundation score 1 (test gating).
+
+**Entry criteria**:
+- [ ] First sortie — no prerequisites.
+
+**Tasks**:
+1. In `Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift::testDownloadMissingModelExitsNonZeroWithCanonicalMessage`, replace the `stderrTrimmed.hasPrefix(Self.expectedStderrPrefix)` assertion (around line 84-85) with a line-by-line scan: `XCTAssertTrue(stderr.split(separator: "\n").contains { $0.hasPrefix(Self.expectedStderrPrefix) }, ...)`. Reason: LIGHTHOUSE Sortie 7 prepended `[bruja] SharedModels:` so the canonical R2 message is no longer the first line.
+2. In `Makefile` `reference-check` target (Step 1, around line 115), remove `-skip-testing:BrujaIntegrationTests/ErrorReportingSmokeTest` from the xcodebuild test invocation.
+3. Run `make test` to confirm `ErrorReportingSmokeTest` passes without the skip.
+4. Run `make reference-check` end-to-end without the skip.
+
+**Exit criteria**:
+- [ ] `! grep -F 'skip-testing:BrujaIntegrationTests/ErrorReportingSmokeTest' Makefile` matches zero.
+- [ ] `make test` exits 0 with `ErrorReportingSmokeTest` running and passing.
+- [ ] `make reference-check` exits 0.
+
+---
+
+### Sortie 2: Delete `BrujaDownloadManager` pass-throughs and migrate CLI to `Acervo.*` (R1)
+
+**Priority**: 14.0 — high dependency-depth (3 downstream); introduces the `ManifestDispatcher` free function that becomes the canonical componentId→repoId hop; foundation score 1.
+
+**Entry criteria**:
+- [ ] Sortie 1 complete (test suite is green again — needed to validate this sortie doesn't regress anything).
+- [ ] Decisions locked: Shape A; dispatcher as free function in SwiftBruja at `Sources/SwiftBruja/Core/ManifestDispatcher.swift`.
+
+**Tasks**:
+1. Create new file at exact path `Sources/SwiftBruja/Core/ManifestDispatcher.swift` containing a free function: `public func fetchManifestForBrujaId(_ id: String) async throws -> CDNManifest`. Behavior: if `BrujaComponents.component(for: id)` returns a registered descriptor, call `Acervo.fetchManifest(forComponent: id)`; otherwise call `Acervo.fetchManifest(for: id)`. Pure dispatch, no state, no actor, no class.
+2. Delete the following methods from `Sources/SwiftBruja/Core/BrujaDownloadManager.swift` (do NOT delete the actor in this sortie — that's Sortie 3):
+   - `func listModels() throws -> [AcervoModel]`
+   - `func modelInfo(_ modelId: String) throws -> AcervoModel`
+   - `func deleteModel(_ modelId: String) throws`
+   - `func findModels(matching query: String) throws -> [AcervoModel]`
+   - `func manifestFiles(for modelOrComponentId: String) async throws -> [CDNManifestFile]`
+   - `func estimatedSize(for modelOrComponentId: String) async throws -> Int64`
+3. In `Sources/bruja/BrujaCLI.swift`, migrate every call to those six methods:
+   - `BrujaDownloadManager.shared.listModels()` → `Acervo.listModels()`
+   - `BrujaDownloadManager.shared.modelInfo(...)` → `Acervo.modelInfo(...)`
+   - `BrujaDownloadManager.shared.deleteModel(...)` → `Acervo.deleteModel(...)`
+   - `BrujaDownloadManager.shared.findModels(matching:)` → `Acervo.findModels(matching:)`
+   - `BrujaDownloadManager.shared.manifestFiles(for:)` and `estimatedSize(for:)` → derive from `fetchManifestForBrujaId(_:)` introduced in task 1.
+4. Run `make build` to verify no broken references in CLI or library.
+
+**Exit criteria**:
+- [ ] `test -f Sources/SwiftBruja/Core/ManifestDispatcher.swift` exits 0.
+- [ ] `! grep -nE 'BrujaDownloadManager\.shared\.(listModels|modelInfo|deleteModel|findModels|manifestFiles|estimatedSize)' -r Sources/ Tests/` returns zero matches.
+- [ ] `make build` exits 0.
+- [ ] `make test` exits 0.
+
+---
+
+### Sortie 3: Strip `downloadModel`/`ensureComponentReady` and delete `BrujaDownloadManager` entirely (R2 — Shape A)
+
+**Priority**: 11.0 — final deletion of the actor unblocks the parallel tail (S4 + S6). Risk 2 (deletion + 7-invocation CLI smoke test against CDN).
+
+**Entry criteria**:
+- [ ] Sortie 2 complete (pass-throughs deleted; CLI uses `Acervo.*` directly).
+- [ ] Decision locked: Shape A (delete entire actor).
+
+**Tasks**:
+1. In `Sources/bruja/BrujaCLI.swift::DownloadCommand.run` (raw repoId path), replace `BrujaDownloadManager.shared.downloadModel(modelId, force: force, progress: ...)` with the explicit composite at the call site:
+   ```swift
+   if force { try? Acervo.deleteModel(modelId) }
+   try await Acervo.ensureAvailable(modelId, files: []) { acervoProgress in
+     progress(acervoProgress.overallProgress)
+   }
+   ```
+2. In `Sources/bruja/BrujaCLI.swift` (component path), replace `BrujaDownloadManager.shared.ensureComponentReady(componentId, force: force, progress: ...)` with the inline equivalent:
+   ```swift
+   if force { try? Acervo.deleteModel(componentRepoId) }
+   try await Acervo.ensureComponentReady(componentId) { acervoProgress in
+     progress(acervoProgress.overallProgress)
+   }
+   let url = try Acervo.modelDirectory(for: componentRepoId)
+   ```
+3. Delete the entire file `Sources/SwiftBruja/Core/BrujaDownloadManager.swift`.
+4. Sweep all remaining `BrujaDownloadManager` references in `Sources/`: run `grep -rn 'BrujaDownloadManager' Sources/` and update each hit. Known live references at refine time: `Sources/SwiftBruja/Core/BrujaModelManager.swift` lines 25 and 77 (doc comments). Update doc comments to reference `Acervo` directly. Also inspect `Sources/SwiftBruja/Bruja.swift` for re-exports or symbol references.
+5. Run `make build` to verify the package still compiles.
+
+**Exit criteria**:
+- [ ] `! test -f Sources/SwiftBruja/Core/BrujaDownloadManager.swift`.
+- [ ] `! grep -rE 'BrujaDownloadManager' Sources/` matches zero.
+- [ ] `make build` exits 0.
+- [ ] Each of these CLI invocations exits 0 against the `SMALL_FIXTURE_MODEL` (`mlx-community/Qwen2.5-0.5B-Instruct-4bit`) on the CDN: `bruja download`, `bruja download --force`, `bruja info --remote`, `bruja query`, `bruja chat`, `bruja list`, `bruja info`. (Network/CDN-dependent — surface as a single sortie note if CDN is unreachable; do not silently skip.)
+
+---
+
+### Sortie 4: Migrate tests off `BrujaDownloadManager` (R3)
+
+**Priority**: 1.5 — pure tail work; no downstream dependencies. Eligible for the Group 4 parallel slot.
+
+**Entry criteria**:
+- [ ] Sortie 3 complete (`BrujaDownloadManager` deleted).
+
+**Tasks**:
+1. In `Tests/SwiftBrujaTests/SwiftBrujaTests.swift`, migrate the five existing `BrujaDownloadManager.shared.*` tests to `Acervo.*`:
+   - `testEnsureComponentReadyHydratesFiles` → `Acervo.ensureComponentReady`
+   - `testEnsureComponentReadyThrowsForUnregisteredComponent` → `Acervo.ensureComponentReady`
+   - `testDownloadModelLevel2PathWorksForUnregisteredRepoId` → `Acervo.ensureAvailable`
+   - `testEstimatedSizeForProductionModelIsNonZeroAndCreatesNoFiles` → `fetchManifestForBrujaId(_:)` (free function from Sortie 2)
+   - `testManifestFilesForSmallFixtureModelReturnsNonEmptyArray` → `fetchManifestForBrujaId(_:)`
+2. Confirm Bruja-owned tests (`BrujaModelManager.loadModel`/`query`/`chat`, `BrujaMemory`, `BrujaComponents` registration) still compile and pass — these are NOT migrated.
+
+**Exit criteria**:
+- [ ] `! grep -rE 'BrujaDownloadManager' Tests/` returns zero matches.
+- [ ] `make test` exits 0.
+- [ ] `BrujaIntegrationTests/ErrorReportingSmokeTest` runs and passes (no Makefile skip — verifies S1 still holds).
+- [ ] If any test fails, the failing test name(s) MUST be enumerated in the sortie completion notes with a one-line cause attribution. "Pre-existing environmental failure" is not an acceptable hand-wave; name the test.
+
+---
+
+### Sortie 5 (optional): Suppress `[SwiftBruja]` stdout banner under `--json` (R5)
+
+**Priority**: 2.5 — optional polish; orthogonal to the deletion chain. Defer if mission scope is constrained.
+
+**Entry criteria**:
+- [ ] Sortie 3 complete (binary surface stable; verification runs against the post-deletion CLI).
+- [ ] **Optional** — may be deferred; nothing else depends on it.
+
+**Tasks**:
+1. Locate the emit site (pinned at refine time): `Sources/SwiftBruja/Core/BrujaQuery.swift:56` — `print("[SwiftBruja] maxTokens set to \(resolvedMaxTokens) for this query")`.
+2. Implement **Option A** (decided in OQ-4): replace the `print(...)` call with an unconditional stderr emit, e.g.:
+   ```swift
+   FileHandle.standardError.write(Data("[SwiftBruja] maxTokens set to \(resolvedMaxTokens) for this query\n".utf8))
+   ```
+   Do NOT plumb a `quiet`/`json` flag through the library API. Do NOT add a configuration knob. The banner is library-internal diagnostic output and belongs on stderr in all modes.
+3. Verify `bruja query "hi" --json 2>/dev/null | jq .` exits 0.
+4. Verify `bruja query "hi" 2>/dev/null` (no `--json`) no longer emits the banner on stdout (banner is stderr-only now — this is the intentional UX shift).
+
+**Exit criteria**:
+- [ ] `! grep -nF 'print("[SwiftBruja] maxTokens' Sources/SwiftBruja/Core/BrujaQuery.swift` matches zero (the `print(...)` line is replaced).
+- [ ] `grep -nF 'FileHandle.standardError.write' Sources/SwiftBruja/Core/BrujaQuery.swift` matches at least once near line 56.
+- [ ] `bruja query "hi" --json 2>/dev/null | jq .` exits 0 (assumes the model is loadable in the test env — if it isn't, document the env gap in the sortie notes; do not silently skip).
+- [ ] `make build` exits 0.
+
+---
+
+### Sortie 6: README + AGENTS.md SemVer-major note (R6)
+
+**Priority**: 1.5 — pure docs; no build dependency. **Sub-agent eligible** — runs in parallel with S4.
+
+**Entry criteria**:
+- [ ] Sortie 3 complete (`BrujaDownloadManager` deletion finalized — code surface stable for documentation).
+
+**Tasks**:
+1. Update `README.md` to describe SwiftBruja as a "consumer of SwiftAcervo". Remove every `BrujaDownloadManager.shared.<method>` example; replace with the equivalent `Acervo.<method>` call.
+2. In `AGENTS.md`, add a one-line breaking-change note in the migration / version section flagging the SemVer-major bump for host-app integrators (e.g. "**Breaking change in 2.0.0**: `BrujaDownloadManager` removed — call `Acervo.*` directly. See `REQUIREMENTS_NEXT.md` for migration mapping.").
+3. Leave the App Group entitlement section (LIGHTHOUSE Sortie 9) untouched — still accurate.
+
+**Exit criteria**:
+- [ ] `! grep -F 'BrujaDownloadManager.shared' README.md` matches zero.
+- [ ] `grep -iF 'breaking change' AGENTS.md` matches at least once.
+- [ ] `grep -F 'BrujaDownloadManager' AGENTS.md` is allowed (the breaking-change note must name the deleted symbol).
+
+---
+
+## Composite Verification — `make reference-check`
+
+After this mission, all five LIGHTHOUSE reference-check steps must still pass with no Makefile skips:
+
+1. **Step 1 (full suite):** All tests including `ErrorReportingSmokeTest`. No `-skip-testing` flag.
+2. **Step 2 (offline-load):** `bruja download` then `ACERVO_OFFLINE=1 bruja query`. CLI now calls `Acervo.*` directly.
+3. **Step 3 (TTY guard):** ProgressRenderer behavior unchanged (LIGHTHOUSE Sortie 2 not touched).
+4. **Step 4 (R2 error mapping):** `runCLI` + `humanReadable` mapping intact (LIGHTHOUSE Sortie 3 not touched).
+5. **Step 5 (pre-flight):** `bruja info --remote` calls `Acervo.fetchManifest(...)` via the free dispatcher introduced in Sortie 2 instead of `BrujaDownloadManager.estimatedSize`. Exit shape unchanged.
 
 ---
 
 ## Open Questions & Missing Documentation
 
-Pass 4 surfaced 6 issues across two refinement rounds (2026-04-24 initial, 2026-04-25 re-refine). **All blocking issues resolved.** OQ-3 closed via REQUIREMENTS.md §"Offline-Mode Contract" (option b: `ACERVO_OFFLINE=1` env var honored by SwiftAcervo). OQ-7 collapsed: per user assumption (2026-04-25), SwiftAcervo 0.8.1 will ship the offline gate before Sortie 8 dispatches, so the `xfail` hedge is removed and Sortie 8 simply requires the 0.8.1 pin.
+All open questions raised during refinement are resolved in the **Decisions Locked** table above. No items require manual review before execution.
 
-| # | Sortie | Issue Type | Description | Resolution | Status |
-|---|--------|-----------|-------------|------------|--------|
-| OQ-1 | 1, 2, 8 | Vague reference | `<small-fixture-model>` used in R3 tests and `make reference-check` step 2/3 without a concrete ID. | **Resolved** by Sortie 1 (new pre-flight): `SMALL_FIXTURE_MODEL = mlx-community/Qwen2.5-0.5B-Instruct-4bit` is defined in Shared Fixtures table; Sortie 1 validates its CDN presence and ships it via `acervo` if missing. No separate user action required — CDN coverage is now a sortie deliverable. | **RESOLVED** |
-| OQ-2 | 5 | Open question | Sortie 5 tasks referenced `[AcervoManifestFile]` — "confirm the concrete type name from SwiftAcervo 0.8". | **Resolved**: SwiftAcervo 0.8 uses `CDNManifest` / `CDNManifestFile` (verified in `../SwiftAcervo/Sources/SwiftAcervo/CDNManifest.swift:59`). Substituted in Sortie 5 Task 2. | **RESOLVED** |
-| OQ-3 | 8 | Missing doc / vague | `make reference-check` step 2 references an "existing offline harness" — no such harness is documented in the repo. | **Resolved (2026-04-25, user)**: option (b) chosen. SwiftAcervo `ACERVO_OFFLINE=1` env var refuses outbound HTTP and serves from `sharedModelsDirectory`. Codified in REQUIREMENTS.md §"Offline-Mode Contract" and Sortie 8 Task 3. Cross-repo dep tracked as OQ-7. | **RESOLVED** |
-| OQ-4 | 2 | Auto-fixable | Original plan left the ProgressRenderer's reuse pattern for R5 implicit. | **Auto-fixed**: Sortie 2 now explicitly requires a public stderr-logging method (Task 6, new Exit criterion); Sortie 7 (R5) now requires routing through it (Task 2). | **RESOLVED** |
-| OQ-5 | — | External dependency check | Plan relies on `SwiftAcervo 0.8` public API surface. | Non-blocking if user confirms SwiftAcervo 0.8 is actually pinned in `Package.swift` (currently modified per `git status` — note at start of this file). Supervisor to verify during Startup Protocol. | **ADVISORY** |
-| OQ-6 | 1 | External dependency check | Sortie 1 requires `acervo` CLI with Cloudflare R2 credentials. | Entry criterion added to Sortie 1. If `acervo ship` needs credentials not present in current env, Sortie 1 will fail and need user intervention before retry. | **ADVISORY** |
-| OQ-7 | 8 | Cross-repo dependency | OQ-3's resolution depends on SwiftAcervo honoring `ACERVO_OFFLINE=1`. SwiftBruja does not implement the gate. | **Resolved (2026-04-25, user assumption)**: SwiftAcervo 0.8.1 ships the offline gate. SwiftBruja's responsibility is reduced to (a) bumping `Package.swift` to pin `≥ 0.8.1` before Sortie 8 dispatches, (b) setting the env var in `make reference-check` step 2. Sortie 8's `xfail` hedge is removed; entry criterion now requires the 0.8.1 pin. The SwiftAcervo PR is in flight at the time of this re-refine; mission start should not block on it but Sortie 8 specifically must wait. | **RESOLVED** |
-| OQ-8 | 8 | External dependency check | `Package.swift` must pin SwiftAcervo ≥ 0.8.1 before Sortie 8 dispatches (currently `M Package.swift` per `git status` — pin state unknown). | Entry criterion on Sortie 8 verifies the pin via grep + `make build`. If the SwiftAcervo 0.8.1 release has not landed when Sortie 8 is scheduled, Sortie 8 stays PENDING (not FATAL — deferred-sortie rule applies). User should confirm 0.8.1 is tagged on `../SwiftAcervo` `main` and bump `Package.swift` accordingly before dispatching Sortie 8. | **ADVISORY** |
-
-**BLOCKED**: 0 issues. Plan is ready to execute.
-
-**Auto-fixed / resolved**: 6 issues (OQ-1 absorbed into Sortie 1, OQ-2 resolved via SwiftAcervo source inspection, OQ-3 resolved 2026-04-25 via REQUIREMENTS.md §"Offline-Mode Contract", OQ-4 auto-fixed in Pass 1, OQ-7 collapsed under SwiftAcervo 0.8.1 assumption; OQ-5/OQ-6/OQ-8 advisory only).
+| Sortie | Issue Type | Description | Resolution |
+|--------|-----------|-------------|------------|
+| S5 | Open question | Option A vs Option B for `--json` banner suppression | Auto-resolved as OQ-4: Option A (stderr unconditional). |
+| S4 | Vague criterion | "excluding pre-existing environmental failures inherited from LIGHTHOUSE" | Auto-resolved as OQ-5: failing test names must be enumerated; no hand-waving. |
+| S2 | Vague phrasing | "suggested file: ManifestDispatcher.swift" | Auto-resolved: definitive exact path locked in OQ-2 and Task 1. |
+| S3 | Open-ended scope | "any other library entry points" | Auto-resolved: Task 4 made grep-driven with refine-time known references pinned (`BrujaModelManager.swift:25,77`). |
+| S5 | Imprecise locator | "likely Sources/SwiftBruja/Core/BrujaModelManager.swift or BrujaQuery.swift" | Auto-resolved: pinned at refine time to `Sources/SwiftBruja/Core/BrujaQuery.swift:56`. |
 
 ---
 
@@ -352,54 +296,9 @@ Pass 4 surfaced 6 issues across two refinement rounds (2026-04-24 initial, 2026-
 | Metric | Value |
 |--------|-------|
 | Work units | 1 |
-| Total sorties | 9 (8 required, 1 optional [Sortie 6 / R7]) |
-| Dependency structure | 3 layers (6 parallel → 1 → 2) |
-| Critical path length | 3 sorties |
-| In-scope requirements | R1, R2, R3, R4, R5, R6 (High + Medium) + CDN pre-flight infra |
-| Optional requirements | R7 (Low, Sortie 6) |
-| Deferred requirements | R8 (do not build until a caller exists) |
-| Sub-agent eligible | 1 of 9 (Sortie 9, docs only) |
-| Blocking open questions | 0 (OQ-3 + OQ-7 resolved 2026-04-25; OQ-8 tracks Package.swift pin as advisory) |
-
-### Dependency graph (post-refine numbering)
-
-```
-Layer 0 (parallel):                       Layer 1:                    Layer 2:
-  Sortie 1 (CDN validation) ─────────┐                                ┌─► Sortie 8 (make reference-check)
-  Sortie 2 (R3 ProgressRenderer) ──► Sortie 7 (R5 SharedModels) ─────┤
-  Sortie 3 (R2 ErrorReporting)         ▲                              └─► Sortie 9 (R6 docs)
-  Sortie 4 (R1 Level 3)                │
-  Sortie 5 (R4 pre-flight)             │
-  Sortie 6 (R7 withModelAccess) [opt]  │
-                                       │
-         Sortie 1 also gates Sortie 8 ─┘  (CDN coverage required for reference-check)
-```
-
-### Refinement Pass Results
-
-#### Round 1 — 2026-04-24 (initial)
-
-| Pass | Status | Changes |
-|------|--------|---------|
-| 1. Atomicity & Testability | PASS | 0 splits, 0 merges on feature sorties; 1 new pre-flight sortie added per user guidance; all sorties right-sized (14–28 estimated turns); exit criteria tightened with grep-based checks |
-| 2. Prioritization | PASS | Priority scores added to every sortie; renumbered after inserting Sortie 1 (CDN validation) at Layer 0 head; all cross-references updated |
-| 3. Parallelism | PASS | 3 layers identified; 1 sortie marked sub-agent eligible; critical path = 3 sorties |
-| 4. Open Questions & Vague Criteria | BLOCKED → PASS (post-OQ-3 resolution) | 7 issues evaluated; OQ-3 resolved on 2026-04-25 via offline-mode env-var contract |
-
-#### Round 2 — 2026-04-25 (re-refine under SwiftAcervo 0.8.1 assumption)
-
-| Pass | Status | Changes |
-|------|--------|---------|
-| 1. Atomicity & Testability | PASS | No sortie size changes. Sortie 8 added a one-line entry criterion (Package.swift pin check); still right-sized at ~22 estimated turns. |
-| 2. Prioritization | PASS | Sortie 8 risk reassessed (xfail hedge removed under 0.8.1 assumption); composite priority unchanged in rank order. No reordering. |
-| 3. Parallelism | PASS | No structural change. 3 layers, critical path = 3 sorties (Sortie 2 → Sortie 7 → Sortie 8). |
-| 4. Open Questions & Vague Criteria | PASS | OQ-7 collapsed to RESOLVED under user assumption (SwiftAcervo 0.8.1 ships offline gate). OQ-8 added as a new advisory tracking the `Package.swift` pin bump (one-line edit, must precede Sortie 8 dispatch). 0 blocking. |
-
-### Verdict
-
-✓ **Plan is READY to execute.** All blocking open questions resolved across both refinement rounds. `/mission-supervisor start` may proceed.
-
-**Advisory items** (will be verified during Startup Protocol, not blocking):
-- OQ-5: Confirm SwiftAcervo is pinned in `Package.swift` at the version specified in this plan's header.
-- OQ-6: Confirm `acervo` CLI is installed and R2 credentials are present in env for Sortie 1. If not, Sortie 1 will fail fast and report back.
-- OQ-8: Confirm SwiftAcervo 0.8.1 is tagged on `../SwiftAcervo` `main` AND `Package.swift` pins `≥ 0.8.1` before Sortie 8 dispatches. If 0.8.1 has not yet landed when Sortie 8 is scheduled, leave Sortie 8 PENDING (deferred-sortie rule — do NOT escalate to FATAL just because the upstream tag isn't ready). The SwiftAcervo PR is in flight at the time of this re-refine.
+| Total sorties | 6 (5 mandatory + 1 optional) |
+| Dependency structure | S1 → S2 → S3 → {S4 ∥ S6}; S5 optional, after S3 |
+| Critical path length | 4 sorties (5 with optional S5) |
+| Max concurrency | 2 (1 supervising + 1 sub-agent during Group 4) |
+| Sub-agent-eligible sorties | S6 only (docs grep, no build) |
+| SemVer impact | MAJOR — `BrujaDownloadManager` public API removed |

@@ -12,6 +12,10 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 
 **Design Philosophy**: Simplicity over inference. Models are pre-downloaded via SwiftAcervo. No cloud APIs, no API keys, no network latency - just fast, private, on-device AI.
 
+## Breaking Changes
+
+**Breaking change in 2.0.0**: `BrujaDownloadManager` has been removed — call `Acervo.*` directly for model lifecycle operations. See `REQUIREMENTS_NEXT.md` for the full migration mapping.
+
 ## Project Structure
 
 - `Sources/SwiftBruja/` -- Library target with static `Bruja` API

@@ -22,9 +22,9 @@ private let _initBrujaComponents: () = initializeBrujaComponents()
 /// Manages loading LLM models into memory for inference.
 ///
 /// Download, list, info, and delete responsibilities are handled by
-/// `BrujaDownloadManager` (which delegates to SwiftAcervo). This actor
-/// is inference-only: it loads models into `ModelContainer` instances,
-/// caches them, validates memory, and supports legacy path migration.
+/// `Acervo` (SwiftAcervo) directly. This actor is inference-only: it
+/// loads models into `ModelContainer` instances, caches them, validates
+/// memory, and supports legacy path migration.
 public actor BrujaModelManager {
 
   /// Shared instance
@@ -74,7 +74,8 @@ public actor BrujaModelManager {
   /// Load a model into memory for inference.
   ///
   /// Loads the specified model from its downloaded location and caches the
-  /// container for reuse. Models must be downloaded first via BrujaDownloadManager.
+  /// container for reuse. Models must be downloaded first via `Acervo.ensureAvailable`
+  /// or `Acervo.ensureComponentReady`.
   public func loadModel(_ modelId: String) async throws -> ModelContainer {
     // Run one-shot migration on first load
     migrateIfNeeded()

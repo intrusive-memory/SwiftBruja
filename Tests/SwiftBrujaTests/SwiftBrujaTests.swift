@@ -427,16 +427,16 @@ final class BrujaPathResolutionTests: XCTestCase {
   }
 }
 
-// MARK: - BrujaDownloadManager Tests (Sortie 4: Level 3 delegation)
+// MARK: - Acervo Component Ready Tests
 
-final class BrujaDownloadManagerTests: XCTestCase {
+final class AcervoComponentReadyTests: XCTestCase {
 
   /// Verifies that `ensureComponentReady` delegates to the Level 3 component-aware path
   /// (`Acervo.ensureComponentReady`) rather than the Level 2 raw-repoId path.
   ///
   /// Strategy: register a test component with a single file (`config.json`), seed a
   /// temp directory with that file so `Acervo.isComponentReady` returns `true` (no
-  /// network round-trip needed), call `BrujaDownloadManager.ensureComponentReady`, then
+  /// network round-trip needed), call `Acervo.ensureComponentReady`, then
   /// assert the registered component's file list is non-empty.
   func testEnsureComponentReadyHydratesFiles() async throws {
     // Use a unique component ID that won't collide with production components
@@ -479,8 +479,13 @@ final class BrujaDownloadManagerTests: XCTestCase {
     Acervo.customBaseDirectory = tempBase
     defer { Acervo.customBaseDirectory = previousCustomBase }
 
-    // Call the Level 3 path — should use Acervo.ensureComponentReady, not ensureAvailable
-    let resultURL = try await BrujaDownloadManager.shared.ensureComponentReady(testComponentId)
+    // Call the Level 3 path — uses Acervo.ensureComponentReady, not ensureAvailable
+    try await Acervo.ensureComponentReady(testComponentId) { _ in }
+    guard let component = Acervo.component(testComponentId) else {
+      XCTFail("Component should still be registered after ensureComponentReady")
+      return
+    }
+    let resultURL = try Acervo.modelDirectory(for: component.repoId)
 
     // The returned URL should point into our temp directory
     XCTAssertTrue(
@@ -497,26 +502,24 @@ final class BrujaDownloadManagerTests: XCTestCase {
     )
   }
 
-  /// Verifies that `BrujaDownloadManager.ensureComponentReady` throws `BrujaError.modelNotFound`
-  /// for an unregistered component ID, preserving the component-registration guard.
+  /// Verifies that `Acervo.ensureComponentReady` throws for an unregistered component ID,
+  /// preserving the component-registration guard (now enforced by Acervo directly).
   func testEnsureComponentReadyThrowsForUnregisteredComponent() async throws {
     let unregisteredId = "absolutely-not-registered-\(UUID().uuidString)"
     do {
-      _ = try await BrujaDownloadManager.shared.ensureComponentReady(unregisteredId)
-      XCTFail("Expected BrujaError.modelNotFound to be thrown")
-    } catch BrujaError.modelNotFound {
-      // Expected
+      try await Acervo.ensureComponentReady(unregisteredId) { _ in }
+      XCTFail("Expected an error to be thrown for unregistered component")
     } catch {
-      XCTFail("Unexpected error type: \(error)")
+      // Expected — Acervo throws for unregistered component IDs
     }
   }
 
-  /// Regression test: `downloadModel` (Level 2 raw-repoId path) must remain intact
-  /// and accessible for unregistered repo IDs.
+  /// Regression test: the Level 2 raw-repoId path (Acervo.ensureAvailable) must work
+  /// for unregistered repo IDs.
   ///
-  /// Verifies that `downloadModel(_:force:progress:)` exists, accepts a raw
-  /// HuggingFace repo ID (not registered as a component), and follows the Level 2
-  /// path (Acervo.ensureAvailable) rather than the Level 3 component-aware path.
+  /// Verifies that `Acervo.ensureAvailable` accepts a raw HuggingFace repo ID (not
+  /// registered as a component) and follows the Level 2 path rather than the Level 3
+  /// component-aware path.
   ///
   /// Uses a pre-seeded temp directory to avoid any real network download.
   func testDownloadModelLevel2PathWorksForUnregisteredRepoId() async throws {
@@ -549,15 +552,15 @@ final class BrujaDownloadManagerTests: XCTestCase {
     Acervo.customBaseDirectory = tempBase
     defer { Acervo.customBaseDirectory = previousCustomBase }
 
-    // `downloadModel` must NOT throw when model is already available (force: false)
-    try await BrujaDownloadManager.shared.downloadModel(unregisteredRepoId, force: false)
+    // `Acervo.ensureAvailable` must NOT throw when model is already available (force: false)
+    try await Acervo.ensureAvailable(unregisteredRepoId, files: []) { _ in }
     // If we get here, the Level 2 path executed without error
   }
 }
 
-// MARK: - BrujaDownloadManager Pre-flight Manifest Tests (Sortie 5: R4)
+// MARK: - Acervo Manifest Dispatcher Tests
 
-final class BrujaDownloadManagerManifestTests: XCTestCase {
+final class AcervoManifestDispatcherTests: XCTestCase {
 
   /// The production model guaranteed to exist on the CDN by Sortie 1.
   private static let productionModelId = "mlx-community/Qwen3-Coder-Next-4bit"
@@ -578,8 +581,8 @@ final class BrujaDownloadManagerManifestTests: XCTestCase {
     let before = snapshotDirectory(sharedModelsDir)
 
     // Call under test — must not throw and must return > 0
-    let sizeBytes = try await BrujaDownloadManager.shared.estimatedSize(
-      for: Self.productionModelId)
+    let sizeBytes = try await fetchManifestForBrujaId(Self.productionModelId).files
+      .reduce(Int64(0)) { $0 + $1.sizeBytes }
 
     XCTAssertGreaterThan(
       sizeBytes, 0,
@@ -600,8 +603,7 @@ final class BrujaDownloadManagerManifestTests: XCTestCase {
     let sharedModelsDir = Acervo.sharedModelsDirectory
     let before = snapshotDirectory(sharedModelsDir)
 
-    let files = try await BrujaDownloadManager.shared.manifestFiles(
-      for: Self.smallFixtureModelId)
+    let files = try await fetchManifestForBrujaId(Self.smallFixtureModelId).files
 
     XCTAssertFalse(
       files.isEmpty,
