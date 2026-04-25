@@ -92,7 +92,10 @@ let package = Package(
     // Integration Tests (requires built binary and LLM model)
     .testTarget(
       name: "BrujaIntegrationTests",
-      dependencies: ["SwiftBruja"]
+      dependencies: [
+        "SwiftBruja",
+        .product(name: "SwiftAcervo", package: "SwiftAcervo"),
+      ]
     ),
 
     // Unit tests for ProgressRenderer (no binary or model required)
