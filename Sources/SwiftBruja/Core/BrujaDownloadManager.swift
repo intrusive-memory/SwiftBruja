@@ -71,24 +71,18 @@ public actor BrujaDownloadManager {
       throw BrujaError.modelNotFound("Component '\(componentId)' not registered")
     }
 
-    // Extract model ID from component metadata (use repoId as the identifier)
-    let modelId = component.repoId
-
     // Delete if force re-download requested
     if force {
-      try? Acervo.deleteModel(modelId)
+      try? Acervo.deleteModel(component.repoId)
     }
 
-    // Ensure model is available from CDN
-    try await Acervo.ensureAvailable(
-      modelId,
-      files: []
-    ) { acervoProgress in
+    // Ensure component is ready via component-aware CDN path (Level 3)
+    try await Acervo.ensureComponentReady(componentId) { acervoProgress in
       progress?(acervoProgress.overallProgress)
     }
 
     // Return the local path where model is stored
-    return try Acervo.modelDirectory(for: modelId)
+    return try Acervo.modelDirectory(for: component.repoId)
   }
 
   /// List all downloaded models

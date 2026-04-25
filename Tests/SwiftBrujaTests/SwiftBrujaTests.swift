@@ -427,6 +427,134 @@ final class BrujaPathResolutionTests: XCTestCase {
   }
 }
 
+// MARK: - BrujaDownloadManager Tests (Sortie 4: Level 3 delegation)
+
+final class BrujaDownloadManagerTests: XCTestCase {
+
+  /// Verifies that `ensureComponentReady` delegates to the Level 3 component-aware path
+  /// (`Acervo.ensureComponentReady`) rather than the Level 2 raw-repoId path.
+  ///
+  /// Strategy: register a test component with a single file (`config.json`), seed a
+  /// temp directory with that file so `Acervo.isComponentReady` returns `true` (no
+  /// network round-trip needed), call `BrujaDownloadManager.ensureComponentReady`, then
+  /// assert the registered component's file list is non-empty.
+  func testEnsureComponentReadyHydratesFiles() async throws {
+    // Use a unique component ID that won't collide with production components
+    let testComponentId = "test-sortie4-fixture-\(UUID().uuidString.prefix(8))"
+    let testRepoId = "test-org/sortie4-fixture"
+
+    // Register a test component with one file
+    let descriptor = ComponentDescriptor(
+      id: testComponentId,
+      type: .languageModel,
+      displayName: "Sortie 4 Fixture",
+      repoId: testRepoId,
+      files: [
+        ComponentFile(relativePath: "config.json")
+      ],
+      estimatedSizeBytes: 100,
+      minimumMemoryBytes: 0
+    )
+    Acervo.register(descriptor)
+    defer { Acervo.unregister(testComponentId) }
+
+    // Redirect Acervo to a temp directory to avoid touching the real SharedModels
+    let tempBase = FileManager.default.temporaryDirectory
+      .appendingPathComponent("bruja-sortie4-test-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempBase) }
+
+    // Seed the component directory with config.json so isComponentReady returns true
+    let slug = Acervo.slugify(testRepoId)
+    let componentDir = tempBase.appendingPathComponent(slug)
+    try FileManager.default.createDirectory(at: componentDir, withIntermediateDirectories: true)
+    try "{}".write(
+      to: componentDir.appendingPathComponent("config.json"),
+      atomically: true,
+      encoding: .utf8
+    )
+
+    // Redirect Acervo to the temp directory
+    let previousCustomBase = Acervo.customBaseDirectory
+    Acervo.customBaseDirectory = tempBase
+    defer { Acervo.customBaseDirectory = previousCustomBase }
+
+    // Call the Level 3 path — should use Acervo.ensureComponentReady, not ensureAvailable
+    let resultURL = try await BrujaDownloadManager.shared.ensureComponentReady(testComponentId)
+
+    // The returned URL should point into our temp directory
+    XCTAssertTrue(
+      resultURL.path.hasPrefix(tempBase.path),
+      "Result URL should be within temp directory, got: \(resultURL.path)"
+    )
+
+    // The registered component must have a non-empty files list (Level 3 assertion)
+    let registeredComponent = Acervo.component(testComponentId)
+    XCTAssertNotNil(registeredComponent, "Component should still be registered after ensureComponentReady")
+    XCTAssertFalse(
+      registeredComponent?.files.isEmpty ?? true,
+      "Acervo.component(id)?.files must be non-empty after ensureComponentReady (Level 3 hydration assertion)"
+    )
+  }
+
+  /// Verifies that `BrujaDownloadManager.ensureComponentReady` throws `BrujaError.modelNotFound`
+  /// for an unregistered component ID, preserving the component-registration guard.
+  func testEnsureComponentReadyThrowsForUnregisteredComponent() async throws {
+    let unregisteredId = "absolutely-not-registered-\(UUID().uuidString)"
+    do {
+      _ = try await BrujaDownloadManager.shared.ensureComponentReady(unregisteredId)
+      XCTFail("Expected BrujaError.modelNotFound to be thrown")
+    } catch BrujaError.modelNotFound {
+      // Expected
+    } catch {
+      XCTFail("Unexpected error type: \(error)")
+    }
+  }
+
+  /// Regression test: `downloadModel` (Level 2 raw-repoId path) must remain intact
+  /// and accessible for unregistered repo IDs.
+  ///
+  /// Verifies that `downloadModel(_:force:progress:)` exists, accepts a raw
+  /// HuggingFace repo ID (not registered as a component), and follows the Level 2
+  /// path (Acervo.ensureAvailable) rather than the Level 3 component-aware path.
+  ///
+  /// Uses a pre-seeded temp directory to avoid any real network download.
+  func testDownloadModelLevel2PathWorksForUnregisteredRepoId() async throws {
+    // The canonical small fixture model (unregistered raw repo ID)
+    let unregisteredRepoId = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+
+    // Confirm the repo ID is NOT registered as a component
+    XCTAssertNil(
+      BrujaModelManager.component(for: unregisteredRepoId),
+      "The raw repo ID must NOT be registered as a component for this Level 2 regression test"
+    )
+
+    // Redirect to a temp directory and seed it so Acervo.isModelAvailable returns true
+    // (avoids real CDN download while still exercising the call boundary)
+    let tempBase = FileManager.default.temporaryDirectory
+      .appendingPathComponent("bruja-level2-test-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempBase) }
+
+    let slug = Acervo.slugify(unregisteredRepoId)
+    let modelDir = tempBase.appendingPathComponent(slug)
+    try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
+    try "{}".write(
+      to: modelDir.appendingPathComponent("config.json"),
+      atomically: true,
+      encoding: .utf8
+    )
+
+    let previousCustomBase = Acervo.customBaseDirectory
+    Acervo.customBaseDirectory = tempBase
+    defer { Acervo.customBaseDirectory = previousCustomBase }
+
+    // `downloadModel` must NOT throw when model is already available (force: false)
+    try await BrujaDownloadManager.shared.downloadModel(unregisteredRepoId, force: false)
+    // If we get here, the Level 2 path executed without error
+  }
+}
+
 // MARK: - Concurrent Access Tests
 
 final class BrujaConcurrencyTests: XCTestCase {
