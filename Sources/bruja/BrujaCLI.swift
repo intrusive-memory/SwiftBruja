@@ -27,7 +27,7 @@ struct BrujaCLI: AsyncParsableCommand {
         bruja list                                 # Show downloaded models
         bruja info -m ~/Models/Phi-3              # Show model details
       """,
-    version: "1.5.1",
+    version: "1.6.0",
     subcommands: [
       DownloadCommand.self, QueryCommand.self, ChatCommand.self, ListCommand.self, InfoCommand.self,
     ],
@@ -123,7 +123,8 @@ struct DownloadCommand: AsyncParsableCommand {
 
   private func runBatch(_ modelIds: [String], renderer: ProgressRenderer) async throws {
     if !quiet {
-      print("Downloading \(modelIds.count) models from CDN to \(Acervo.sharedModelsDirectory.path)...")
+      print(
+        "Downloading \(modelIds.count) models from CDN to \(Acervo.sharedModelsDirectory.path)...")
     }
 
     let progressCallback = renderer.makeProgressCallback()
@@ -275,7 +276,8 @@ struct ChatCommand: AsyncParsableCommand {
       var session = ChatSession(
         container,
         instructions: instructions,
-        generateParameters: GenerateParameters(maxTokens: resolvedMaxTokens, temperature: temperature)
+        generateParameters: GenerateParameters(
+          maxTokens: resolvedMaxTokens, temperature: temperature)
       )
 
       let modelShort = model.components(separatedBy: "/").last ?? model

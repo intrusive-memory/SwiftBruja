@@ -475,7 +475,8 @@ final class AcervoComponentReadyTests: XCTestCase {
 
     // The registered component must have a non-empty files list (Level 3 assertion)
     let registeredComponent = Acervo.component(testComponentId)
-    XCTAssertNotNil(registeredComponent, "Component should still be registered after ensureComponentReady")
+    XCTAssertNotNil(
+      registeredComponent, "Component should still be registered after ensureComponentReady")
     XCTAssertFalse(
       registeredComponent?.files.isEmpty ?? true,
       "Acervo.component(id)?.files must be non-empty after ensureComponentReady (Level 3 hydration assertion)"
