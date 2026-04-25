@@ -74,6 +74,7 @@ struct DownloadCommand: AsyncParsableCommand {
   func run() async throws {
     try await runCLI {
       let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
 
       if !quiet {
         print("Downloading \(model) from CDN to \(Acervo.sharedModelsDirectory.path)...")
@@ -150,6 +151,9 @@ struct QueryCommand: AsyncParsableCommand {
 
   func run() async throws {
     try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
+
       let result = try await SwiftBruja.Bruja.queryWithMetadata(
         prompt,
         model: model,
@@ -206,8 +210,14 @@ struct ChatCommand: AsyncParsableCommand {
   @Option(name: .long, help: "System prompt to set model behavior/persona")
   var system: String?
 
+  @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
+  var quiet = false
+
   func run() async throws {
     try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
+
       // Resolve maxTokens
       let resolvedMaxTokens: Int
       if let maxTokens {
@@ -303,8 +313,14 @@ struct ListCommand: AsyncParsableCommand {
   @Flag(name: .long, help: "Output as JSON with full metadata")
   var json = false
 
+  @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
+  var quiet = false
+
   func run() async throws {
     try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
+
       let models = try SwiftBruja.Bruja.listModels()
 
       if json {
@@ -358,8 +374,14 @@ struct InfoCommand: AsyncParsableCommand {
   @Flag(name: .long, help: "Output as JSON with full metadata")
   var json = false
 
+  @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
+  var quiet = false
+
   func run() async throws {
     try await runCLI {
+      let renderer = ProgressRenderer(quiet: quiet)
+      await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
+
       let info = try SwiftBruja.Bruja.modelInfo(at: model)
 
       if json {
