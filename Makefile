@@ -116,7 +116,6 @@ reference-check: install
 		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testComponentRetrievalByID \
 		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testQwen3CoderNextComponentIsRegistered \
 		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testRegisteredComponentsNotEmpty \
-		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testEnsureComponentReadyHydratesFiles \
 		-skip-testing:SwiftBrujaTests/SwiftBrujaTests/testListModels_ReturnsArray
 	@echo "Step 1 passed."
 	@# Step 2: offline-load test

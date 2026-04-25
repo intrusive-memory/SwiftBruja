@@ -427,10 +427,9 @@ final class BrujaPathResolutionTests: XCTestCase {
   }
 }
 
-// MARK: - BrujaDownloadManager Tests (Sortie 4: Level 3 delegation)
-// NOTE: BrujaDownloadManager was deleted in Sortie 3. These tests now call Acervo.* directly.
+// MARK: - Acervo Component Ready Tests
 
-final class BrujaDownloadManagerTests: XCTestCase {
+final class AcervoComponentReadyTests: XCTestCase {
 
   /// Verifies that `ensureComponentReady` delegates to the Level 3 component-aware path
   /// (`Acervo.ensureComponentReady`) rather than the Level 2 raw-repoId path.
@@ -559,9 +558,9 @@ final class BrujaDownloadManagerTests: XCTestCase {
   }
 }
 
-// MARK: - BrujaDownloadManager Pre-flight Manifest Tests (Sortie 5: R4)
+// MARK: - Acervo Manifest Dispatcher Tests
 
-final class BrujaDownloadManagerManifestTests: XCTestCase {
+final class AcervoManifestDispatcherTests: XCTestCase {
 
   /// The production model guaranteed to exist on the CDN by Sortie 1.
   private static let productionModelId = "mlx-community/Qwen3-Coder-Next-4bit"
