@@ -250,6 +250,41 @@ make test
 
 **Note:** Metal shaders require `xcodebuild` or `make install`. Using `swift build` alone will compile but shaders won't load at runtime.
 
+## App Group Entitlement
+
+To integrate SwiftBruja into a host iOS or macOS app, the app must declare the App Group entitlement `group.intrusive-memory.models`. This allows SwiftBruja's shared model cache (via [SwiftAcervo](../SwiftAcervo/USAGE.md)) to be accessible to your app when it imports the SwiftBruja library.
+
+### Xcode Setup
+
+1. **Signing & Capabilities** → **+ Capability** → search for and select **App Groups**
+2. Enter the group identifier: `group.intrusive-memory.models`
+3. Repeat for all targets that import SwiftBruja (e.g., main app target, any app extensions)
+
+### Entitlements File
+
+If you manage entitlements via `.entitlements` files instead of Xcode UI, add the following snippet:
+
+```xml
+<key>com.apple.security.application-groups</key>
+<array>
+    <string>group.intrusive-memory.models</string>
+</array>
+```
+
+### Self-Diagnostic
+
+If `[bruja] SharedModels:` shows a path under `Application Support/SwiftAcervo/SharedModels`, the capability is missing from the host target. The stderr line logs the shared models directory on every CLI invocation:
+
+```
+[bruja] SharedModels: /Users/you/Library/Application Support/SwiftAcervo/SharedModels/...
+```
+
+If the path points to a fallback location (e.g., a temporary directory or app-specific sandbox), ensure the entitlement is present and code-signed correctly.
+
+**Note:** The `bruja` CLI binary itself is unsigned and legitimately uses the fallback path — this is expected, not a bug.
+
+For the full integration checklist and App Group setup guidance, see [SwiftAcervo USAGE.md](../SwiftAcervo/USAGE.md).
+
 ## License
 
 MIT

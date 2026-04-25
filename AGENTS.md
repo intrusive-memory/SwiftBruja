@@ -197,3 +197,7 @@ Integration Tests
 | `BrujaError.modelLoadFailed` | Model failed to load into memory |
 | `BrujaError.queryFailed` | Inference failed during generation |
 | `BrujaError.jsonParsingFailed` | Structured output parsing failed |
+
+## Related Documentation
+
+- For host-app App Group setup, see [README.md § App Group Entitlement](README.md#app-group-entitlement)
