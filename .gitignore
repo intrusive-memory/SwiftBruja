@@ -24,5 +24,6 @@ Carthage/Build/
 # Accidental files
 *.orig
 *~
+*.profraw
 bin/*
 dist/*
