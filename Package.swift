@@ -17,17 +17,6 @@ func sibling(_ name: String, remote: String, from version: Version) -> Package.D
   return .package(url: remote, .upToNextMajor(from: version))
 }
 
-/// Branch-pinned sibling: prefer the local sibling checkout when present;
-/// otherwise pin to a specific remote branch instead of a version range. Use
-/// for in-flight upstream changes that have not yet shipped a tagged release.
-func siblingBranch(_ name: String, remote: String, branch: String) -> Package.Dependency {
-  let localPath = "../\(name)"
-  if useLocalSiblings && FileManager.default.fileExists(atPath: localPath) {
-    return .package(path: localPath)
-  }
-  return .package(url: remote, branch: branch)
-}
-
 let package = Package(
   name: "SwiftBruja",
   platforms: [
@@ -64,17 +53,10 @@ let package = Package(
       traits: ["Swift"]),
 
     // Shared model management (download, cache, discovery).
-    //
-    // Temporarily pinned to branch `fix/app-group-env-resolution` (SwiftAcervo
-    // PR #34) which removes `Acervo.customBaseDirectory` and exposes the new
-    // `Acervo.appGroupEnvironmentVariable` constant. SwiftBruja's tests
-    // migrated to the new env-var pattern in this same PR, so a version pin
-    // would break compile until #34 ships. A follow-up will switch back to
-    // `from: "0.8.5"` (or the actual released version) once #34 is tagged.
-    siblingBranch(
+    sibling(
       "SwiftAcervo",
       remote: "https://github.com/intrusive-memory/SwiftAcervo.git",
-      branch: "fix/app-group-env-resolution"),
+      from: "0.9.0"),
 
     // CLI argument parsing
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),

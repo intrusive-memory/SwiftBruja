@@ -44,7 +44,7 @@ brew install intrusive-memory/tap/bruja
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.6.0")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.6.1")
 ]
 ```
 
