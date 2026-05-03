@@ -13,6 +13,15 @@ build/
 
 # Swift Package Manager
 .swiftpm/
+# Track the shared SPM scheme so its <EnvironmentVariables> (notably
+# ACERVO_APP_GROUP_ID for the test bundle, required since SwiftAcervo PR #34
+# removed customBaseDirectory) survive `xcodebuild`'s auto-generation.
+# Everything else under .swiftpm/ stays local.
+!.swiftpm/
+!.swiftpm/xcode/
+!.swiftpm/xcode/xcshareddata/
+!.swiftpm/xcode/xcshareddata/xcschemes/
+!.swiftpm/xcode/xcshareddata/xcschemes/*.xcscheme
 Package.resolved
 
 # CocoaPods

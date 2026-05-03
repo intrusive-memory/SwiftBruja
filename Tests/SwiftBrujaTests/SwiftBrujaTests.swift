@@ -438,11 +438,36 @@ final class AcervoComponentReadyTests: XCTestCase {
     Acervo.register(descriptor)
     defer { Acervo.unregister(testComponentId) }
 
-    // Redirect Acervo to a temp directory to avoid touching the real SharedModels
-    let tempBase = FileManager.default.temporaryDirectory
-      .appendingPathComponent("bruja-sortie4-test-\(UUID().uuidString)")
+    // Redirect Acervo to a per-test App Group container by setting the
+    // ACERVO_APP_GROUP_ID env var. Acervo will resolve sharedModelsDirectory
+    // to ~/Library/Group Containers/<testGroupID>/SharedModels/ on macOS,
+    // isolating this test from the developer's real shared-models directory.
+    //
+    // NOTE: macOS sandboxes Group Containers for unentitled processes; the
+    // test runner needs Full Disk Access (granted via System Settings >
+    // Privacy & Security > Full Disk Access for Xcode and Terminal) to
+    // create per-test directories under ~/Library/Group Containers/. CI
+    // runners (macos-26) have this by default; locally, run `make test` from
+    // a Terminal that has FDA.
+    let testGroupID = "group.acervo.test.\(UUID().uuidString.lowercased())"
+    let previousEnv = ProcessInfo.processInfo.environment[Acervo.appGroupEnvironmentVariable]
+    setenv(Acervo.appGroupEnvironmentVariable, testGroupID, 1)
+    defer {
+      if let previousEnv {
+        setenv(Acervo.appGroupEnvironmentVariable, previousEnv, 1)
+      } else {
+        unsetenv(Acervo.appGroupEnvironmentVariable)
+      }
+      // Clean up the per-test container so tests don't leak data between runs.
+      let groupRoot = FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent("Library/Group Containers")
+        .appendingPathComponent(testGroupID)
+      try? FileManager.default.removeItem(at: groupRoot)
+    }
+
+    // The resolved per-test SharedModels directory acts as the previous tempBase.
+    let tempBase = Acervo.sharedModelsDirectory
     try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
-    defer { try? FileManager.default.removeItem(at: tempBase) }
 
     // Seed the component directory with config.json so isComponentReady returns true
     let slug = Acervo.slugify(testRepoId)
@@ -454,11 +479,6 @@ final class AcervoComponentReadyTests: XCTestCase {
       encoding: .utf8
     )
 
-    // Redirect Acervo to the temp directory
-    let previousCustomBase = Acervo.customBaseDirectory
-    Acervo.customBaseDirectory = tempBase
-    defer { Acervo.customBaseDirectory = previousCustomBase }
-
     // Call the Level 3 path — uses Acervo.ensureComponentReady, not ensureAvailable
     try await Acervo.ensureComponentReady(testComponentId) { _ in }
     guard let registered = Acervo.component(testComponentId) else {
@@ -467,10 +487,10 @@ final class AcervoComponentReadyTests: XCTestCase {
     }
     let resultURL = try Acervo.modelDirectory(for: registered.repoId)
 
-    // The returned URL should point into our temp directory
+    // The returned URL should point into the per-test SharedModels directory
     XCTAssertTrue(
       resultURL.path.hasPrefix(tempBase.path),
-      "Result URL should be within temp directory, got: \(resultURL.path)"
+      "Result URL should be within per-test SharedModels directory, got: \(resultURL.path)"
     )
 
     // The registered component must have a non-empty files list (Level 3 assertion)
@@ -513,12 +533,37 @@ final class AcervoComponentReadyTests: XCTestCase {
       "The raw repo ID must NOT be registered as a component for this Level 2 regression test"
     )
 
-    // Redirect to a temp directory and seed it so Acervo.isModelAvailable returns true
-    // (avoids real CDN download while still exercising the call boundary)
-    let tempBase = FileManager.default.temporaryDirectory
-      .appendingPathComponent("bruja-level2-test-\(UUID().uuidString)")
+    // Redirect Acervo to a per-test App Group container by setting the
+    // ACERVO_APP_GROUP_ID env var. Acervo will resolve sharedModelsDirectory
+    // to ~/Library/Group Containers/<testGroupID>/SharedModels/ on macOS,
+    // isolating this test from the developer's real shared-models directory.
+    //
+    // NOTE: macOS sandboxes Group Containers for unentitled processes; the
+    // test runner needs Full Disk Access (granted via System Settings >
+    // Privacy & Security > Full Disk Access for Xcode and Terminal) to
+    // create per-test directories under ~/Library/Group Containers/. CI
+    // runners (macos-26) have this by default; locally, run `make test` from
+    // a Terminal that has FDA.
+    let testGroupID = "group.acervo.test.\(UUID().uuidString.lowercased())"
+    let previousEnv = ProcessInfo.processInfo.environment[Acervo.appGroupEnvironmentVariable]
+    setenv(Acervo.appGroupEnvironmentVariable, testGroupID, 1)
+    defer {
+      if let previousEnv {
+        setenv(Acervo.appGroupEnvironmentVariable, previousEnv, 1)
+      } else {
+        unsetenv(Acervo.appGroupEnvironmentVariable)
+      }
+      // Clean up the per-test container so tests don't leak data between runs.
+      let groupRoot = FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent("Library/Group Containers")
+        .appendingPathComponent(testGroupID)
+      try? FileManager.default.removeItem(at: groupRoot)
+    }
+
+    // Seed the per-test SharedModels directory so Acervo.isModelAvailable returns true
+    // (avoids real CDN download while still exercising the call boundary).
+    let tempBase = Acervo.sharedModelsDirectory
     try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
-    defer { try? FileManager.default.removeItem(at: tempBase) }
 
     let slug = Acervo.slugify(unregisteredRepoId)
     let modelDir = tempBase.appendingPathComponent(slug)
@@ -528,10 +573,6 @@ final class AcervoComponentReadyTests: XCTestCase {
       atomically: true,
       encoding: .utf8
     )
-
-    let previousCustomBase = Acervo.customBaseDirectory
-    Acervo.customBaseDirectory = tempBase
-    defer { Acervo.customBaseDirectory = previousCustomBase }
 
     // `Acervo.ensureAvailable` must NOT throw when model is already available (force: false)
     try await Acervo.ensureAvailable(unregisteredRepoId, files: []) { _ in }
