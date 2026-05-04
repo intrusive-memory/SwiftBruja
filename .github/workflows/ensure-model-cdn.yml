@@ -19,6 +19,9 @@ on:
       # Re-run only when this workflow file itself changes on main
       - .github/workflows/ensure-model-cdn.yml
 
+env:
+  ACERVO_APP_GROUP_ID: group.intrusive-memory.models
+
 jobs:
   ensure-model-cdn:
     name: Ensure Qwen3-Coder-Next (4-bit) on CDN
