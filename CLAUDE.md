@@ -21,6 +21,10 @@ Reference: [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md) for complete Claude Code
 - **Never** commit directly to `main`
 - **Never** add `@available` checks for older platforms
 
+## App Group Configuration
+
+See [AGENTS.md § App Group configuration (required)](./AGENTS.md#app-group-configuration-required) for the `ACERVO_APP_GROUP_ID` env var contract and entitlement setup.
+
 ## Claude-Specific Critical Rules
 
 1. ALWAYS use `make` targets instead of raw `xcodebuild` commands
