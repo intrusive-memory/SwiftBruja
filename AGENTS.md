@@ -2,7 +2,7 @@
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.6.1 (May 2026)
+**Current Version**: 1.6.2
 
 ---
 
@@ -57,7 +57,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 | mlx-swift | 0.31.3+ | Core MLX framework for Apple Silicon GPU |
 | mlx-swift-lm | 3.31.3+ | LLM inference (MLXLLM, MLXLMCommon); 3.x decouples tokenizer/downloader |
 | swift-tokenizers-mlx | 0.2.0+ | Tokenizer adapter for mlx-swift-lm 3.x (MLXLMTokenizers, Swift trait) |
-| SwiftAcervo | 0.8.2+ | Shared model management (CDN download, cache, discovery, manifest-driven hydration) |
+| SwiftAcervo | 0.11.1+ | Shared model management (CDN download, cache, discovery, manifest-driven hydration) |
 | swift-argument-parser | 1.7.1+ | CLI argument parsing |
 
 ## Build and Test
@@ -200,6 +200,21 @@ Integration Tests
 | `BrujaError.queryFailed` | Inference failed during generation |
 | `BrujaError.jsonParsingFailed` | Structured output parsing failed |
 
+## App Group configuration (required)
+
+SwiftBruja depends on [SwiftAcervo](https://github.com/intrusive-memory/SwiftAcervo) for shared model storage. SwiftAcervo v0.10.0 resolves its App Group ID in this order: `ACERVO_APP_GROUP_ID` env var → `com.apple.security.application-groups` entitlement (macOS only) → `fatalError`. There is **no silent fallback**.
+
+- **Signed UI apps (macOS / iOS)**: declare `com.apple.security.application-groups` with `group.intrusive-memory.models` in your `.entitlements` file. iOS apps additionally need `ACERVO_APP_GROUP_ID=group.intrusive-memory.models` in the launch environment.
+- **CLI tools, scripts, CI jobs, test runners**: export `ACERVO_APP_GROUP_ID=group.intrusive-memory.models` in the shell or job environment. The standard place is `~/.zprofile`:
+
+    ```sh
+    export ACERVO_APP_GROUP_ID=group.intrusive-memory.models
+    ```
+
+Without this, `Acervo.sharedModelsDirectory` traps with `fatalError`. See [SwiftAcervo's USAGE.md](https://github.com/intrusive-memory/SwiftAcervo/blob/main/USAGE.md) for full details.
+
+For host-app Xcode setup and entitlements file snippet, see [README.md § App Group configuration](README.md#app-group-configuration-required).
+
 ## Related Documentation
 
-- For host-app App Group setup, see [README.md § App Group Entitlement](README.md#app-group-entitlement)
+- For host-app App Group setup, see [README.md § App Group configuration (required)](README.md#app-group-configuration-required)

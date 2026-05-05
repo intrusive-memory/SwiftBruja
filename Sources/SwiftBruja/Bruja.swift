@@ -23,7 +23,7 @@ import SwiftAcervo
 public enum Bruja {
 
   /// Library version
-  public static let version = "1.6.1"
+  public static let version = "1.6.2"
 
   /// Default model for general use
   public static let defaultModel = BrujaModelManager.defaultModel
@@ -56,6 +56,10 @@ public enum Bruja {
       let size = try calculateDirectorySize(url)
       let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
       let creationDate = attributes[.creationDate] as? Date ?? Date()
+      // NOTE: Best-effort reverse of the SwiftAcervo `org_repo` slug for local
+      // paths Acervo did not download (e.g. user-supplied directories on disk).
+      // Underscores in repo names will misparse — the canonical lookup is
+      // `Acervo.modelInfo(_:)` with a model ID, used in the fallthrough below.
       return BrujaModelInfo(
         id: url.lastPathComponent.replacingOccurrences(of: "_", with: "/"),
         path: url.path,

@@ -19,6 +19,10 @@ This file contains instructions specific to Google Gemini agents working on Swif
 - **Never** commit directly to `main`
 - See [AGENTS.md](AGENTS.md) for full development workflow details
 
+## App Group Configuration
+
+See [AGENTS.md § App Group configuration (required)](./AGENTS.md#app-group-configuration-required) for the `ACERVO_APP_GROUP_ID` env var contract and entitlement setup.
+
 ## Gemini-Specific Critical Rules
 
 1. ALWAYS use `make` targets instead of raw `xcodebuild` commands
