@@ -1,21 +1,6 @@
 // swift-tools-version: 6.2
 
-import Foundation
 import PackageDescription
-
-// In CI we always pin to released remotes. Locally, prefer a sibling checkout
-// at ../<name> if present so in-flight changes can be exercised end-to-end
-// without publishing a release. Falls back to the remote pin if the sibling
-// directory is missing, so fresh clones still build.
-let useLocalSiblings = ProcessInfo.processInfo.environment["CI"] != "true"
-
-func sibling(_ name: String, remote: String, from version: Version) -> Package.Dependency {
-  let localPath = "../\(name)"
-  if useLocalSiblings && FileManager.default.fileExists(atPath: localPath) {
-    return .package(path: localPath)
-  }
-  return .package(url: remote, .upToNextMajor(from: version))
-}
 
 let package = Package(
   name: "SwiftBruja",
@@ -46,17 +31,15 @@ let package = Package(
     .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
 
     // Tokenizer adapter for mlx-swift-lm 3.x (replaces bundled swift-transformers dep).
-    // Explicit Swift trait avoids pulling the Rust backend (binary xcframework).
+    // swift-tokenizers-mlx 0.3.0+ is Swift-only (Rust backend removed); no traits needed.
     .package(
       url: "https://github.com/DePasqualeOrg/swift-tokenizers-mlx",
-      .upToNextMajor(from: "0.2.0"),
-      traits: ["Swift"]),
+      .upToNextMajor(from: "0.3.0")),
 
     // Shared model management (download, cache, discovery).
-    sibling(
-      "SwiftAcervo",
-      remote: "https://github.com/intrusive-memory/SwiftAcervo.git",
-      from: "0.11.1"),
+    .package(
+      url: "https://github.com/intrusive-memory/SwiftAcervo.git",
+      .upToNextMajor(from: "0.12.0")),
 
     // CLI argument parsing
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
