@@ -2,7 +2,7 @@
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.6.2-dev
+**Current Version**: 1.6.3
 
 ---
 
