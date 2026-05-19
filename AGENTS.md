@@ -57,8 +57,23 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 | mlx-swift | 0.31.3+ | Core MLX framework for Apple Silicon GPU |
 | mlx-swift-lm | 3.31.3+ | LLM inference (MLXLLM, MLXLMCommon); 3.x decouples tokenizer/downloader |
 | swift-tokenizers-mlx | 0.2.0+ | Tokenizer adapter for mlx-swift-lm 3.x (MLXLMTokenizers, Swift trait) |
+| swift-tokenizers | **EXACTLY 0.5.0** | Transitive via swift-tokenizers-mlx; **DO NOT BUMP** — see note below |
 | SwiftAcervo | 0.11.1+ | Shared model management (CDN download, cache, discovery, manifest-driven hydration) |
 | swift-argument-parser | 1.7.1+ | CLI argument parsing |
+
+### swift-tokenizers is pinned to 0.5.0
+
+`Package.swift` declares `swift-tokenizers` as a direct dep with `exact: "0.5.0"` even though we don't import it — this overrides the transitive `from: "0.5.0"` constraint in `swift-tokenizers-mlx 0.3.0`, which would otherwise greedy-resolve to `0.6.x`.
+
+**Why**: `swift-tokenizers 0.6.0+` migrated the Rust backend from XCFramework to an SE-0482 `artifactbundle` `binaryTarget` and added `@_implementationOnly import TokenizersRust`. Under Xcode 26.x + SwiftPM, **Release** builds of the `bruja` executable scheme fail to bring the artifactbundle's C symbols into scope, with errors like:
+
+```
+TokenizersFFI.swift:1904:9: error: cannot find 'uniffi_tokenizers_rust_checksum_method_tokenizer_descriptor' in scope
+```
+
+`make test` (Debug, `SwiftBruja-Package` scheme) tolerates it. `make release` / `make dist` do not.
+
+**Do not bump** until you have personally verified `make dist` succeeds with the new version end-to-end on a clean checkout (no `Package.resolved`, no `DerivedData`).
 
 ## Build and Test
 
