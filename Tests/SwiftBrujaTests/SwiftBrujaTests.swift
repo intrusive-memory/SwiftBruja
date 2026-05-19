@@ -1,6 +1,7 @@
-import SwiftAcervo
+import CryptoKit
 import XCTest
 
+@testable import SwiftAcervo
 @testable import SwiftBruja
 
 final class SwiftBrujaTests: XCTestCase {
@@ -560,19 +561,33 @@ final class AcervoComponentReadyTests: XCTestCase {
       try? FileManager.default.removeItem(at: groupRoot)
     }
 
-    // Seed the per-test SharedModels directory so Acervo.isModelAvailable returns true
-    // (avoids real CDN download while still exercising the call boundary).
+    // Seed the per-test SharedModels directory with a self-consistent manifest so
+    // Acervo.isModelAvailable (0.14.0 strict semantics) returns true — avoids any
+    // real CDN download while still exercising the call boundary.
     let tempBase = Acervo.sharedModelsDirectory
     try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
 
     let slug = Acervo.slugify(unregisteredRepoId)
     let modelDir = tempBase.appendingPathComponent(slug)
     try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-    try "{}".write(
-      to: modelDir.appendingPathComponent("config.json"),
-      atomically: true,
-      encoding: .utf8
+
+    let configData = Data("{}".utf8)
+    try configData.write(to: modelDir.appendingPathComponent("config.json"))
+
+    let configEntry = CDNManifestFile(
+      path: "config.json",
+      sha256: SHA256.hash(data: configData).map { String(format: "%02x", $0) }.joined(),
+      sizeBytes: Int64(configData.count)
     )
+    let manifest = CDNManifest(
+      manifestVersion: CDNManifest.supportedVersion,
+      modelId: unregisteredRepoId,
+      slug: slug,
+      updatedAt: ISO8601DateFormatter().string(from: Date()),
+      files: [configEntry],
+      manifestChecksum: CDNManifest.computeChecksum(from: [configEntry.sha256])
+    )
+    try AcervoDownloader.persistManifest(manifest, in: tempBase)
 
     // `Acervo.ensureAvailable` must NOT throw when model is already available (force: false)
     try await Acervo.ensureAvailable(unregisteredRepoId, files: []) { _ in }

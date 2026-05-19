@@ -31,16 +31,21 @@ let package = Package(
     .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
 
     // Tokenizer adapter for mlx-swift-lm 3.x (replaces bundled swift-transformers dep).
-    // swift-tokenizers-mlx 0.3.0+ is Swift-only (Rust backend removed); no traits needed.
     .package(
       url: "https://github.com/DePasqualeOrg/swift-tokenizers-mlx",
       .upToNextMajor(from: "0.3.0")),
 
+    // LOCK swift-tokenizers to exactly 0.5.0 — DO NOT BUMP without verifying `make dist`.
+    // 0.6.0+ migrated the Rust backend from XCFramework to SE-0482 artifactbundle and added
+    // `@_implementationOnly import TokenizersRust`; under Xcode 26.x + SwiftPM, Release builds
+    // of the bruja executable scheme fail to bring the artifactbundle's C symbols into scope
+    // (`cannot find 'uniffi_tokenizers_rust_*' in scope` in TokenizersFFI.swift). swift-tokenizers-mlx
+    // 0.3.0 declares `from: "0.5.0"` which greedy-resolves to 0.6.3 without this exact pin.
+    .package(url: "https://github.com/DePasqualeOrg/swift-tokenizers.git", exact: "0.5.0"),
+
     // Shared model management (download, cache, discovery).
     .package(
-      url: "https://github.com/intrusive-memory/SwiftAcervo.git",
-      .upToNextMajor(from: "0.12.0")),
-
+      url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.14.0")),
     // CLI argument parsing
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
   ],
