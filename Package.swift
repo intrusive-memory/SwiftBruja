@@ -40,7 +40,6 @@ let package = Package(
     .package(
       url: "https://github.com/intrusive-memory/SwiftAcervo.git",
       .upToNextMajor(from: "0.14.0")),
-
     // CLI argument parsing
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
   ],
