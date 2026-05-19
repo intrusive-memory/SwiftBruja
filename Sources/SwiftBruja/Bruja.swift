@@ -23,7 +23,7 @@ import SwiftAcervo
 public enum Bruja {
 
   /// Library version
-  public static let version = "1.6.4"
+  public static let version = "1.7.0"
 
   /// Default model for general use
   public static let defaultModel = BrujaModelManager.defaultModel
