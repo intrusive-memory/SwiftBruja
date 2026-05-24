@@ -562,7 +562,7 @@ final class AcervoComponentReadyTests: XCTestCase {
     }
 
     // Seed the per-test SharedModels directory with a self-consistent manifest so
-    // Acervo.isModelAvailable (0.14.0 strict semantics) returns true — avoids any
+    // Acervo.isModelAvailable (0.14.0+ strict semantics) returns true — avoids any
     // real CDN download while still exercising the call boundary.
     let tempBase = Acervo.sharedModelsDirectory
     try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)

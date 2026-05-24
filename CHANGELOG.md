@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.1] - 2026-05-23
+
+### Changed
+- **SwiftAcervo upgrade** — bumped from 0.14.0 to 0.16.0. Picks up the 0.14.1, 0.15.0, and 0.16.0 changes in a single hop.
+
+### Removed
+- **`BrujaModelManager.migrateIfNeeded()` and the `migrationAttempted` flag** — the underlying `Acervo.migrateFromLegacyPaths()` was removed in SwiftAcervo 0.14.1. The migration path was a one-shot from the pre-0.12 layout; anyone who has run any version ≥ 0.12 either already migrated or has nothing to migrate.
+
+---
+
 ## [Unreleased]
 
 ### Removed

@@ -105,9 +105,6 @@ public func humanReadable(_ error: AcervoError) -> String {
   case .modelAlreadyExists(let modelId):
     return "Error: Model '\(modelId)' already exists locally. Use --force to re-download."
 
-  case .migrationFailed(let source, let reason):
-    return "Error: Migration failed for '\(source)': \(reason)"
-
   case .invalidModelId(let modelId):
     return
       "Error: Invalid model ID '\(modelId)'. Expected format: 'org/repo' (e.g., mlx-community/Llama-3.2-1B-Instruct-4bit)."
