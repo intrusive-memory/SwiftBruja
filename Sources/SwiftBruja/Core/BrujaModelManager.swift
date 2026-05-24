@@ -11,8 +11,8 @@ import SwiftAcervo
 ///
 /// Download, list, info, and delete responsibilities are handled by
 /// `Acervo` (SwiftAcervo) directly. This actor is inference-only: it
-/// loads models into `ModelContainer` instances, caches them, validates
-/// memory, and supports legacy path migration.
+/// loads models into `ModelContainer` instances, caches them, and
+/// validates memory.
 public actor BrujaModelManager {
 
   /// Shared instance
@@ -29,32 +29,7 @@ public actor BrujaModelManager {
   /// Loaded model containers (cached for reuse)
   private var loadedModels: [String: ModelContainer] = [:]
 
-  /// Whether legacy migration has been attempted this session
-  private var migrationAttempted = false
-
   private init() {}
-
-  // MARK: - Migration
-
-  /// Migrate models from legacy cache paths to ~/Library/SharedModels/ (one-shot per session).
-  ///
-  /// Status messages go to stderr so they don't corrupt `--json` stdout from `bruja query`.
-  func migrateIfNeeded() {
-    guard !migrationAttempted else { return }
-    migrationAttempted = true
-    do {
-      let migrated = try Acervo.migrateFromLegacyPaths()
-      if !migrated.isEmpty {
-        FileHandle.standardError.write(
-          Data("[SwiftBruja] Migrated \(migrated.count) model(s) to ~/Library/SharedModels/\n".utf8)
-        )
-      }
-    } catch {
-      FileHandle.standardError.write(
-        Data("[SwiftBruja] Warning: legacy migration failed: \(error.localizedDescription)\n".utf8)
-      )
-    }
-  }
 
   // MARK: - Model Availability
 
@@ -71,9 +46,6 @@ public actor BrujaModelManager {
   /// container for reuse. Models must be downloaded first via `Acervo.ensureAvailable`
   /// or `Acervo.ensureComponentReady`.
   public func loadModel(_ modelId: String) async throws -> ModelContainer {
-    // Run one-shot migration on first load
-    migrateIfNeeded()
-
     // Return cached model if already loaded
     if let cached = loadedModels[modelId] {
       return cached
