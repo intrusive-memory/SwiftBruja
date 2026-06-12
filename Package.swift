@@ -101,13 +101,15 @@ let package = Package(
         .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
         .product(name: "MLXLMTokenizers", package: "swift-tokenizers-mlx"),
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
-      ]
+      ],
+      swiftSettings: [.swiftLanguageMode(.v6)]
     ),
 
     // CLI helper utilities (ProgressRenderer, etc.)
     .target(
       name: "BrujaHelpers",
-      dependencies: []
+      dependencies: [],
+      swiftSettings: [.swiftLanguageMode(.v6)]
     ),
 
     // CLI executable
@@ -119,7 +121,8 @@ let package = Package(
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
         .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
-      ]
+      ],
+      swiftSettings: [.swiftLanguageMode(.v6)]
     ),
 
     // Unit Tests
@@ -128,7 +131,8 @@ let package = Package(
       dependencies: [
         "SwiftBruja",
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
-      ]
+      ],
+      swiftSettings: [.swiftLanguageMode(.v6)]
     ),
 
     // Integration Tests (requires built binary and LLM model)
@@ -137,13 +141,15 @@ let package = Package(
       dependencies: [
         "SwiftBruja",
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
-      ]
+      ],
+      swiftSettings: [.swiftLanguageMode(.v6)]
     ),
 
     // Unit tests for ProgressRenderer (no binary or model required)
     .testTarget(
       name: "ProgressRendererTests",
-      dependencies: ["BrujaHelpers"]
+      dependencies: ["BrujaHelpers"],
+      swiftSettings: [.swiftLanguageMode(.v6)]
     ),
   ]
 )
