@@ -13,7 +13,7 @@ VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || 
 SMALL_FIXTURE_MODEL = mlx-community/Qwen2.5-0.5B-Instruct-4bit
 MISSING_MODEL_ID    = mlx-community/__nope__
 
-.PHONY: all build release install clean test test-agent-seam test-agent-repl resolve dist lint help reference-check codesign-cli
+.PHONY: all build release install clean test test-agent-seam test-agent-repl test-agent-fm resolve dist lint help reference-check codesign-cli
 
 all: install
 
@@ -119,6 +119,22 @@ test-agent-repl: install codesign-cli
 	echo "Running AgentReplTest via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
 	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
 		-XCTest AgentReplTest/testAgentVerbRoundTripsReadFileAgainstFixtureModel "$$XCTEST_BUNDLE"
+
+# Run the S9 Foundation Models backend end-to-end integration test.
+#
+# Drives the REAL signed ./bin/bruja binary with --backend foundation against the real
+# SystemLanguageModel. On an FM-available host the test asserts exit 0 + a read_file tool
+# call round-trip. On an FM-unavailable host it asserts exit non-zero + the unavailability
+# reason in stderr. Both branches are covered by FoundationBackendIntegrationTest.
+#
+# Prereq: make install codesign-cli  (no model download required — FM uses on-device assets)
+test-agent-fm: install codesign-cli
+	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
+	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
+	echo "Running FoundationBackendIntegrationTest via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
+	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
+		-XCTest FoundationBackendIntegrationTest/testFoundationBackendRoundTripsOrFailsLoudly "$$XCTEST_BUNDLE"
 
 # Format Swift source files
 lint:
@@ -286,6 +302,7 @@ help:
 	@echo "  test             - Run tests with xcodebuild"
 	@echo "  test-agent-seam  - Run the S2 read_file round-trip spike via an unsandboxed xctest host"
 	@echo "  test-agent-repl  - Run the S7 'bruja agent' end-to-end REPL test against ./bin/bruja"
+	@echo "  test-agent-fm    - Run the S9 Foundation Models backend integration test against ./bin/bruja"
 	@echo "  lint             - Format Swift source files"
 	@echo "  clean            - Clean build artifacts"
 	@echo "  reference-check  - R1–R5 end-to-end verification (build, offline, TTY, error-map, preflight)"

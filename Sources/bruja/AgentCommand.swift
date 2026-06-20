@@ -120,7 +120,7 @@ struct AgentCommand: AsyncParsableCommand {
 
       switch resolvedBackend {
       case .foundation:
-        // S8: wire the FM-unavailable error path. The actual FM session is S9.
+        // S9: Foundation Models backend — availability gate + real FM session.
         let availability = LiveFoundationModelsAvailability()
         guard availability.isAvailable else {
           let reason =
@@ -130,12 +130,29 @@ struct AgentCommand: AsyncParsableCommand {
               + "Use '--backend mlx' (or omit --backend) to run with an MLX model instead."
           )
         }
-        // FM is available on this host: S9 will wire the real session here.
-        // For now, surface a clear not-yet-implemented message (S9 lands next sortie).
-        throw CLIError(
-          "The Foundation Models backend session is implemented in Sortie 9 (not yet available). "
-            + "Use '--backend mlx' (or omit --backend) to run with an MLX model instead."
+
+        // FM is available: build the session using the SAME ToolRegistry array and SAME
+        // ConsentToolObserver wrappers as the MLX path. The only difference is the model
+        // argument: SystemLanguageModel.default instead of MLXLanguageModel(...).
+        // This is THE PROOF — no second tool adapter, no second tool definition.
+        let io = IOCoordinator(quiet: quiet)
+
+        let loop = AgentLoop(
+          backend: .foundation,
+          io: io,
+          quiet: quiet
         )
+
+        if let task, !task.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+          // One-shot: a single turn on the same loop, then exit.
+          do {
+            try await loop.runTurn(task)
+          } catch let bruja as BrujaError {
+            throw CLIError(bruja.errorDescription ?? "\(bruja)")
+          }
+        } else {
+          try await loop.runInteractive()
+        }
 
       case .mlx:
         let effectiveModel = resolvedModelId ?? Self.agentDefaultModel
@@ -174,13 +191,17 @@ struct AgentCommand: AsyncParsableCommand {
 ///
 /// Holds a single `LanguageModelSession` so the in-memory transcript persists across REPL turns
 /// (R5.4). All terminal I/O routes through the injected ``IOCoordinator`` (R5.2).
+///
+/// Both the MLX and Foundation Models backends use this same loop — the only difference is which
+/// model is passed to `LanguageModelSession(model:tools:instructions:)`. The tool array comes from
+/// the SAME `ToolRegistry.defaultTools()` call wrapped in `ConsentToolObserver`s (R2.2, R4).
 @available(macOS 27.0, *)
 final class AgentLoop {
-  private let modelId: String
-  private let temperature: Float
-  private let maxTokens: Int
   private let io: IOCoordinator
   private let quiet: Bool
+
+  /// Human-readable model label surfaced in the REPL startup banner.
+  let modelLabel: String
 
   /// The recording/consent tool wrappers backing this loop. Their accumulated observations are how
   /// the REPL surfaces tool calls + results (R5.2) and how `AgentReplTest` asserts the round-trip.
@@ -188,7 +209,8 @@ final class AgentLoop {
 
   private let session: LanguageModelSession
 
-  private static let instructions =
+  /// The agent's system instructions — identical for both backends.
+  static let agentInstructions =
     "You are a capable command-line agent operating in the user's current working directory. "
     + "You can call tools to inspect and modify files: read_file, write_file, edit_file, "
     + "list_dir, grep, glob, run_shell. "
@@ -196,6 +218,12 @@ final class AgentLoop {
     + "provided before answering — do NOT guess or claim the file is missing without calling "
     + "read_file first. After a tool returns, answer using its result. Be concise."
 
+  // MARK: - MLX initializer (original path)
+
+  /// Initialise an MLX-backed agent loop.
+  ///
+  /// Builds a `LanguageModelSession(model: MLXLanguageModel(...), tools:, instructions:)` using
+  /// `ToolRegistry.defaultTools()` wrapped in `ConsentToolObserver`s.
   init(
     modelId: String,
     temperature: Float,
@@ -203,11 +231,9 @@ final class AgentLoop {
     io: IOCoordinator,
     quiet: Bool
   ) {
-    self.modelId = modelId
-    self.temperature = temperature
-    self.maxTokens = maxTokens
     self.io = io
     self.quiet = quiet
+    self.modelLabel = modelId
 
     let model = MLXLanguageModel(
       modelId: modelId,
@@ -226,7 +252,44 @@ final class AgentLoop {
     self.session = LanguageModelSession(
       model: model,
       tools: wrappedTools,
-      instructions: Self.instructions
+      instructions: Self.agentInstructions
+    )
+  }
+
+  // MARK: - Foundation Models initializer (S9 — THE PROOF)
+
+  /// Initialise a Foundation Models–backed agent loop.
+  ///
+  /// Builds a `LanguageModelSession(model: SystemLanguageModel.default, tools:, instructions:)`
+  /// using the SAME `ToolRegistry.defaultTools()` array wrapped in the SAME `ConsentToolObserver`s
+  /// as the MLX path — NO second tool adapter (R2.2, R4).
+  ///
+  /// - Parameters:
+  ///   - backend: Must be `.foundation`. The `backend` label is the compile-time discriminator
+  ///     that selects this initializer over the MLX one; it has no runtime role.
+  ///   - io: Shared IOCoordinator for all terminal I/O.
+  ///   - quiet: Forwarded to `IOCoordinator` construction.
+  init(
+    backend: AgentBackend,
+    io: IOCoordinator,
+    quiet: Bool
+  ) {
+    precondition(backend == .foundation, "This initializer is for the Foundation Models backend")
+    self.io = io
+    self.quiet = quiet
+    self.modelLabel = "SystemLanguageModel.default (Foundation Models)"
+
+    // SAME ConsentToolObserver wrapping of the SAME ToolRegistry array as the MLX path.
+    // This is the proof: both backends share one tool definition, one registry call, one wrapper.
+    let observers = ToolRegistry.defaultTools().map { ConsentToolObserver(inner: $0, io: io) }
+    self.toolObservers = observers
+    let wrappedTools: [any Tool] = observers.map { $0.makeWrapper() }
+
+    // THE PROOF: same seam, different model. FoundationModelBackend.makeSession builds a
+    // LanguageModelSession(model: SystemLanguageModel.default, tools: wrappedTools, instructions:)
+    self.session = FoundationModelBackend.makeSession(
+      tools: wrappedTools,
+      instructions: Self.agentInstructions
     )
   }
 
@@ -248,7 +311,7 @@ final class AgentLoop {
     sigintSource.resume()
     defer { sigintSource.cancel() }
 
-    await io.emitLine("[bruja] agent ready — model: \(modelId)")
+    await io.emitLine("[bruja] agent ready — model: \(modelLabel)")
     await io.emitLine("[bruja] Type /quit to exit, /clear to reset the conversation.")
 
     while true {
@@ -303,7 +366,11 @@ final class AgentLoop {
     } catch let bruja as BrujaError {
       throw bruja
     } catch {
-      throw BrujaError.queryFailed(error.localizedDescription)
+      // Map FM errors (LanguageModelError) and MLX generation errors into typed BrujaErrors.
+      // FoundationModelBackend.mapFMError handles LanguageModelError cases (context size,
+      // rate limiting, guardrail violations, refusals, timeouts) and falls back to the
+      // string-heuristic path for everything else (same heuristic as MLXLanguageModelExecutor).
+      throw FoundationModelBackend.mapFMError(error)
     }
   }
 }
