@@ -27,10 +27,10 @@ let response = try await Bruja.query("What is the capital of France?")
 
 ## Requirements
 
-- **macOS 26.0+** or **iOS 26.0+**
-- **Apple Silicon only** (M1/M2/M3/M4) - NO Intel support
-- **Swift 6.2+**
-- ~2-4 GB storage per model
+- **macOS 27.0+** — required for the `LanguageModelExecutor` custom-provider seam that powers the MLX backend
+- **Apple Silicon only** (M1/M2/M3/M4) — NO Intel support
+- **Swift 6.4+**
+- ~2-4 GB storage per model (agent default: `mlx-community/Qwen2.5-7B-Instruct-4bit`, ~4.3 GB)
 
 ## Installation
 
@@ -177,8 +177,50 @@ Show detailed information about a model.
 
 ```bash
 bruja info -m mlx-community/Llama-3.2-1B-Instruct-4bit
-bruja info -m ~/Models/custom-model --json
+bruja info -m mlx-community/Llama-3.2-1B-Instruct-4bit --remote
 ```
+
+#### `bruja agent`
+
+Run the on-device agent loop. The agent can read, write, and search files in the current working directory using a built-in tool suite, then answer using the results.
+
+```bash
+# Interactive REPL (type /quit or Ctrl-D to exit)
+bruja agent
+
+# One-shot: run a task and exit
+bruja agent "Read ./README.md and summarize the first paragraph"
+
+# Use Apple's on-device Foundation Models backend
+bruja agent --backend foundation "List the Swift files in this project"
+
+# Use MLX with a specific model
+bruja agent --model mlx-community/Qwen2.5-7B-Instruct-4bit "Find all TODO comments in Sources/"
+```
+
+**Options:**
+- `task` (argument): Optional task to run once and exit. Omit for an interactive REPL.
+- `--backend`: `mlx` (default) or `foundation` (Apple on-device FM)
+- `-m, --model`: MLX model id (ignored with `--backend foundation`)
+- `--temperature`: Sampling temperature (default: 0.0 for determinism)
+- `--max-tokens`: Maximum tokens per turn (default: 1024)
+- `-q, --quiet`: Suppress startup and informational output
+
+**Built-in tools (7):**
+
+| Tool | What it does |
+|------|-------------|
+| `read_file` | Read a file's text content |
+| `write_file` | Write content to a path |
+| `edit_file` | Replace an exact old string with a new string in a file |
+| `list_dir` | List a directory's immediate children |
+| `grep` | Search file contents for a pattern |
+| `glob` | Match files by glob pattern |
+| `run_shell` | Run a shell command; return stdout/stderr/exit code |
+
+**Working-directory confinement:** Filesystem tools are confined to the current working directory by `PathGuard`. Paths that escape the cwd (via `..`, absolute paths, or out-of-cwd symlinks) trigger a blocking consent prompt before any disk access. `run_shell` performs a best-effort scan for outside-cwd path tokens. PathGuard is a guardrail, not an OS sandbox.
+
+**Backends:** Both `mlx` and `foundation` backends share the same tool definitions and the same `LanguageModelSession(model:tools:instructions:)` seam — there is no second tool adapter. The `--backend foundation` path uses `SystemLanguageModel.default`; selecting it when Foundation Models is unavailable on the host is a full-stop error (no silent fallback).
 
 ## API Reference
 
@@ -241,14 +283,22 @@ make install
 # Or release build
 make release
 
-# Manual xcodebuild (requires correct destination for macOS 26 Apple Silicon)
+# Create distributable tarball (binary + mlx-swift_Cmlx.bundle)
+make dist
+
+# Manual xcodebuild (requires correct destination for macOS 27 Apple Silicon)
 xcodebuild -scheme bruja -destination 'platform=macOS,arch=arm64' build
 
 # Run tests (requires xcodebuild)
 make test
+
+# End-to-end verification
+make reference-check
 ```
 
-**Note:** Metal shaders require `xcodebuild` or `make install`. Using `swift build` alone will compile but shaders won't load at runtime.
+**Note:** Metal shaders require `xcodebuild` or `make install`. Using `swift build` alone will compile but Metal shaders won't load at runtime, making MLX inference non-functional.
+
+**macOS 27 required.** The `Package.swift` manifest uses `swift-tools-version: 6.4` and `.macOS(.v27)`. Building requires Xcode 27 (beta). GitHub Actions hosted CI cannot yet parse this manifest (no `macos-27` runner image exists); verification gates on a local macOS-27 host.
 
 ## App Group configuration (required)
 

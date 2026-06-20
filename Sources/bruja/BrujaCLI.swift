@@ -29,7 +29,8 @@ struct BrujaCLI: AsyncParsableCommand {
       """,
     version: "1.7.1-dev",
     subcommands: [
-      DownloadCommand.self, QueryCommand.self, ChatCommand.self, ListCommand.self, InfoCommand.self,
+      DownloadCommand.self, QueryCommand.self, ChatCommand.self, AgentCommand.self,
+      ListCommand.self, InfoCommand.self,
     ],
     defaultSubcommand: QueryCommand.self
   )
@@ -376,8 +377,13 @@ struct ListCommand: AsyncParsableCommand {
         } else {
           print("Downloaded models in \(Acervo.sharedModelsDirectory.path):\n")
           for model in models {
-            print("• \(model.id) (\(formatBytes(model.sizeBytes)))")
+            let agentTag =
+              AgentAllowlist.isAgentCapable(model.id) ? " [agent-capable]" : ""
+            print("• \(model.id) (\(formatBytes(model.sizeBytes)))\(agentTag)")
           }
+          print(
+            "\n[agent-capable] = on the curated tool-calling allowlist (reliable for `bruja agent`)"
+          )
         }
       }
     }

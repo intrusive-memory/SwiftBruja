@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.4
 
 import Foundation
 import PackageDescription
@@ -43,8 +43,11 @@ func sibling(_ name: String, remote: String, branch: String) -> Package.Dependen
 let package = Package(
   name: "SwiftBruja",
   platforms: [
-    .macOS(.v26),
-    .iOS(.v26),
+    // macOS 27 only. This is a macOS-first CLI; iOS is out of scope for now.
+    // macOS 27 is required for the FoundationModels custom-provider seam
+    // (`LanguageModel` + `LanguageModelExecutor`, @available macOS 27.0+) that lets the
+    // MLX backend plug into the same `LanguageModelSession(model:tools:)` as the system model.
+    .macOS(.v27),
   ],
   products: [
     // Library for programmatic access
@@ -63,31 +66,40 @@ let package = Package(
       targets: ["bruja"]
     ),
   ],
+  // Dependency set pared back to what REQUIREMENTS.md justifies for the agentic-CLI rework.
+  // The code is being reworked from scratch; this manifest is the forward-looking dep target,
+  // not a guarantee that the current Sources still compile against it.
   dependencies: [
-    // MLX ecosystem for on-device inference
+    // MLX backend (R3): on-device inference engine + LLM layer.
     .package(url: "https://github.com/ml-explore/mlx-swift", .upToNextMajor(from: "0.31.3")),
     .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
 
-    // Tokenizer adapter for mlx-swift-lm 3.x (replaces bundled swift-transformers dep).
-    .package(
-      url: "https://github.com/DePasqualeOrg/swift-tokenizers-mlx",
-      .upToNextMajor(from: "0.3.0")),
-
-    // LOCK swift-tokenizers to exactly 0.5.0 — DO NOT BUMP without verifying `make dist`.
-    // 0.6.0+ migrated the Rust backend from XCFramework to SE-0482 artifactbundle and added
-    // `@_implementationOnly import TokenizersRust`; under Xcode 26.x + SwiftPM, Release builds
-    // of the bruja executable scheme fail to bring the artifactbundle's C symbols into scope
-    // (`cannot find 'uniffi_tokenizers_rust_*' in scope` in TokenizersFFI.swift). swift-tokenizers-mlx
-    // 0.3.0 declares `from: "0.5.0"` which greedy-resolves to 0.6.3 without this exact pin.
-    .package(url: "https://github.com/DePasqualeOrg/swift-tokenizers.git", exact: "0.5.0"),
-
-    // Shared model management (download, cache, discovery).
+    // Model download / cache / discovery (R3.2, G1/G2).
     sibling(
       "SwiftAcervo",
       remote: "https://github.com/intrusive-memory/SwiftAcervo.git",
-      from: "0.16.0"),
-    // CLI argument parsing
+      from: "0.19.2"),
+
+    // CLI argument parsing (R5). Not named in REQUIREMENTS, but the agent CLI requires it.
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
+
+    // Tokenizer (S2 / OQ-2). mlx-swift-lm 3.x ships only the `MLXLMCommon.Tokenizer`/
+    // `TokenizerLoader` *protocols* — no concrete tokenizer. swift-transformers provides a
+    // local-folder tokenizer loader (and bundles swift-jinja so `applyChatTemplate` works).
+    // It is independent of mlx-swift-lm, so it does NOT collide with our ml-explore pin the way
+    // the DePasqualeOrg swift-tokenizers-mlx fork would. We bridge it to the MLXLMCommon seam in
+    // `Sources/SwiftBruja/Agent/TokenizerBridge.swift`.
+    .package(
+      url: "https://github.com/huggingface/swift-transformers", .upToNextMajor(from: "1.3.3")),
+
+    // Deliberately removed: swift-tokenizers + swift-tokenizers-mlx. The adapter
+    // (swift-tokenizers-mlx 0.3.0) does not compile against swift-tokenizers 0.7.x
+    // (encode/decode became typed-throws and the bridge was never updated; no newer
+    // adapter release exists). The tokenizer story is deferred to the rework's
+    // "different dependency solution".
+    //
+    // FoundationModels (R2/R8.1) is a system framework — `import FoundationModels`,
+    // no SPM dependency entry required.
   ],
   targets: [
     // Main library
@@ -99,8 +111,8 @@ let package = Package(
         .product(name: "MLXFast", package: "mlx-swift"),
         .product(name: "MLXLLM", package: "mlx-swift-lm"),
         .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
-        .product(name: "MLXLMTokenizers", package: "swift-tokenizers-mlx"),
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
+        .product(name: "Tokenizers", package: "swift-transformers"),
       ],
       swiftSettings: [.swiftLanguageMode(.v6)]
     ),
