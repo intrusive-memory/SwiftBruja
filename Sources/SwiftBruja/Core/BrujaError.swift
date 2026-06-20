@@ -23,6 +23,10 @@ public enum BrujaError: LocalizedError, Sendable {
   /// Insufficient memory to load the model
   case insufficientMemory(available: UInt64, required: UInt64)
 
+  /// A filesystem tool resolved to a path outside the working-directory subtree (R6.2).
+  /// The argument is the resolved (canonicalized) path that escaped the cwd.
+  case pathEscapesWorkingDirectory(String)
+
   public var errorDescription: String? {
     switch self {
     case .modelNotFound(let path):
@@ -41,6 +45,8 @@ public enum BrujaError: LocalizedError, Sendable {
       let availMB = available / (1024 * 1024)
       let reqMB = required / (1024 * 1024)
       return "Insufficient memory: \(availMB) MB available, \(reqMB) MB required to load model"
+    case .pathEscapesWorkingDirectory(let path):
+      return "Path escapes the working directory subtree and requires explicit consent: \(path)"
     }
   }
 }

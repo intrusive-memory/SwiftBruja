@@ -42,6 +42,16 @@ public struct GlobTool: Tool {
     let pattern = arguments.pattern
     let basePath = arguments.basePath
 
+    // Working-directory confinement guard (R6.1/R6.2): classify BEFORE touching disk.
+    switch PathGuard.classify(basePath) {
+    case .allowed(let resolved):
+      ToolResult.audit(operation: name, detail: resolved)
+    case .escapeRequested(let resolved):
+      return ToolResult.escapeRequested(operation: name, resolvedPath: resolved)
+    case .denied(let reason):
+      return ToolResult.error(reason)
+    }
+
     let expanded = NSString(string: basePath).expandingTildeInPath
     let baseURL = URL(fileURLWithPath: expanded)
 

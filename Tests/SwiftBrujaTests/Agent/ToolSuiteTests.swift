@@ -12,15 +12,24 @@ final class ToolSuiteTests: XCTestCase {
   // MARK: - Helpers
 
   private var tmpDir: URL!
+  private var previousCwd: String!
 
   override func setUpWithError() throws {
     try super.setUpWithError()
     tmpDir = FileManager.default.temporaryDirectory
       .appendingPathComponent("BrujaToolSuiteTests-\(UUID().uuidString)")
     try FileManager.default.createDirectory(at: tmpDir, withIntermediateDirectories: true)
+    // S4: the PathGuard confines tools to the process cwd subtree. These tool tests operate
+    // entirely inside `tmpDir`, so make `tmpDir` the working directory for the duration of each
+    // test — exactly the in-cwd usage R6.1 permits without confirmation.
+    previousCwd = FileManager.default.currentDirectoryPath
+    XCTAssertTrue(
+      FileManager.default.changeCurrentDirectoryPath(tmpDir.path),
+      "could not chdir into the test working directory")
   }
 
   override func tearDownWithError() throws {
+    FileManager.default.changeCurrentDirectoryPath(previousCwd)
     try? FileManager.default.removeItem(at: tmpDir)
     try super.tearDownWithError()
   }

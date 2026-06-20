@@ -75,4 +75,40 @@ public enum ToolResult {
 
   /// Prefix marking a tool result as a typed error (see ``error(_:)``).
   public static let errorPrefix = "ERROR: "
+
+  // MARK: - Path-escape consent outcome (R6.2)
+
+  /// Render the "escape requested" outcome for a path that resolved **outside** the cwd
+  /// subtree. The consent UI itself lands in Sortie 6/7; until then a tool surfaces this as a
+  /// typed error string so the agent loop does not silently touch an out-of-tree path.
+  ///
+  /// The string carries ``escapeMarker`` (after ``errorPrefix``) so the future consent flow —
+  /// and our tests — can distinguish a consent-required escape from an ordinary error.
+  ///
+  /// - Parameters:
+  ///   - operation: A short label for the attempted operation (e.g. `write_file`).
+  ///   - resolvedPath: The fully canonicalized path that escaped the cwd subtree.
+  public static func escapeRequested(operation: String, resolvedPath: String) -> String {
+    error(
+      escapeMarker
+        + "\(operation) target resolves outside the working directory; "
+        + "explicit user consent is required (path: \(resolvedPath))")
+  }
+
+  /// Marker (after ``errorPrefix``) identifying a consent-required path escape.
+  public static let escapeMarker = "CONSENT_REQUIRED: "
+
+  // MARK: - Auditable echo (R6.3)
+
+  /// Emit an auditable echo of an operation the agent performed, even when not prompting (R6.3),
+  /// so the transcript shows exactly what the agent did.
+  ///
+  /// Written to standard error so it never contaminates a tool's model-facing result string.
+  ///
+  /// - Parameters:
+  ///   - operation: The tool/operation name (e.g. `edit_file`, `run_shell`).
+  ///   - detail: A compact description of the target (path, command, etc.).
+  public static func audit(operation: String, detail: String) {
+    FileHandle.standardError.write(Data("[bruja audit] \(operation): \(detail)\n".utf8))
+  }
 }

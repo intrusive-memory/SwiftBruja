@@ -38,6 +38,16 @@ public struct WriteFileTool: Tool {
     let path = arguments.path
     let content = arguments.content
 
+    // Working-directory confinement guard (R6.1/R6.2): classify BEFORE writing to disk.
+    switch PathGuard.classify(path) {
+    case .allowed(let resolved):
+      ToolResult.audit(operation: name, detail: resolved)
+    case .escapeRequested(let resolved):
+      return ToolResult.escapeRequested(operation: name, resolvedPath: resolved)
+    case .denied(let reason):
+      return ToolResult.error(reason)
+    }
+
     let expanded = NSString(string: path).expandingTildeInPath
     let url = URL(fileURLWithPath: expanded)
 

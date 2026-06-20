@@ -43,6 +43,26 @@ public struct RunShellTool: Tool {
     let command = arguments.command
     let workingDirectory = arguments.workingDirectory
 
+    // R6.3 — auditable echo of every command performed, even when not prompting.
+    ToolResult.audit(operation: name, detail: command)
+
+    // R6.2 / R6.4 — BEST-EFFORT outside-path detection only.
+    //
+    // This is a guardrail, NOT a sandbox. A shell command can still `cd` elsewhere, build
+    // paths via variable/glob/command-substitution expansion, or otherwise reach outside the
+    // cwd subtree in ways a static token scan cannot see. We surface a non-blocking warning so
+    // the transcript flags suspicious tokens; we deliberately do NOT block execution on the
+    // scan alone. Honest limitation per R6.4: the cwd guard is a guardrail, not a sandbox.
+    let scanRoot = workingDirectory.map { NSString(string: $0).expandingTildeInPath }
+      ?? FileManager.default.currentDirectoryPath
+    let suspicious = PathGuard.suspiciousOutsidePaths(in: command, workingDirectory: scanRoot)
+    var warningPrefix = ""
+    if !suspicious.isEmpty {
+      warningPrefix =
+        "WARNING (best-effort): command references paths that appear to escape the working "
+        + "directory: \(suspicious.joined(separator: ", "))\n"
+    }
+
     let process = Process()
     process.executableURL = URL(fileURLWithPath: "/bin/zsh")
     process.arguments = ["-c", command]
@@ -80,7 +100,7 @@ public struct RunShellTool: Tool {
       parts.append("stderr:\n\(stderr)")
     }
 
-    let combined = parts.joined(separator: "\n")
+    let combined = warningPrefix + parts.joined(separator: "\n")
     return ToolResult.ok(combined)
   }
 }

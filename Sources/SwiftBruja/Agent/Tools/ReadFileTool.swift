@@ -42,6 +42,16 @@ public struct ReadFileTool: Tool {
   /// - Returns: The file's contents on success (truncated per the shared policy), or a
   ///   typed error string when the file is missing, is a directory, or cannot be decoded.
   public func call(arguments: Arguments) async throws -> String {
+    // Working-directory confinement guard (R6.1/R6.2): classify BEFORE touching disk.
+    switch PathGuard.classify(arguments.path) {
+    case .allowed(let resolved):
+      ToolResult.audit(operation: name, detail: resolved)
+    case .escapeRequested(let resolved):
+      return ToolResult.escapeRequested(operation: name, resolvedPath: resolved)
+    case .denied(let reason):
+      return ToolResult.error(reason)
+    }
+
     let expanded = NSString(string: arguments.path).expandingTildeInPath
     let url = URL(fileURLWithPath: expanded)
 

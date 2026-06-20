@@ -48,6 +48,16 @@ public struct EditFileTool: Tool {
     let oldString = arguments.oldString
     let newString = arguments.newString
 
+    // Working-directory confinement guard (R6.1/R6.2): classify BEFORE touching disk.
+    switch PathGuard.classify(path) {
+    case .allowed(let resolved):
+      ToolResult.audit(operation: name, detail: resolved)
+    case .escapeRequested(let resolved):
+      return ToolResult.escapeRequested(operation: name, resolvedPath: resolved)
+    case .denied(let reason):
+      return ToolResult.error(reason)
+    }
+
     let expanded = NSString(string: path).expandingTildeInPath
     let url = URL(fileURLWithPath: expanded)
 
