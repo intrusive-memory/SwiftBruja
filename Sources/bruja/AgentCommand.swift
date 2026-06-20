@@ -330,7 +330,7 @@ final class AgentLoop {
       if trimmed.isEmpty { continue }
 
       switch trimmed.lowercased() {
-      case "/quit", "/exit":
+      case "/quit", "/exit", "quit", "exit":
         await io.emitLine("[bruja] bye.")
         return
       case "/clear":
