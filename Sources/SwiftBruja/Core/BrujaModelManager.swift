@@ -2,7 +2,6 @@ import Foundation
 import MLX
 import MLXLLM
 import MLXLMCommon
-import MLXLMTokenizers
 import SwiftAcervo
 
 // MARK: - BrujaModelManager
@@ -68,16 +67,31 @@ public actor BrujaModelManager {
     }
 
     // Load model from local directory using LLMModelFactory (mlx-swift-lm 3.x API).
-    // TokenizersLoader is supplied via MLXLMTokenizers convenience overload.
-    do {
-      let container = try await LLMModelFactory.shared.loadContainer(from: modelDir)
+    //
+    // S0 NOTE: In mlx-swift-lm 3.31.3, every `LLMModelFactory.loadContainer`/`load`
+    // overload requires `using tokenizerLoader: any TokenizerLoader` (MLXLMCommon).
+    // That protocol ships with NO concrete implementation, and the previous
+    // tokenizer-adapter convenience overload no longer exists (its package was
+    // removed from the dependency set). The concrete `TokenizerLoader` is
+    // implemented in Sortie 2 (OQ-2); until then this load path is guarded with a
+    // typed error so the package compiles cleanly without the broken dependency.
+    _ = modelDir
+    throw BrujaError.modelLoadFailed(
+      BrujaModelManager.tokenizerLoaderNotImplemented
+    )
+  }
 
-      loadedModels[modelId] = container
-      return container
-    } catch {
-      throw BrujaError.modelLoadFailed(error)
+  /// Placeholder error for the not-yet-implemented concrete `TokenizerLoader`.
+  /// Replaced in Sortie 2 when `MLXLMCommon`'s `TokenizerLoader` seam gets a
+  /// concrete conformer that reads `tokenizer.json`/config from the model dir.
+  struct TokenizerLoaderNotImplemented: Error, CustomStringConvertible {
+    var description: String {
+      "tokenizer loader not implemented (deferred to Sortie 2; "
+        + "MLXLMCommon.TokenizerLoader ships protocol-only, no concrete impl)"
     }
   }
+
+  static let tokenizerLoaderNotImplemented = TokenizerLoaderNotImplemented()
 
   /// Unload a model to free memory
   public func unloadModel(_ modelId: String) {
