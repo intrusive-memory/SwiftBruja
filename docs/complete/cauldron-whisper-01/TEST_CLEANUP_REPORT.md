@@ -1,6 +1,6 @@
 ---
-state: complete
-mission: OPERATION CAULDRON WHISPER
+state: completed
+mission: cauldron-whisper-01
 branch: mission/cauldron-whisper/01
 date: 2026-06-20
 ---
