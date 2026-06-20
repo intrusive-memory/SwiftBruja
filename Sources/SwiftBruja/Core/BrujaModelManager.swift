@@ -50,8 +50,14 @@ public actor BrujaModelManager {
       return cached
     }
 
-    // Verify model is available locally
-    guard isModelAvailable(modelId) else {
+    // Verify the model directory is present locally. Use the LOOSE check
+    // (config.json present) rather than the strict `isModelAvailable`, which
+    // additionally requires the byte-equal manifest *cache* file. A model whose
+    // weights/tokenizer/config are all on disk but which lacks that cache (e.g.
+    // downloaded by an older flow) is still fully loadable — gating the load on
+    // the cache would reject it. If a declared file is genuinely missing, the
+    // MLX loader below surfaces a specific error.
+    guard Acervo.isModelConfigPresent(modelId) else {
       throw BrujaError.modelNotFound(
         "Model '\(modelId)' not found at \(Acervo.sharedModelsDirectory.path). Ensure it is pre-downloaded."
       )

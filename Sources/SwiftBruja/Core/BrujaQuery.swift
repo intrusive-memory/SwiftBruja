@@ -125,8 +125,12 @@ public enum BrujaQuery {
   ) async throws -> (ModelContainer, String, String) {
     let manager = BrujaModelManager.shared
 
-    // Verify model exists via Acervo — assumes it was downloaded externally
-    guard Acervo.isModelAvailable(model) else {
+    // Verify the model directory is present via Acervo — assumes it was
+    // downloaded externally. Loose check (config.json present), not the strict
+    // manifest-cache check: a fully-downloaded model without the cache file is
+    // still loadable. `loadModel` re-checks and the MLX loader reports any
+    // genuinely-missing file.
+    guard Acervo.isModelConfigPresent(model) else {
       throw BrujaError.modelNotFound(
         "Model '\(model)' not found. Ensure it is pre-downloaded to \(Acervo.sharedModelsDirectory.path)"
       )

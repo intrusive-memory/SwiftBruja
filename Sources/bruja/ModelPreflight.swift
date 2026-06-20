@@ -25,9 +25,16 @@ import SwiftAcervo
 ///   malformed; rethrows other `AcervoError`s (network failures, etc.) so
 ///   `runCLI` can render them via `humanReadable`.
 func ensureModelObtainable(_ modelId: String) async throws {
-  // Already downloaded into the shared container — usable offline; there is
-  // nothing to verify against the server.
-  if Acervo.isModelAvailable(modelId) { return }
+  // Already present in the shared container — the model is here and loadable,
+  // so the server's opinion is irrelevant (and we stay usable offline).
+  //
+  // Use the LOOSE local probe (`isModelConfigPresent`, a config.json check) and
+  // not the strict `isModelAvailable`: the latter additionally requires the
+  // byte-equal manifest *cache* file, which older download flows did not write.
+  // A model with all weights/tokenizer/config on disk but no cached manifest is
+  // fully loadable for inference — the strict check would wrongly force a
+  // network probe and block it.
+  if Acervo.isModelConfigPresent(modelId) { return }
 
   do {
     _ = try await Acervo.availability(slug: modelId)
