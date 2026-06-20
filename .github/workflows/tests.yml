@@ -18,7 +18,7 @@ jobs:
   # Step 1: Code Quality
   code-quality:
     name: Code Quality
-    runs-on: macos-26
+    runs-on: macos-27
 
     steps:
       - name: Checkout code
@@ -54,7 +54,7 @@ jobs:
   # self-hosted) is available, so the test gate is real again.
   macos-tests:
     name: macOS Tests
-    runs-on: macos-26
+    runs-on: macos-27
     needs: [code-quality]
     continue-on-error: true
 
@@ -68,7 +68,7 @@ jobs:
       # will fail until the runner image ships Xcode 27 (or a self-hosted macOS 27 box is used).
       # Adjust the app path to match the runner's installed beta name if needed.
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_27.0.app/Contents/Developer
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Show Swift version
         run: swift --version
@@ -93,7 +93,7 @@ jobs:
   # macOS 27 runner is available so this gate is enforced again.
   integration-tests:
     name: Integration Tests
-    runs-on: macos-26
+    runs-on: macos-27
     needs: [code-quality]
     timeout-minutes: 15
     continue-on-error: true
@@ -110,7 +110,7 @@ jobs:
       # will fail until the runner image ships Xcode 27 (or a self-hosted macOS 27 box is used).
       # Adjust the app path to match the runner's installed beta name if needed.
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_27.0.app/Contents/Developer
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Build distributable tarball
         run: make dist
