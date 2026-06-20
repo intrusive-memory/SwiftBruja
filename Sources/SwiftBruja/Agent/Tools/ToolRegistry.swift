@@ -20,11 +20,25 @@ public enum ToolRegistry {
   ///
   /// Both backends call this to obtain their `tools:` array, guaranteeing identical tool surfaces.
   ///
+  /// Registered tools (S1 + S3):
+  /// - ``ReadFileTool`` (`read_file`) — read a file's text content
+  /// - ``RunShellTool`` (`run_shell`) — run a shell command; return stdout/stderr/exit code
+  /// - ``WriteFileTool`` (`write_file`) — write content to a path
+  /// - ``EditFileTool`` (`edit_file`) — replace an old string with a new string in a file
+  /// - ``ListDirTool`` (`list_dir`) — list a directory's immediate children
+  /// - ``GrepTool`` (`grep`) — search file contents for a pattern
+  /// - ``GlobTool`` (`glob`) — match files by glob pattern under a base directory
+  ///
   /// - Returns: The registered tools as an `[any Tool]`.
   public static func defaultTools() -> [any Tool] {
     [
-      ReadFileTool()
-      // S3 appends the remaining built-in tools here.
+      ReadFileTool(),
+      RunShellTool(),
+      WriteFileTool(),
+      EditFileTool(),
+      ListDirTool(),
+      GrepTool(),
+      GlobTool(),
     ]
   }
 }
