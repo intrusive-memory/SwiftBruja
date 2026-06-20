@@ -96,6 +96,13 @@ struct DownloadCommand: AsyncParsableCommand {
         }
       }
 
+      // Preflight: every requested model must exist on the CDN. Throws and
+      // stops before any download begins if one is not published. (Models
+      // already present locally are skipped, so this stays offline-friendly.)
+      for modelId in model {
+        try await ensureModelObtainable(modelId)
+      }
+
       if model.count == 1 {
         try await runSingleModel(model[0], renderer: renderer)
       } else {

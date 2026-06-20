@@ -164,6 +164,11 @@ struct AgentCommand: AsyncParsableCommand {
           )
         }
 
+        // Preflight: the MLX model must exist on the CDN (unless already present
+        // locally). Throws and stops before loading if it is not published. The
+        // Foundation Models backend has no model file, so this gate is MLX-only.
+        try await ensureModelObtainable(effectiveModel)
+
         let io = IOCoordinator(quiet: quiet)
 
         let loop = AgentLoop(
