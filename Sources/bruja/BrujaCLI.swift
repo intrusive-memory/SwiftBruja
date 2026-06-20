@@ -29,7 +29,8 @@ struct BrujaCLI: AsyncParsableCommand {
       """,
     version: "1.7.1-dev",
     subcommands: [
-      DownloadCommand.self, QueryCommand.self, ChatCommand.self, ListCommand.self, InfoCommand.self,
+      DownloadCommand.self, QueryCommand.self, ChatCommand.self, AgentCommand.self,
+      ListCommand.self, InfoCommand.self,
     ],
     defaultSubcommand: QueryCommand.self
   )

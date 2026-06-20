@@ -13,7 +13,7 @@ VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || 
 SMALL_FIXTURE_MODEL = mlx-community/Qwen2.5-0.5B-Instruct-4bit
 MISSING_MODEL_ID    = mlx-community/__nope__
 
-.PHONY: all build release install clean test test-agent-seam resolve dist lint help reference-check codesign-cli
+.PHONY: all build release install clean test test-agent-seam test-agent-repl resolve dist lint help reference-check codesign-cli
 
 all: install
 
@@ -103,6 +103,22 @@ test-agent-seam: resolve
 	echo "Running AgentSeamSpikeTest via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
 	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
 		-XCTest AgentSeamSpikeTest/testReadFileToolRoundTripsThroughMLXSession "$$XCTEST_BUNDLE"
+
+# Run the S7 agent REPL end-to-end test against the real signed ./bin/bruja binary.
+#
+# AgentReplTest drives the REAL binary (not in-process), so it needs ./bin/bruja built + signed
+# first, plus the fixture model downloaded. It runs via the unsandboxed xctest host (same reason as
+# test-agent-seam: the sandboxed `xcodebuild test` host cannot reach the App Group container, and
+# the spawned binary itself needs the App Group entitlement).
+#
+# Prereq: make install codesign-cli && ./bin/$(BINARY) download -m $(SMALL_FIXTURE_MODEL)
+test-agent-repl: install codesign-cli
+	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
+	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
+	echo "Running AgentReplTest via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
+	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
+		-XCTest AgentReplTest/testAgentVerbRoundTripsReadFileAgainstFixtureModel "$$XCTEST_BUNDLE"
 
 # Format Swift source files
 lint:
@@ -269,6 +285,7 @@ help:
 	@echo "  dist             - Release build + create distributable tarball in ./dist"
 	@echo "  test             - Run tests with xcodebuild"
 	@echo "  test-agent-seam  - Run the S2 read_file round-trip spike via an unsandboxed xctest host"
+	@echo "  test-agent-repl  - Run the S7 'bruja agent' end-to-end REPL test against ./bin/bruja"
 	@echo "  lint             - Format Swift source files"
 	@echo "  clean            - Clean build artifacts"
 	@echo "  reference-check  - R1–R5 end-to-end verification (build, offline, TTY, error-map, preflight)"

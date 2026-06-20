@@ -216,7 +216,8 @@ public actor IOCoordinator {
     // 4. Perform the blocking readLine off the actor executor so we don't stall it.
     //    We capture `input` before crossing the isolation boundary.
     let lineReader = self.input
-    let response = await withCheckedContinuation { (continuation: CheckedContinuation<String?, Never>) in
+    let response = await withCheckedContinuation {
+      (continuation: CheckedContinuation<String?, Never>) in
       Task.detached {
         let line = lineReader.readLine()
         continuation.resume(returning: line)
@@ -232,6 +233,30 @@ public actor IOCoordinator {
     output.flush()
 
     return response?.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  // MARK: - Line helpers (S7 REPL convenience)
+
+  /// Emit `text` followed by a newline, respecting the pause/resume gate.
+  ///
+  /// Used by the agent REPL for status lines, tool-call/result echoes, and the final assistant
+  /// response. Routing these through the coordinator keeps them serialized with token streaming and
+  /// consent prompts so output never interleaves.
+  public func emitLine(_ text: String) {
+    streamToken(text + "\n")
+    flushOutput()
+  }
+
+  /// Emit `text` as a streamed line (same as ``emitLine(_:)`` today; named separately so the agent
+  /// loop can later swap in token-by-token streaming without touching call sites).
+  public func streamLine(_ text: String) {
+    streamToken(text + "\n")
+    flushOutput()
+  }
+
+  /// Present a one-line prompt (e.g. `>`) and return the user's trimmed input, or `nil` on EOF.
+  public func prompt(_ label: String) async -> String? {
+    await promptUser(label)
   }
 
   // MARK: - Path-Escape Consent (R6.5)
@@ -258,4 +283,3 @@ public actor IOCoordinator {
     return normalized == "y" || normalized == "yes"
   }
 }
-
