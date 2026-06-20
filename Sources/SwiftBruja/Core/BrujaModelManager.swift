@@ -68,30 +68,24 @@ public actor BrujaModelManager {
 
     // Load model from local directory using LLMModelFactory (mlx-swift-lm 3.x API).
     //
-    // S0 NOTE: In mlx-swift-lm 3.31.3, every `LLMModelFactory.loadContainer`/`load`
-    // overload requires `using tokenizerLoader: any TokenizerLoader` (MLXLMCommon).
-    // That protocol ships with NO concrete implementation, and the previous
-    // tokenizer-adapter convenience overload no longer exists (its package was
-    // removed from the dependency set). The concrete `TokenizerLoader` is
-    // implemented in Sortie 2 (OQ-2); until then this load path is guarded with a
-    // typed error so the package compiles cleanly without the broken dependency.
-    _ = modelDir
-    throw BrujaError.modelLoadFailed(
-      BrujaModelManager.tokenizerLoaderNotImplemented
-    )
-  }
-
-  /// Placeholder error for the not-yet-implemented concrete `TokenizerLoader`.
-  /// Replaced in Sortie 2 when `MLXLMCommon`'s `TokenizerLoader` seam gets a
-  /// concrete conformer that reads `tokenizer.json`/config from the model dir.
-  struct TokenizerLoaderNotImplemented: Error, CustomStringConvertible {
-    var description: String {
-      "tokenizer loader not implemented (deferred to Sortie 2; "
-        + "MLXLMCommon.TokenizerLoader ships protocol-only, no concrete impl)"
+    // S2: every `loadContainer(from:using:)` overload requires a concrete
+    // `MLXLMCommon.TokenizerLoader`. mlx-swift-lm ships the protocol only, so we
+    // supply `SwiftTransformersTokenizerLoader` (OQ-2), which reads the tokenizer
+    // from the local model directory offline via swift-transformers. The load is
+    // fully local — `Acervo` already placed every file in `modelDir`.
+    let container: ModelContainer
+    do {
+      container = try await LLMModelFactory.shared.loadContainer(
+        from: modelDir,
+        using: SwiftTransformersTokenizerLoader()
+      )
+    } catch {
+      throw BrujaError.modelLoadFailed(error)
     }
-  }
 
-  static let tokenizerLoaderNotImplemented = TokenizerLoaderNotImplemented()
+    loadedModels[modelId] = container
+    return container
+  }
 
   /// Unload a model to free memory
   public func unloadModel(_ modelId: String) {

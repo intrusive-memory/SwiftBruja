@@ -13,7 +13,7 @@ VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || 
 SMALL_FIXTURE_MODEL = mlx-community/Qwen2.5-0.5B-Instruct-4bit
 MISSING_MODEL_ID    = mlx-community/__nope__
 
-.PHONY: all build release install clean test resolve dist lint help reference-check
+.PHONY: all build release install clean test test-agent-seam resolve dist lint help reference-check codesign-cli
 
 all: install
 
@@ -85,6 +85,24 @@ install: resolve
 # Run tests
 test: resolve
 	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+
+# Run the S2 agent-seam spike against the fixture model.
+#
+# The model-backed integration tests need to read the shared-models App Group container
+# (group.intrusive-memory.models). The default `xcodebuild test` host is SANDBOXED and cannot
+# reach another App Group's container, so it `XCTSkip`s. This target instead runs the spike under
+# the unsandboxed `xcrun xctest` host with ACERVO_APP_GROUP_ID set, which can read the container
+# by plain POSIX (same-user) and exercises the full read_file round-trip.
+#
+# Prereq: the fixture model must be downloaded:
+#   make install codesign-cli && ./bin/$(BINARY) download -m $(SMALL_FIXTURE_MODEL)
+test-agent-seam: resolve
+	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
+	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
+	echo "Running AgentSeamSpikeTest via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
+	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
+		-XCTest AgentSeamSpikeTest/testReadFileToolRoundTripsThroughMLXSession "$$XCTEST_BUNDLE"
 
 # Format Swift source files
 lint:
@@ -215,6 +233,29 @@ reference-check: install
 	@echo " reference-check PASSED -- all five verification steps OK"
 	@echo "================================================================"
 
+# ── App Group code-signing ────────────────────────────────────────────────
+# Sign the bruja CLI with the com.apple.security.application-groups entitlement
+# so the group ID is embedded in the binary and SwiftAcervo resolves the shared
+# models container (~/Library/Group Containers/group.intrusive-memory.models/)
+# WITHOUT requiring ACERVO_APP_GROUP_ID in the environment. Container access is
+# plain POSIX (same-user, mode 700); the entitlement only supplies the group
+# identifier at runtime via SecTaskCopyValueForEntitlement.
+#
+# Default identity is ad-hoc (-), sufficient for the entitlement to be read back
+# at runtime. For a distributable build, override with a Developer ID by
+# certificate SHA-1 (names collide in the keychain):
+#   make install codesign-cli CODESIGN_IDENTITY=<sha1>
+APP_GROUP_ID ?= group.intrusive-memory.models
+CODESIGN_IDENTITY ?= -
+CODESIGN_FLAGS ?=
+CODESIGN_ENTITLEMENTS ?= cli.entitlements
+
+codesign-cli:
+	@test -f "$(BIN_DIR)/$(BINARY)" || { echo "Error: $(BIN_DIR)/$(BINARY) not found — run 'make install' or 'make release' first."; exit 1; }
+	@codesign --force --sign "$(CODESIGN_IDENTITY)" --entitlements "$(CODESIGN_ENTITLEMENTS)" $(CODESIGN_FLAGS) "$(BIN_DIR)/$(BINARY)"
+	@echo "Signed $(BIN_DIR)/$(BINARY) (identity: $(CODESIGN_IDENTITY), group: $(APP_GROUP_ID))"
+	@codesign -d --entitlements - "$(BIN_DIR)/$(BINARY)" 2>/dev/null | grep -A1 "application-groups" || true
+
 help:
 	@echo "SwiftBruja Makefile"
 	@echo ""
@@ -227,9 +268,11 @@ help:
 	@echo "  release          - Release build with xcodebuild + copy to ./bin"
 	@echo "  dist             - Release build + create distributable tarball in ./dist"
 	@echo "  test             - Run tests with xcodebuild"
+	@echo "  test-agent-seam  - Run the S2 read_file round-trip spike via an unsandboxed xctest host"
 	@echo "  lint             - Format Swift source files"
 	@echo "  clean            - Clean build artifacts"
 	@echo "  reference-check  - R1–R5 end-to-end verification (build, offline, TTY, error-map, preflight)"
+	@echo "  codesign-cli  - Sign the bruja CLI with the App Group entitlement (run after install/release)"
 	@echo "  help             - Show this help"
 	@echo ""
 	@echo "Version: $(VERSION)"

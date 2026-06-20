@@ -78,10 +78,19 @@ let package = Package(
     sibling(
       "SwiftAcervo",
       remote: "https://github.com/intrusive-memory/SwiftAcervo.git",
-      from: "0.16.0"),
+      from: "0.19.2"),
 
     // CLI argument parsing (R5). Not named in REQUIREMENTS, but the agent CLI requires it.
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
+
+    // Tokenizer (S2 / OQ-2). mlx-swift-lm 3.x ships only the `MLXLMCommon.Tokenizer`/
+    // `TokenizerLoader` *protocols* — no concrete tokenizer. swift-transformers provides a
+    // local-folder tokenizer loader (and bundles swift-jinja so `applyChatTemplate` works).
+    // It is independent of mlx-swift-lm, so it does NOT collide with our ml-explore pin the way
+    // the DePasqualeOrg swift-tokenizers-mlx fork would. We bridge it to the MLXLMCommon seam in
+    // `Sources/SwiftBruja/Agent/TokenizerBridge.swift`.
+    .package(
+      url: "https://github.com/huggingface/swift-transformers", .upToNextMajor(from: "1.3.3")),
 
     // Deliberately removed: swift-tokenizers + swift-tokenizers-mlx. The adapter
     // (swift-tokenizers-mlx 0.3.0) does not compile against swift-tokenizers 0.7.x
@@ -103,6 +112,7 @@ let package = Package(
         .product(name: "MLXLLM", package: "mlx-swift-lm"),
         .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
+        .product(name: "Tokenizers", package: "swift-transformers"),
       ],
       swiftSettings: [.swiftLanguageMode(.v6)]
     ),
