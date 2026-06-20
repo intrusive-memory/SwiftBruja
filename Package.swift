@@ -78,11 +78,16 @@ let package = Package(
     sibling(
       "SwiftAcervo",
       remote: "https://github.com/intrusive-memory/SwiftAcervo.git",
+<<<<<<< HEAD
       from: "0.19.2"),
+=======
+      from: "0.16.0"),
+>>>>>>> 164672c (Retarget to macOS 27 / Swift 6.4 and pare deps to the agentic-CLI set)
 
     // CLI argument parsing (R5). Not named in REQUIREMENTS, but the agent CLI requires it.
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
 
+<<<<<<< HEAD
     // Tokenizer (S2 / OQ-2). mlx-swift-lm 3.x ships only the `MLXLMCommon.Tokenizer`/
     // `TokenizerLoader` *protocols* — no concrete tokenizer. swift-transformers provides a
     // local-folder tokenizer loader (and bundles swift-jinja so `applyChatTemplate` works).
@@ -92,6 +97,8 @@ let package = Package(
     .package(
       url: "https://github.com/huggingface/swift-transformers", .upToNextMajor(from: "1.3.3")),
 
+=======
+>>>>>>> 164672c (Retarget to macOS 27 / Swift 6.4 and pare deps to the agentic-CLI set)
     // Deliberately removed: swift-tokenizers + swift-tokenizers-mlx. The adapter
     // (swift-tokenizers-mlx 0.3.0) does not compile against swift-tokenizers 0.7.x
     // (encode/decode became typed-throws and the bridge was never updated; no newer
