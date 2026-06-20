@@ -27,6 +27,20 @@ public enum BrujaError: LocalizedError, Sendable {
   /// The argument is the resolved (canonicalized) path that escaped the cwd.
   case pathEscapesWorkingDirectory(String)
 
+  /// A tool invoked by the agent loop failed while executing. Carries the tool name and the
+  /// underlying reason so the agent can surface (or recover from) the failure instead of crashing.
+  case toolExecutionFailed(tool: String, reason: String)
+
+  /// The agent exceeded its configured per-conversation step/turn budget (R5.3). Carries the
+  /// limit that was hit so the caller can report it precisely.
+  case agentStepLimitExceeded(limit: Int)
+
+  /// Generation hit the model's context window (prompt + history too large), or the underlying
+  /// MLX generation reported a context-overflow condition. Mapped here instead of crashing
+  /// (R2.4 spirit applied to MLX). `tokenCount`/`limit` are best-effort and may be 0 when the
+  /// source cannot report exact counts.
+  case contextWindowExceeded(tokenCount: Int, limit: Int)
+
   public var errorDescription: String? {
     switch self {
     case .modelNotFound(let path):
@@ -47,6 +61,15 @@ public enum BrujaError: LocalizedError, Sendable {
       return "Insufficient memory: \(availMB) MB available, \(reqMB) MB required to load model"
     case .pathEscapesWorkingDirectory(let path):
       return "Path escapes the working directory subtree and requires explicit consent: \(path)"
+    case .toolExecutionFailed(let tool, let reason):
+      return "Tool '\(tool)' failed: \(reason)"
+    case .agentStepLimitExceeded(let limit):
+      return "Agent step limit exceeded: reached the configured maximum of \(limit) step(s) per turn"
+    case .contextWindowExceeded(let tokenCount, let limit):
+      if limit > 0 {
+        return "Context window exceeded: \(tokenCount) tokens requested, \(limit) tokens available"
+      }
+      return "Context window exceeded: prompt and history are too large for the model"
     }
   }
 }
