@@ -62,36 +62,107 @@ struct AgentCommand: AsyncParsableCommand {
   @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
   var quiet = false
 
-  /// The agent loop's default model for Sortie 7.
+  /// Select the inference backend: `mlx` (default) or `foundation`.
   ///
-  /// Deliberately distinct from `Bruja.defaultModel` (Llama-3.2-1B, used by `query`/`chat`): the
-  /// agent needs a tool-capable instruct model. For S7 this is the small, cached, tool-calling
-  /// fixture (`mlx-community/Qwen2.5-0.5B-Instruct-4bit`). Sortie 8 introduces `--model`/`--backend`
-  /// selection and the curated 7B agentic default; until then the verb runs against this fixture so
-  /// it works out of the box against the model that is already downloaded for the agent-seam spike.
-  static let agentDefaultModel = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+  /// `mlx` routes through `MLXLanguageModelExecutor` against any SwiftAcervo model id.
+  /// `foundation` routes through `SystemLanguageModel` (Foundation Models, S9); selecting it
+  /// when FM is unavailable on this host is a full-stop typed error — no silent fallback.
+  @Option(
+    name: .long,
+    help:
+      "Backend to use: 'mlx' (default, any acervo model id) or 'foundation' (on-device FM, S9)."
+  )
+  var backend: String?
+
+  /// Override the model id used by the MLX backend.
+  ///
+  /// Ignored when `--backend foundation` is selected (Foundation Models uses
+  /// `SystemLanguageModel.default`, not a model-file id). When omitted with the MLX backend,
+  /// defaults to ``agentDefaultModel``.
+  @Option(
+    name: [.short, .long],
+    help:
+      "MLX model id (e.g., mlx-community/Qwen2.5-7B-Instruct-4bit). Ignored with --backend foundation."
+  )
+  var model: String?
+
+  // MARK: - Constants
+
+  /// The agentic default model id (Sortie 8, R7 / OQ-3).
+  ///
+  /// Deliberately distinct from `Bruja.defaultModel` ("mlx-community/Llama-3.2-1B-Instruct-4bit"),
+  /// which is the lighter-weight default used by `query`/`chat`. The agent path requires a
+  /// larger, tool-capable instruct model. This 7B model is CDN-verified present (4.3 GB, 10 files).
+  /// Do NOT use `Qwen2.5-Coder-7B-Instruct-4bit` — it returns HTTP 404 on the CDN (OQ-3).
+  static let agentDefaultModel: String = AgentAllowlist.agentDefaultModel
+
+  // MARK: - Run
 
   func run() async throws {
     try await runCLI {
       let renderer = ProgressRenderer(quiet: quiet)
       await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
 
-      let model = Self.agentDefaultModel
-      let io = IOCoordinator(quiet: quiet)
+      // Resolve backend + effective model id from --backend / --model flags.
+      // The selector is the explicit --backend flag if set; otherwise the explicit --model id
+      // (which implies the MLX backend); otherwise nil (use defaults).
+      let selector = backend ?? model
+      let (resolvedBackend, resolvedModelId) = AgentBackendSelector.resolve(selector: selector)
 
-      let loop = AgentLoop(
-        modelId: model,
-        temperature: temperature,
-        maxTokens: maxTokens,
-        io: io,
-        quiet: quiet
-      )
+      // When a --model is given but --backend is 'foundation', warn that --model is ignored.
+      if resolvedBackend == .foundation, let explicitModel = model {
+        if !quiet {
+          print(
+            "[bruja] Warning: --model '\(explicitModel)' is ignored when --backend foundation is selected."
+          )
+        }
+      }
 
-      if let task, !task.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-        // One-shot: a single turn on the same loop, then exit.
-        try await loop.runTurn(task)
-      } else {
-        try await loop.runInteractive()
+      switch resolvedBackend {
+      case .foundation:
+        // S8: wire the FM-unavailable error path. The actual FM session is S9.
+        let availability = LiveFoundationModelsAvailability()
+        guard availability.isAvailable else {
+          let reason =
+            availability.unavailabilityReason ?? "unknown reason"
+          throw CLIError(
+            "Foundation Models is not available on this host: \(reason). "
+              + "Use '--backend mlx' (or omit --backend) to run with an MLX model instead."
+          )
+        }
+        // FM is available on this host: S9 will wire the real session here.
+        // For now, surface a clear not-yet-implemented message (S9 lands next sortie).
+        throw CLIError(
+          "The Foundation Models backend session is implemented in Sortie 9 (not yet available). "
+            + "Use '--backend mlx' (or omit --backend) to run with an MLX model instead."
+        )
+
+      case .mlx:
+        let effectiveModel = resolvedModelId ?? Self.agentDefaultModel
+
+        // Warn if the selected model is not on the curated agent-capable allowlist (R3.3 / R7.3).
+        if !AgentAllowlist.isAgentCapable(effectiveModel), !quiet {
+          print(
+            "[bruja] Warning: '\(effectiveModel)' is not on the agent-capable allowlist and may not tool-call reliably."
+          )
+        }
+
+        let io = IOCoordinator(quiet: quiet)
+
+        let loop = AgentLoop(
+          modelId: effectiveModel,
+          temperature: temperature,
+          maxTokens: maxTokens,
+          io: io,
+          quiet: quiet
+        )
+
+        if let task, !task.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+          // One-shot: a single turn on the same loop, then exit.
+          try await loop.runTurn(task)
+        } else {
+          try await loop.runInteractive()
+        }
       }
     }
   }

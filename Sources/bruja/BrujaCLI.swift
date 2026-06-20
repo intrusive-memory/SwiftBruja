@@ -377,8 +377,13 @@ struct ListCommand: AsyncParsableCommand {
         } else {
           print("Downloaded models in \(Acervo.sharedModelsDirectory.path):\n")
           for model in models {
-            print("• \(model.id) (\(formatBytes(model.sizeBytes)))")
+            let agentTag =
+              AgentAllowlist.isAgentCapable(model.id) ? " [agent-capable]" : ""
+            print("• \(model.id) (\(formatBytes(model.sizeBytes)))\(agentTag)")
           }
+          print(
+            "\n[agent-capable] = on the curated tool-calling allowlist (reliable for `bruja agent`)"
+          )
         }
       }
     }

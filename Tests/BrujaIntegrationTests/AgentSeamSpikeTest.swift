@@ -88,15 +88,26 @@ final class AgentSeamSpikeTest: XCTestCase {
   // MARK: - Test
 
   func testReadFileToolRoundTripsThroughMLXSession() async throws {
-    // 1. Write a temp file with a unique sentinel the model could not have invented.
+    // 1. Create an isolated working directory and place the fixture file INSIDE it, so the
+    //    read_file call stays within the cwd and PathGuard allows it (no CONSENT_REQUIRED).
+    //    Mirror the same pattern as AgentReplTest: chdir into the workdir, use a relative path.
     let sentinel = "SWIFTBRUJA_S2_SENTINEL_\(UUID().uuidString.prefix(8))"
-    let tempDir = FileManager.default.temporaryDirectory
-    let fileURL = tempDir.appendingPathComponent("bruja_s2_spike_\(UUID().uuidString).txt")
+    let workDir = FileManager.default.temporaryDirectory
+      .appendingPathComponent("bruja_s2_spike_\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: workDir) }
+
+    let fileName = "bruja_s2_spike.txt"
+    let fileURL = workDir.appendingPathComponent(fileName)
     let fileContents = "The secret pass phrase is: \(sentinel)\n"
     try fileContents.write(to: fileURL, atomically: true, encoding: .utf8)
-    defer { try? FileManager.default.removeItem(at: fileURL) }
 
-    print("\n📌 S2 spike: temp file \(fileURL.path)")
+    // Chdir into the workdir so PathGuard's cwd-confinement permits a relative read.
+    let savedCwd = FileManager.default.currentDirectoryPath
+    FileManager.default.changeCurrentDirectoryPath(workDir.path)
+    defer { FileManager.default.changeCurrentDirectoryPath(savedCwd) }
+
+    print("\n📌 S2 spike: workDir \(workDir.path), file \(fileName)")
     print("   sentinel = \(sentinel)")
 
     // Skip with a clear diagnostic if the model is not reachable. Under a SANDBOXED test host
@@ -130,7 +141,7 @@ final class AgentSeamSpikeTest: XCTestCase {
     )
 
     let prompt =
-      "Read the file at the path '\(fileURL.path)' and tell me the secret pass phrase it contains."
+      "Read the file at the path '\(fileName)' and tell me the secret pass phrase it contains."
 
     // 3. Run the prompt — the framework dispatches read_file, appends the output, and re-prompts.
     print("🔄 Running session.respond(...) — first call loads the MLX model")
@@ -151,8 +162,8 @@ final class AgentSeamSpikeTest: XCTestCase {
         + "The tool-calling seam did not fire."
     )
     XCTAssertTrue(
-      invocations.contains { $0.contains(fileURL.lastPathComponent) || $0 == fileURL.path },
-      "read_file was called but not with the temp file path. Got: \(invocations)"
+      invocations.contains { $0.contains(fileName) || $0 == fileURL.path },
+      "read_file was called but not with the fixture file path. Got: \(invocations)"
     )
 
     // 5. Assert (b): the file content round-tripped back into the framework loop.
