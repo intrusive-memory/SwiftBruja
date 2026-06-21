@@ -138,7 +138,8 @@ final class IOCoordinatorTests: XCTestCase {
 
     // 3. The prompt question appears in the output (after pre-pause tokens).
     let promptIndex = allText.range(of: "Allow?")
-    XCTAssertNotNil(promptIndex, "Prompt question must appear in output; got: \(allText.debugDescription)")
+    XCTAssertNotNil(
+      promptIndex, "Prompt question must appear in output; got: \(allText.debugDescription)")
 
     // 4. token_B appears before the prompt question.
     let tokenBIndex = allText.range(of: "token_B ")

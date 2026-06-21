@@ -437,8 +437,10 @@ final class ConsentToolDispatcher: AgentToolHandling, @unchecked Sendable {
     self.tools = tools
     let obs = tools.map { ConsentToolObserver(inner: $0, io: io) }
     self.observers = obs
-    self.toolByName = Dictionary(tools.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
-    self.observerByName = Dictionary(obs.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
+    self.toolByName = Dictionary(
+      tools.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
+    self.observerByName = Dictionary(
+      obs.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
   }
 
   func toolSpecs() -> [ToolSpec] {

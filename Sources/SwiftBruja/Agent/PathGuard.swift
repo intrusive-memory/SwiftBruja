@@ -173,7 +173,8 @@ public enum PathGuard {
   ) -> [String] {
     // Tokenize on whitespace and a few shell separators. Crude on purpose — this is best-effort.
     let separators = CharacterSet(charactersIn: " \t\n;|&()<>\"'`=")
-    let tokens = command
+    let tokens =
+      command
       .components(separatedBy: separators)
       .map { $0.trimmingCharacters(in: .whitespaces) }
       .filter { !$0.isEmpty }

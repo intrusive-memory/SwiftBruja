@@ -64,7 +64,8 @@ public enum BrujaError: LocalizedError, Sendable {
     case .toolExecutionFailed(let tool, let reason):
       return "Tool '\(tool)' failed: \(reason)"
     case .agentStepLimitExceeded(let limit):
-      return "Agent step limit exceeded: reached the configured maximum of \(limit) step(s) per turn"
+      return
+        "Agent step limit exceeded: reached the configured maximum of \(limit) step(s) per turn"
     case .contextWindowExceeded(let tokenCount, let limit):
       if limit > 0 {
         return "Context window exceeded: \(tokenCount) tokens requested, \(limit) tokens available"

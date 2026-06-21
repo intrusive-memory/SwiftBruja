@@ -62,18 +62,22 @@ final class ToolSuiteTests: XCTestCase {
 
   func testRunShellReturnsStdout() async throws {
     let tool = RunShellTool()
-    let result = try await tool.call(arguments: .init(command: "echo hello_bruja", workingDirectory: nil))
+    let result = try await tool.call(
+      arguments: .init(command: "echo hello_bruja", workingDirectory: nil))
 
     XCTAssertTrue(result.contains("hello_bruja"), "Expected stdout in result, got: \(result)")
     XCTAssertTrue(result.contains("exit_code: 0"), "Expected exit_code: 0, got: \(result)")
-    XCTAssertFalse(result.hasPrefix(ToolResult.errorPrefix), "Successful command must not be an error result")
+    XCTAssertFalse(
+      result.hasPrefix(ToolResult.errorPrefix), "Successful command must not be an error result")
   }
 
   func testRunShellCapturesStderr() async throws {
     let tool = RunShellTool()
-    let result = try await tool.call(arguments: .init(command: "echo error_text >&2", workingDirectory: nil))
+    let result = try await tool.call(
+      arguments: .init(command: "echo error_text >&2", workingDirectory: nil))
 
-    XCTAssertTrue(result.contains("error_text"), "Expected stderr content in result, got: \(result)")
+    XCTAssertTrue(
+      result.contains("error_text"), "Expected stderr content in result, got: \(result)")
   }
 
   func testRunShellNonZeroExitCode() async throws {
@@ -88,7 +92,8 @@ final class ToolSuiteTests: XCTestCase {
     let result = try await tool.call(
       arguments: .init(command: "pwd", workingDirectory: tmpDir.path))
 
-    XCTAssertTrue(result.contains(tmpDir.path), "Expected working directory in pwd output, got: \(result)")
+    XCTAssertTrue(
+      result.contains(tmpDir.path), "Expected working directory in pwd output, got: \(result)")
   }
 
   func testRunShellTruncatesLargeOutput() async throws {
@@ -191,7 +196,8 @@ final class ToolSuiteTests: XCTestCase {
     XCTAssertFalse(result.hasPrefix(ToolResult.errorPrefix), "listDir must succeed, got: \(result)")
     XCTAssertTrue(result.contains("alpha.txt"), "Must list alpha.txt, got: \(result)")
     XCTAssertTrue(result.contains("beta.txt"), "Must list beta.txt, got: \(result)")
-    XCTAssertTrue(result.contains("subdir/"), "Subdirectory must have trailing slash, got: \(result)")
+    XCTAssertTrue(
+      result.contains("subdir/"), "Subdirectory must have trailing slash, got: \(result)")
   }
 
   func testListDirOnEmptyDirectoryReturnsMarker() async throws {
@@ -227,13 +233,15 @@ final class ToolSuiteTests: XCTestCase {
   // MARK: - GrepTool
 
   func testGrepFindsLiteralMatch() async throws {
-    let fileURL = try makeFile(name: "grep_test.txt", content: "line one\nline two\nno match here\n")
+    let fileURL = try makeFile(
+      name: "grep_test.txt", content: "line one\nline two\nno match here\n")
     let tool = GrepTool()
     let result = try await tool.call(
       arguments: .init(pattern: "line two", path: fileURL.path, isRegex: false))
 
     XCTAssertFalse(result.hasPrefix(ToolResult.errorPrefix), "Grep must succeed, got: \(result)")
-    XCTAssertTrue(result.contains("line two"), "Result must contain the matched line, got: \(result)")
+    XCTAssertTrue(
+      result.contains("line two"), "Result must contain the matched line, got: \(result)")
     XCTAssertFalse(result.contains("no match"), "Non-matching lines must be absent, got: \(result)")
   }
 
@@ -254,7 +262,8 @@ final class ToolSuiteTests: XCTestCase {
     let result = try await tool.call(
       arguments: .init(pattern: "\\d+", path: fileURL.path, isRegex: true))
 
-    XCTAssertTrue(result.contains("foo123") || result.contains("bar456"),
+    XCTAssertTrue(
+      result.contains("foo123") || result.contains("bar456"),
       "Regex match must find numeric suffixes, got: \(result)")
     XCTAssertFalse(result.contains("baz"), "Non-matching line must be absent, got: \(result)")
   }
@@ -283,7 +292,8 @@ final class ToolSuiteTests: XCTestCase {
     XCTAssertFalse(result.hasPrefix(ToolResult.errorPrefix), "Glob must succeed, got: \(result)")
     XCTAssertTrue(result.contains("Main.swift"), "Must find Main.swift, got: \(result)")
     XCTAssertTrue(result.contains("Helper.swift"), "Must find Helper.swift, got: \(result)")
-    XCTAssertFalse(result.contains("README.md"), "Must not match README.md for *.swift, got: \(result)")
+    XCTAssertFalse(
+      result.contains("README.md"), "Must not match README.md for *.swift, got: \(result)")
   }
 
   func testGlobNoMatchReturnsMessage() async throws {

@@ -1,6 +1,5 @@
-import XCTest
-
 import MLXLMCommon
+import XCTest
 
 @testable import SwiftBruja
 

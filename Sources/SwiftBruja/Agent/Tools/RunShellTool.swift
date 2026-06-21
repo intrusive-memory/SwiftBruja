@@ -30,7 +30,8 @@ public struct RunShellTool: Tool {
     public var command: String
 
     /// Optional working directory for the command. Tilde (`~`) is expanded.
-    @Guide(description: "Optional working directory path; defaults to the process current directory")
+    @Guide(
+      description: "Optional working directory path; defaults to the process current directory")
     public var workingDirectory: String?
   }
 
@@ -53,7 +54,8 @@ public struct RunShellTool: Tool {
     // cwd subtree in ways a static token scan cannot see. We surface a non-blocking warning so
     // the transcript flags suspicious tokens; we deliberately do NOT block execution on the
     // scan alone. Honest limitation per R6.4: the cwd guard is a guardrail, not a sandbox.
-    let scanRoot = workingDirectory.map { NSString(string: $0).expandingTildeInPath }
+    let scanRoot =
+      workingDirectory.map { NSString(string: $0).expandingTildeInPath }
       ?? FileManager.default.currentDirectoryPath
     let suspicious = PathGuard.suspiciousOutsidePaths(in: command, workingDirectory: scanRoot)
     var warningPrefix = ""
@@ -80,7 +82,8 @@ public struct RunShellTool: Tool {
     do {
       try process.run()
     } catch {
-      return ToolResult.error("could not launch command '\(command)': \(error.localizedDescription)")
+      return ToolResult.error(
+        "could not launch command '\(command)': \(error.localizedDescription)")
     }
 
     process.waitUntilExit()

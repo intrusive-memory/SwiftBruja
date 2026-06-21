@@ -452,7 +452,8 @@ final class MockBackendDispatchTests: XCTestCase {
     let secondTurn = mock.receivedTurns[1]
     XCTAssertTrue(
       secondTurn.map(\.role).contains(.tool),
-      "The round-trip generation must include the tool output; got roles: \(secondTurn.map(\.role))")
+      "The round-trip generation must include the tool output; got roles: \(secondTurn.map(\.role))"
+    )
   }
 
   // MARK: - 7. No model/network confirmation

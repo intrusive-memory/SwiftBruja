@@ -74,7 +74,9 @@ public protocol StringOutputTool: FoundationModels.Tool where Output == String {
 /// (macOS 26), then calls the tool. A tool that does not return `String`, or arguments that fail to
 /// decode, yield a typed error *string* (never a throw) so the model can recover on the next turn.
 @available(macOS 26.0, *)
-public func dispatchTool(_ tool: any FoundationModels.Tool, argumentsJSON: String) async throws -> String {
+public func dispatchTool(_ tool: any FoundationModels.Tool, argumentsJSON: String) async throws
+  -> String
+{
   guard let stringTool = tool as? any StringOutputTool else {
     return ToolResult.error("tool '\(tool.name)' is not dispatchable (non-String output)")
   }

@@ -115,7 +115,8 @@ public struct LiveFoundationModelsAvailability: FoundationModelsAvailabilityProv
     case .deviceNotEligible:
       return "this device does not support Apple Intelligence"
     case .appleIntelligenceNotEnabled:
-      return "Apple Intelligence is not enabled — enable it in System Settings › Apple Intelligence & Siri"
+      return
+        "Apple Intelligence is not enabled — enable it in System Settings › Apple Intelligence & Siri"
     case .modelNotReady:
       return "Foundation Models assets are not yet downloaded to this device"
     @unknown default:

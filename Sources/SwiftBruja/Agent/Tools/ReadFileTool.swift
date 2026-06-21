@@ -67,7 +67,8 @@ public struct ReadFileTool: Tool {
     do {
       data = try Data(contentsOf: url)
     } catch {
-      return ToolResult.error("could not read file '\(arguments.path)': \(error.localizedDescription)")
+      return ToolResult.error(
+        "could not read file '\(arguments.path)': \(error.localizedDescription)")
     }
 
     guard let contents = String(data: data, encoding: .utf8) else {

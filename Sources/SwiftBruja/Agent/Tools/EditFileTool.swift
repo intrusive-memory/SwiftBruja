@@ -85,12 +85,14 @@ public struct EditFileTool: Tool {
         "oldString not found in '\(path)'; no edit performed — check your match string")
     }
 
-    let edited = original.replacingOccurrences(of: oldString, with: newString, range: original.startIndex..<original.endIndex)
+    let edited = original.replacingOccurrences(
+      of: oldString, with: newString, range: original.startIndex..<original.endIndex)
 
     do {
       try edited.write(to: url, atomically: true, encoding: .utf8)
     } catch {
-      return ToolResult.error("could not write edited file '\(path)': \(error.localizedDescription)")
+      return ToolResult.error(
+        "could not write edited file '\(path)': \(error.localizedDescription)")
     }
 
     let delta = edited.count - original.count

@@ -132,8 +132,8 @@ final class FoundationBackendIntegrationTest: XCTestCase {
       let combinedOutput = stdout + stderr
       let mentionsUnavailability =
         combinedOutput.contains("not available")
-          || combinedOutput.contains("Apple Intelligence")
-          || combinedOutput.contains("Foundation Models")
+        || combinedOutput.contains("Apple Intelligence")
+        || combinedOutput.contains("Foundation Models")
       XCTAssertTrue(
         mentionsUnavailability,
         "[S9 FM-unavailable] Stderr must explain why FM is unavailable. "
