@@ -17,18 +17,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.8.0] - 2026-06-21
+
+### Added
+
+- **`bruja agent` — local agentic CLI** — a real agent loop with a built-in file/shell tool suite (`ReadFileTool`, `WriteFileTool`, `RunShellTool`) routed through a `ToolRegistry`, scoped to the current working directory with path-guard enforcement. Two backends sit behind one seam: `--backend mlx` (default, any acervo model id, hand-rolled tool-call loop on `MLXLMCommon`) and `--backend foundation` (Apple's on-device Foundation Models system model). Backend selection is an explicit, typed full-stop on unavailability — no silent fallback.
+- **Model preflight on the CDN** — `ModelPreflight` checks model existence on the CDN before attempting load/download, so missing-model failures surface early with a clear error instead of mid-inference.
+- **`cli.entitlements`** — entitlements file for the signed CLI executable.
+
+### Changed
+
+- **Retargeted to macOS 26+** — the project is a macOS-first CLI; iOS is out of scope. The agent stack runs on macOS 26 APIs (`FoundationModels.Tool` + `@Generable` + `LanguageModelSession`, and `MLXLMCommon` generation with native tool-call parsing). The macOS-27-only custom-provider seam (`LanguageModel`/`LanguageModelExecutor`) was removed so the project builds and tests on the macOS 26 CI image.
+- **Dependency set pared to the agentic-CLI essentials** — manifest reworked around mlx-swift / mlx-swift-lm 3.x, SwiftAcervo, swift-argument-parser, and huggingface/swift-transformers (concrete tokenizer bridged to `MLXLMCommon` via `TokenizerBridge.swift`).
+- **Loosened model-presence gates to `config.json`** so the agent can load cache-less models.
+- **Swift 6 language mode pinned explicitly** on all first-party targets.
+- **`BrujaModelManager.migrateIfNeeded()` logs to stderr** instead of stdout, so `bruja query --json` output stays machine-parseable when a legacy migration runs.
+- **CLI help wording**: "HuggingFace ID" → "model ID" / "model path or ID" across `download`, `query`, `chat`, and `info`. The CDN is the source of truth, not the HuggingFace Hub.
 
 ### Removed
 
 - **`BrujaModelManager` component-registry shim** — the static `registeredComponents`, `isComponentRegistered`, and `component(for:)` helpers have been removed. Call `Acervo.registeredComponents(ofType:)`, `Acervo.component(_:)` directly.
 - **`BrujaComponents.swift`** — the bundled `qwen3-coder-next-4bit` `ComponentDescriptor` registration is gone. The CLI accepts raw repo IDs only; consumers that want a curated catalog should register their own descriptors with `Acervo.register(_:)`.
 - **`fetchManifestForBrujaId(_:)` (`ManifestDispatcher.swift`)** — replaced by direct `Acervo.fetchManifest(for:)` calls. The `bruja info --remote` command was rewired in place.
-
-### Changed
-
-- **`BrujaModelManager.migrateIfNeeded()` logs to stderr** instead of stdout, so `bruja query --json` output stays machine-parseable when a legacy migration runs.
-- **CLI help wording**: "HuggingFace ID" → "model ID" / "model path or ID" across `download`, `query`, `chat`, and `info`. The CDN is the source of truth, not the HuggingFace Hub.
 
 ---
 

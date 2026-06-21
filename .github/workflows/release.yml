@@ -26,13 +26,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
-
+      # The released binary targets macOS 26 (swift-tools-version: 6.2, .macOS(.v26)); the hosted
+      # macos-26 image's default Xcode 26 ships the Swift 6.2 toolchain, so no Xcode selection is
+      # needed.
       - name: Determine Version
         id: version
         run: |

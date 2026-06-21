@@ -27,9 +27,10 @@ struct BrujaCLI: AsyncParsableCommand {
         bruja list                                 # Show downloaded models
         bruja info -m ~/Models/Phi-3              # Show model details
       """,
-    version: "1.7.1",
+    version: "1.8.0",
     subcommands: [
-      DownloadCommand.self, QueryCommand.self, ChatCommand.self, ListCommand.self, InfoCommand.self,
+      DownloadCommand.self, QueryCommand.self, ChatCommand.self, AgentCommand.self,
+      ListCommand.self, InfoCommand.self,
     ],
     defaultSubcommand: QueryCommand.self
   )
@@ -93,6 +94,13 @@ struct DownloadCommand: AsyncParsableCommand {
         for modelId in model {
           try? Acervo.deleteModel(modelId)
         }
+      }
+
+      // Preflight: every requested model must exist on the CDN. Throws and
+      // stops before any download begins if one is not published. (Models
+      // already present locally are skipped, so this stays offline-friendly.)
+      for modelId in model {
+        try await ensureModelObtainable(modelId)
       }
 
       if model.count == 1 {
@@ -376,8 +384,13 @@ struct ListCommand: AsyncParsableCommand {
         } else {
           print("Downloaded models in \(Acervo.sharedModelsDirectory.path):\n")
           for model in models {
-            print("• \(model.id) (\(formatBytes(model.sizeBytes)))")
+            let agentTag =
+              AgentAllowlist.isAgentCapable(model.id) ? " [agent-capable]" : ""
+            print("• \(model.id) (\(formatBytes(model.sizeBytes)))\(agentTag)")
           }
+          print(
+            "\n[agent-capable] = on the curated tool-calling allowlist (reliable for `bruja agent`)"
+          )
         }
       }
     }

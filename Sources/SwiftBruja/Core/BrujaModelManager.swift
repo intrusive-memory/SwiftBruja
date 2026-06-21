@@ -2,7 +2,6 @@ import Foundation
 import MLX
 import MLXLLM
 import MLXLMCommon
-import MLXLMTokenizers
 import SwiftAcervo
 
 // MARK: - BrujaModelManager
@@ -51,8 +50,14 @@ public actor BrujaModelManager {
       return cached
     }
 
-    // Verify model is available locally
-    guard isModelAvailable(modelId) else {
+    // Verify the model directory is present locally. Use the LOOSE check
+    // (config.json present) rather than the strict `isModelAvailable`, which
+    // additionally requires the byte-equal manifest *cache* file. A model whose
+    // weights/tokenizer/config are all on disk but which lacks that cache (e.g.
+    // downloaded by an older flow) is still fully loadable — gating the load on
+    // the cache would reject it. If a declared file is genuinely missing, the
+    // MLX loader below surfaces a specific error.
+    guard Acervo.isModelConfigPresent(modelId) else {
       throw BrujaError.modelNotFound(
         "Model '\(modelId)' not found at \(Acervo.sharedModelsDirectory.path). Ensure it is pre-downloaded."
       )
@@ -68,15 +73,24 @@ public actor BrujaModelManager {
     }
 
     // Load model from local directory using LLMModelFactory (mlx-swift-lm 3.x API).
-    // TokenizersLoader is supplied via MLXLMTokenizers convenience overload.
+    //
+    // S2: every `loadContainer(from:using:)` overload requires a concrete
+    // `MLXLMCommon.TokenizerLoader`. mlx-swift-lm ships the protocol only, so we
+    // supply `SwiftTransformersTokenizerLoader` (OQ-2), which reads the tokenizer
+    // from the local model directory offline via swift-transformers. The load is
+    // fully local — `Acervo` already placed every file in `modelDir`.
+    let container: ModelContainer
     do {
-      let container = try await LLMModelFactory.shared.loadContainer(from: modelDir)
-
-      loadedModels[modelId] = container
-      return container
+      container = try await LLMModelFactory.shared.loadContainer(
+        from: modelDir,
+        using: SwiftTransformersTokenizerLoader()
+      )
     } catch {
       throw BrujaError.modelLoadFailed(error)
     }
+
+    loadedModels[modelId] = container
+    return container
   }
 
   /// Unload a model to free memory
