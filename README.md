@@ -27,9 +27,9 @@ let response = try await Bruja.query("What is the capital of France?")
 
 ## Requirements
 
-- **macOS 27.0+** — required for the `LanguageModelExecutor` custom-provider seam that powers the MLX backend
+- **macOS 26.0+** — the agent stack runs on macOS 26 APIs (`FoundationModels.Tool` + `@Generable` + `MLXLMCommon` native tool-calling)
 - **Apple Silicon only** (M1/M2/M3/M4) — NO Intel support
-- **Swift 6.4+**
+- **Swift 6.2+**
 - ~2-4 GB storage per model (agent default: `mlx-community/Qwen2.5-7B-Instruct-4bit`, ~4.3 GB)
 
 ## Installation
@@ -286,7 +286,7 @@ make release
 # Create distributable tarball (binary + mlx-swift_Cmlx.bundle)
 make dist
 
-# Manual xcodebuild (requires correct destination for macOS 27 Apple Silicon)
+# Manual xcodebuild (Apple Silicon)
 xcodebuild -scheme bruja -destination 'platform=macOS,arch=arm64' build
 
 # Run tests (requires xcodebuild)
@@ -298,7 +298,7 @@ make reference-check
 
 **Note:** Metal shaders require `xcodebuild` or `make install`. Using `swift build` alone will compile but Metal shaders won't load at runtime, making MLX inference non-functional.
 
-**macOS 27 required.** The `Package.swift` manifest uses `swift-tools-version: 6.4` and `.macOS(.v27)`. Building requires Xcode 27 (beta). GitHub Actions hosted CI cannot yet parse this manifest (no `macos-27` runner image exists); verification gates on a local macOS-27 host.
+**macOS 26 required.** The `Package.swift` manifest uses `swift-tools-version: 6.2` and `.macOS(.v26)`, so it builds with Xcode 26 on the hosted `macos-26` GitHub Actions image. The agent stack is macOS-26-only (the macOS-27 FoundationModels custom-provider seam was removed in favor of a hand-rolled MLX loop).
 
 ## App Group configuration (required)
 

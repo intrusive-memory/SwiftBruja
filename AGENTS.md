@@ -25,8 +25,10 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
   - `Core/BrujaMemory.swift` -- Memory validation and auto-tuned maxTokens
   - `Core/BrujaTypes.swift` -- `BrujaQueryResult`, `BrujaModelInfo`
   - `Core/BrujaError.swift` -- Error types (includes agent errors: `toolExecutionFailed`, `agentStepLimitExceeded`, `contextWindowExceeded`)
-  - `Agent/MLXLanguageModelExecutor.swift` -- `LanguageModelExecutor` conformer (macOS 27+) — MLX backend
-  - `Agent/FoundationModelBackend.swift` -- Foundation Models backend (uses `SystemLanguageModel.default`)
+  - `Agent/MLXAgentLoop.swift` -- the hand-rolled macOS-26 MLX agent loop (owns the tool round-trip)
+  - `Agent/MLXGeneration.swift` -- MLX generation seam (`GenerationSource`, `ContainerGenerationSource`, `TurnState` KV-cache reuse + step cap)
+  - `Agent/ToolDispatch.swift` -- JSON→tool dispatch, `MLXToolEncoding` (Tool→ToolSpec), `AgentToolHandling`/`RegistryToolHandler`
+  - `Agent/FoundationModelBackend.swift` -- Foundation Models backend (uses `SystemLanguageModel.default` via `LanguageModelSession`)
   - `Agent/AgentBackendSelector.swift` -- Backend resolution from `--backend`/`--model` flags
   - `Agent/PathGuard.swift` -- Working-directory confinement guard (classify / escape-consent)
   - `Agent/TokenizerBridge.swift` -- Bridges huggingface/swift-transformers to `MLXLMCommon.Tokenizer` seam
@@ -188,14 +190,11 @@ make test-agent-fm      # S9 Foundation Models backend integration
 
 These targets use `xcrun xctest` (unsandboxed) with `ACERVO_APP_GROUP_ID` set, which can access the App Group container via plain POSIX (same-user, mode 700).
 
-### CI Gating Reality (OQ-4)
+### CI Gating
 
-**The `Package.swift` manifest (`swift-tools-version: 6.4`, `.macOS(.v27)`) cannot be parsed by hosted macOS-26 runners.** As of this writing, GitHub Actions does not offer a `macos-27` image. This means:
+The `Package.swift` manifest (`swift-tools-version: 6.2`, `.macOS(.v26)`) builds on the hosted `macos-26` image with its default Xcode 26. `tests.yml` (Code Quality + macOS Tests + Integration Tests) and `release.yml` all `runs-on: macos-26` and gate normally — no `continue-on-error` and no Xcode-27 selection.
 
-- **Hosted CI** (`runs-on: macos-26`): dependency resolution and build steps are no-op / will fail to parse the manifest until a hosted macOS-27 image is available.
-- **Local macOS-27 / Xcode 27 host**: the authoritative verification gate. `make build`, `make test`, `make reference-check`, and `make dist` all run and pass here.
-
-This is a conscious beta-window exception to the "green hosted CI" norm, locked in as OQ-4 in the mission plan. The CI workflows (`tests.yml`, `release.yml`) already carry comments acknowledging this.
+The agent stack is intentionally macOS-26-only: the macOS-27 FoundationModels custom-provider seam (`LanguageModel`/`LanguageModelExecutor`) was removed, and the MLX backend uses the hand-rolled `MLXAgentLoop` (driven by `MLXLMCommon` native tool-call parsing). Local note: a macOS-27 / Xcode 27 host still builds correctly because the `.macOS(.v26)` deployment target makes the compiler's availability checker flag any stray macOS-27 symbol as an error — so a local `make build` is a faithful proxy for the macOS-26 CI compile.
 
 ### Known pre-existing test failures (not regressions)
 
@@ -210,18 +209,18 @@ The following tests fail under `xcodebuild test` due to environmental constraint
 | `BrujaModelManagerTests/*` (3 tests) | Require App Group container access (sandboxed host) |
 | `SwiftBrujaTests/testListModels_ReturnsArray` | Requires App Group container access (sandboxed host) |
 
-`make reference-check` skips these via `-skip-testing` flags and runs the remaining suite clean.
+`make reference-check` (local) and `make test-ci` (hosted CI) skip these via `-skip-testing` flags and gate the remaining suite for real. `make test` runs everything, including these environmental tests, for local full runs where the App Group container is present.
 
 ## Platform Requirements
 
 **CRITICAL: Apple Silicon Only**
 
-- **macOS 27.0+** (M1/M2/M3/M4 only) — required for the `LanguageModelExecutor` custom-provider seam (`@available macOS 27.0, *`) that lets MLX plug into the same `LanguageModelSession` as the system model
-- **Swift 6.4+** (`swift-tools-version: 6.4`)
+- **macOS 26.0+** (M1/M2/M3/M4 only) — the agent stack uses only macOS-26 APIs
+- **Swift 6.2+** (`swift-tools-version: 6.2`)
 - **NO Intel support** — MLX requires Apple Silicon GPU
-- **NEVER add `@available` checks for older platforms**
+- **NEVER add `@available` checks for platforms older than the macOS 26 deployment target**
 
-The base `FoundationModels` APIs (`SystemLanguageModel`, `Tool`, `@Generable`, `LanguageModelSession`) shipped macOS 26. The **custom-provider `LanguageModelExecutor` seam** — the architecture of this project — requires **macOS 27.0+ Beta**. The `.macOS(.v27)` target in `Package.swift` is intentional and correct.
+The agent stack is built entirely on macOS-26 APIs: `FoundationModels` base APIs (`SystemLanguageModel`, `Tool`, `@Generable`, `LanguageModelSession`) plus `MLXLMCommon` generation (which parses tool calls natively). The macOS-27 custom-provider `LanguageModelExecutor` seam was **removed** — the MLX backend now owns its own tool round-trip via `MLXAgentLoop`. The `.macOS(.v26)` target in `Package.swift` is intentional and correct.
 
 ## Design Patterns
 

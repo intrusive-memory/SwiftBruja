@@ -15,7 +15,7 @@ import XCTest
 /// **Requirements for the FM-available path:** `make install && make codesign-cli` must have been
 /// run, and `SystemLanguageModel.default.availability` must be `.available` on this machine.
 /// Run via `make test-agent-fm` (an unsandboxed xctest host, same pattern as `test-agent-repl`).
-@available(macOS 27.0, *)
+@available(macOS 26.0, *)
 final class FoundationBackendIntegrationTest: XCTestCase {
 
   private let appGroupId = "group.intrusive-memory.models"

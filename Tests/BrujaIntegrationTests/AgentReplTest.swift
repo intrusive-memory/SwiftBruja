@@ -19,7 +19,7 @@ import XCTest
 /// **Requirements:** Apple Silicon, the fixture model present in the App Group container, and a
 /// built+signed `./bin/bruja` (`make install && make codesign-cli`). Skips with a clear diagnostic
 /// when either is missing — the same environmental contract as every model-backed test here.
-@available(macOS 27.0, *)
+@available(macOS 26.0, *)
 final class AgentReplTest: XCTestCase {
 
   private let fixtureModelId = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"

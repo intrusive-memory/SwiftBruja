@@ -2,28 +2,32 @@ import ArgumentParser
 import BrujaHelpers
 import Foundation
 import FoundationModels
+import MLXLMCommon
 import SwiftAcervo
 import SwiftBruja
 import os
 
 // MARK: - Agent Command
 
-/// `bruja agent` — the MLX agent loop wired into a CLI verb (Sortie 7, R5.1–R5.4).
+/// `bruja agent` — the agent loop wired into a CLI verb (Sortie 7, R5.1–R5.4).
 ///
 /// Two surfaces over the **same** loop (R5.1):
 /// * No positional task → an interactive REPL: read a line, run one agent turn, repeat.
 /// * A task string → a one-shot wrapper that runs exactly one turn on that same loop and exits.
 ///
-/// The loop builds a `LanguageModelSession(model: MLXLanguageModel(...), tools:, instructions:)`
-/// exactly as `AgentSeamSpikeTest` does — the framework dispatches tool calls, appends the
-/// `.toolOutput`, and re-prompts. We surface assistant text and each tool call + result through the
-/// shared ``IOCoordinator`` (R5.2), wire the Sortie-4 path-escape consent prompt into the tool
-/// dispatch path (R5.2/R6.5), honor the Sortie-5 step cap, handle Ctrl-C/`/quit` for graceful stop,
-/// and keep the session transcript in memory across REPL turns (R5.3–R5.4).
+/// Backend selection (`--backend`/`--model`):
+/// * `mlx` (default) drives any SwiftAcervo / mlx-community model through the macOS-26 hand-rolled
+///   ``MLXAgentLoop``: `MLXLMCommon` generation parses tool calls natively, and this loop owns the
+///   tool round-trip, dispatching each call through a consent-aware ``AgentToolHandling``.
+/// * `foundation` drives `SystemLanguageModel.default` through `LanguageModelSession`, which owns
+///   the tool round-trip itself.
 ///
-/// Backend / model selection (`--backend`/`--model`) is intentionally NOT here — that is Sortie 8.
-/// This verb runs against the default MLX path only.
-@available(macOS 27.0, *)
+/// Both backends share ONE tool definition: `ToolRegistry.defaultTools()` wrapped in
+/// `ConsentToolObserver`s (R2.2, R4). We surface assistant text and each tool call + result through
+/// the shared ``IOCoordinator`` (R5.2), wire the Sortie-4 path-escape consent prompt into the tool
+/// dispatch path (R5.2/R6.5), honor the Sortie-5 step cap, handle Ctrl-C/`/quit` for graceful stop,
+/// and keep the conversation transcript in memory across REPL turns (R5.3–R5.4).
+@available(macOS 26.0, *)
 struct AgentCommand: AsyncParsableCommand {
   static let configuration = CommandConfiguration(
     commandName: "agent",
@@ -64,7 +68,7 @@ struct AgentCommand: AsyncParsableCommand {
 
   /// Select the inference backend: `mlx` (default) or `foundation`.
   ///
-  /// `mlx` routes through `MLXLanguageModelExecutor` against any SwiftAcervo model id.
+  /// `mlx` routes through the hand-rolled ``MLXAgentLoop`` against any SwiftAcervo model id.
   /// `foundation` routes through `SystemLanguageModel` (Foundation Models, S9); selecting it
   /// when FM is unavailable on this host is a full-stop typed error — no silent fallback.
   @Option(
@@ -78,7 +82,7 @@ struct AgentCommand: AsyncParsableCommand {
   ///
   /// Ignored when `--backend foundation` is selected (Foundation Models uses
   /// `SystemLanguageModel.default`, not a model-file id). When omitted with the MLX backend,
-  /// defaults to ``agentDefaultModel``.
+  /// defaults to ``AgentAllowlist/agentDefaultModel``.
   @Option(
     name: [.short, .long],
     help:
@@ -131,12 +135,7 @@ struct AgentCommand: AsyncParsableCommand {
           )
         }
 
-        // FM is available: build the session using the SAME ToolRegistry array and SAME
-        // ConsentToolObserver wrappers as the MLX path. The only difference is the model
-        // argument: SystemLanguageModel.default instead of MLXLanguageModel(...).
-        // This is THE PROOF — no second tool adapter, no second tool definition.
         let io = IOCoordinator(quiet: quiet)
-
         let loop = AgentLoop(
           backend: .foundation,
           io: io,
@@ -170,7 +169,6 @@ struct AgentCommand: AsyncParsableCommand {
         try await ensureModelObtainable(effectiveModel)
 
         let io = IOCoordinator(quiet: quiet)
-
         let loop = AgentLoop(
           modelId: effectiveModel,
           temperature: temperature,
@@ -194,13 +192,13 @@ struct AgentCommand: AsyncParsableCommand {
 
 /// The shared agent loop backing both the one-shot and interactive surfaces of `bruja agent`.
 ///
-/// Holds a single `LanguageModelSession` so the in-memory transcript persists across REPL turns
-/// (R5.4). All terminal I/O routes through the injected ``IOCoordinator`` (R5.2).
-///
-/// Both the MLX and Foundation Models backends use this same loop — the only difference is which
-/// model is passed to `LanguageModelSession(model:tools:instructions:)`. The tool array comes from
-/// the SAME `ToolRegistry.defaultTools()` call wrapped in `ConsentToolObserver`s (R2.2, R4).
-@available(macOS 27.0, *)
+/// Holds one backend engine so the conversation transcript persists across REPL turns (R5.4). All
+/// terminal I/O routes through the injected ``IOCoordinator`` (R5.2). Both backends consume the
+/// SAME `ToolRegistry.defaultTools()` array wrapped in `ConsentToolObserver`s (R2.2, R4); they
+/// differ only in who owns the tool round-trip:
+/// * `.mlx` → the hand-rolled ``MLXAgentLoop`` (macOS 26, `MLXLMCommon` generation).
+/// * `.foundation` → `LanguageModelSession` (the framework owns the round-trip).
+@available(macOS 26.0, *)
 final class AgentLoop {
   private let io: IOCoordinator
   private let quiet: Bool
@@ -212,7 +210,14 @@ final class AgentLoop {
   /// the REPL surfaces tool calls + results (R5.2) and how `AgentReplTest` asserts the round-trip.
   let toolObservers: [ConsentToolObserver]
 
-  private let session: LanguageModelSession
+  private let engine: Engine
+
+  private enum Engine {
+    /// Foundation Models: the framework owns the tool round-trip.
+    case foundation(LanguageModelSession)
+    /// MLX: the hand-rolled loop owns the tool round-trip.
+    case mlx(MLXAgentLoop)
+  }
 
   /// The agent's system instructions — identical for both backends.
   static let agentInstructions =
@@ -223,12 +228,13 @@ final class AgentLoop {
     + "provided before answering — do NOT guess or claim the file is missing without calling "
     + "read_file first. After a tool returns, answer using its result. Be concise."
 
-  // MARK: - MLX initializer (original path)
+  // MARK: - MLX initializer
 
-  /// Initialise an MLX-backed agent loop.
+  /// Initialise an MLX-backed agent loop driving the hand-rolled ``MLXAgentLoop``.
   ///
-  /// Builds a `LanguageModelSession(model: MLXLanguageModel(...), tools:, instructions:)` using
-  /// `ToolRegistry.defaultTools()` wrapped in `ConsentToolObserver`s.
+  /// Tool calls are dispatched through a ``ConsentToolDispatcher`` that wraps every registry tool in
+  /// a `ConsentToolObserver` so the loop can surface each call + result through the IOCoordinator and
+  /// intercept the Sortie-4 path-escape outcome to fire the consent prompt (R5.2/R6.5).
   init(
     modelId: String,
     temperature: Float,
@@ -240,28 +246,23 @@ final class AgentLoop {
     self.quiet = quiet
     self.modelLabel = modelId
 
-    let model = MLXLanguageModel(
-      modelId: modelId,
-      temperature: temperature,
-      maxTokens: maxTokens
-    )
+    let dispatcher = ConsentToolDispatcher(io: io)
+    self.toolObservers = dispatcher.observers
 
-    // Wrap every registry tool so the loop can (a) surface each call + result through the
-    // IOCoordinator and (b) intercept the Sortie-4 path-escape outcome to fire the consent prompt
-    // before letting an out-of-cwd access proceed (R5.2/R6.5). The wrappers carry the SAME tool
-    // surface the registry yields — there is no second tool definition.
-    let observers = ToolRegistry.defaultTools().map { ConsentToolObserver(inner: $0, io: io) }
-    self.toolObservers = observers
-    let wrappedTools: [any Tool] = observers.map { $0.makeWrapper() }
-
-    self.session = LanguageModelSession(
-      model: model,
-      tools: wrappedTools,
-      instructions: Self.agentInstructions
+    let loop = MLXAgentLoop(
+      configuration: MLXAgentLoop.Configuration(
+        modelId: modelId,
+        temperature: temperature,
+        maxTokens: maxTokens,
+        maxSteps: 32,
+        instructions: Self.agentInstructions
+      ),
+      tools: dispatcher
     )
+    self.engine = .mlx(loop)
   }
 
-  // MARK: - Foundation Models initializer (S9 — THE PROOF)
+  // MARK: - Foundation Models initializer (S9)
 
   /// Initialise a Foundation Models–backed agent loop.
   ///
@@ -270,8 +271,8 @@ final class AgentLoop {
   /// as the MLX path — NO second tool adapter (R2.2, R4).
   ///
   /// - Parameters:
-  ///   - backend: Must be `.foundation`. The `backend` label is the compile-time discriminator
-  ///     that selects this initializer over the MLX one; it has no runtime role.
+  ///   - backend: Must be `.foundation`. The `backend` label selects this initializer over the MLX
+  ///     one; it has no runtime role.
   ///   - io: Shared IOCoordinator for all terminal I/O.
   ///   - quiet: Forwarded to `IOCoordinator` construction.
   init(
@@ -285,21 +286,17 @@ final class AgentLoop {
     self.modelLabel = "SystemLanguageModel.default (Foundation Models)"
 
     // SAME ConsentToolObserver wrapping of the SAME ToolRegistry array as the MLX path.
-    // This is the proof: both backends share one tool definition, one registry call, one wrapper.
     let observers = ToolRegistry.defaultTools().map { ConsentToolObserver(inner: $0, io: io) }
     self.toolObservers = observers
-    let wrappedTools: [any Tool] = observers.map { $0.makeWrapper() }
+    let wrappedTools: [any FoundationModels.Tool] = observers.map { $0.makeWrapper() }
 
-    // THE PROOF: same seam, different model. FoundationModelBackend.makeSession builds a
-    // LanguageModelSession(model: SystemLanguageModel.default, tools: wrappedTools, instructions:)
-    self.session = FoundationModelBackend.makeSession(
-      tools: wrappedTools,
-      instructions: Self.agentInstructions
+    self.engine = .foundation(
+      FoundationModelBackend.makeSession(
+        tools: wrappedTools,
+        instructions: Self.agentInstructions
+      )
     )
   }
-
-  /// The session transcript (in-memory; persists across REPL turns — R5.4).
-  var transcript: Transcript { session.transcript }
 
   // MARK: - Interactive REPL
 
@@ -334,10 +331,8 @@ final class AgentLoop {
         await io.emitLine("[bruja] bye.")
         return
       case "/clear":
-        // The transcript lives in the session; the cheapest clear that keeps the model loaded is
-        // to note it for the user. (A full session rebuild is a Sortie-8 concern; here we keep the
-        // single-session contract and simply inform.)
-        await io.emitLine("[bruja] (transcript reset is per-session; restart to fully clear)")
+        await resetConversation()
+        await io.emitLine("[bruja] conversation reset (model stays loaded).")
         continue
       default:
         break
@@ -354,41 +349,136 @@ final class AgentLoop {
     }
   }
 
+  /// Reset the in-memory conversation. The MLX loop clears its transcript + KV cache; the
+  /// Foundation Models session's transcript is framework-owned and cannot be reset in place.
+  private func resetConversation() async {
+    if case .mlx(let loop) = engine {
+      await loop.reset()
+    }
+  }
+
   // MARK: - One turn (shared by one-shot and interactive)
 
   /// Run exactly one agent turn for `userInput`: stream assistant text + surface tool calls/results
-  /// through the IOCoordinator. The FoundationModels framework owns the tool round-trip loop; our
-  /// wrappers report each dispatch as it happens.
+  /// through the IOCoordinator. The owner of the tool round-trip differs per backend; the consent
+  /// observers report each dispatch as it happens regardless.
   func runTurn(_ userInput: String) async throws {
     // Mark a fresh observation window so we can surface only this turn's tool activity.
     for observer in toolObservers { await observer.beginTurn() }
 
-    do {
-      let response = try await session.respond(to: userInput)
-      // Stream the final assistant text. (MLX generation is produced eagerly inside the executor;
-      // we emit the completed response through the coordinator so all output is serialized.)
-      await io.streamLine(response.content)
-    } catch let bruja as BrujaError {
-      throw bruja
-    } catch {
-      // Map FM errors (LanguageModelError) and MLX generation errors into typed BrujaErrors.
-      // FoundationModelBackend.mapFMError handles LanguageModelError cases (context size,
-      // rate limiting, guardrail violations, refusals, timeouts) and falls back to the
-      // string-heuristic path for everything else (same heuristic as MLXLanguageModelExecutor).
-      throw FoundationModelBackend.mapFMError(error)
+    switch engine {
+    case .foundation(let session):
+      do {
+        let response = try await session.respond(to: userInput)
+        await io.streamLine(response.content)
+      } catch let bruja as BrujaError {
+        throw bruja
+      } catch {
+        // Map FM errors (LanguageModelError) into typed BrujaErrors.
+        throw FoundationModelBackend.mapFMError(error)
+      }
+
+    case .mlx(let loop):
+      // The consent observers echo each tool call/result via the IOCoordinator as they happen, so
+      // here we only need to accumulate the model's final answer and emit it once the turn settles.
+      // Resetting on each tool round-trip keeps only the final (post-tool) assistant text.
+      let answer = AnswerAccumulator()
+      try await loop.runTurn(userInput) { event in
+        switch event {
+        case .assistantText(let text):
+          await answer.append(text)
+        case .toolCallStarted:
+          await answer.reset()
+        case .toolFinished:
+          break
+        }
+      }
+      let finalAnswer = await answer.value
+      if !finalAnswer.isEmpty {
+        await io.streamLine(finalAnswer)
+      } else {
+        // The model generated tokens but nothing usable surfaced — typically a malformed tool call
+        // (e.g. invalid JSON arguments) that the parser drops. Don't exit silently on an empty turn.
+        await io.emitLine(
+          "[bruja] (no answer produced — the model likely emitted an unparseable tool call; "
+            + "try the default model or a larger one, e.g. mlx-community/Qwen2.5-7B-Instruct-4bit)")
+      }
     }
+  }
+}
+
+/// Accumulates the MLX loop's streamed assistant text for a single turn. An actor so the loop's
+/// `@Sendable` event closure can mutate it safely.
+@available(macOS 26.0, *)
+private actor AnswerAccumulator {
+  private(set) var value = ""
+  func append(_ text: String) { value += text }
+  func reset() { value = "" }
+}
+
+// MARK: - Consent-aware MLX tool dispatcher
+
+/// The MLX backend's ``AgentToolHandling``: advertises `ToolRegistry.defaultTools()` to the model
+/// and dispatches each tool call by name, routing the result through a `ConsentToolObserver` so the
+/// Sortie-4 path-escape consent prompt fires before an out-of-cwd access proceeds (R5.2/R6.5).
+///
+/// `@unchecked Sendable`: all stored state is immutable after init and itself Sendable
+/// (`ConsentToolObserver` is `@unchecked Sendable`; tools are `Sendable`).
+@available(macOS 26.0, *)
+final class ConsentToolDispatcher: AgentToolHandling, @unchecked Sendable {
+  /// The consent/observation wrappers, one per tool — exposed so `AgentLoop` can `beginTurn()` them.
+  let observers: [ConsentToolObserver]
+
+  private let tools: [any FoundationModels.Tool]
+  private let toolByName: [String: any FoundationModels.Tool]
+  private let observerByName: [String: ConsentToolObserver]
+
+  init(io: IOCoordinator, tools: [any FoundationModels.Tool] = ToolRegistry.defaultTools()) {
+    self.tools = tools
+    let obs = tools.map { ConsentToolObserver(inner: $0, io: io) }
+    self.observers = obs
+    self.toolByName = Dictionary(tools.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
+    self.observerByName = Dictionary(obs.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
+  }
+
+  func toolSpecs() -> [ToolSpec] {
+    MLXToolEncoding.toolSpecs(from: tools)
+  }
+
+  func dispatch(name: String, argumentsJSON: String) async throws -> String {
+    guard let tool = toolByName[name] else {
+      return ToolResult.error("unknown tool: \(name)")
+    }
+    // Dispatch the tool (which runs PathGuard internally and may return the escape marker).
+    let raw = try await dispatchTool(tool, argumentsJSON: argumentsJSON)
+
+    guard let observer = observerByName[name] else { return raw }
+    return try await observer.handle(
+      argumentSummary: argumentsJSON,
+      rawResult: raw,
+      rerun: {
+        // Re-run with cwd confinement relaxed: temporarily set the process cwd to "/" so PathGuard
+        // re-classifies the (now in-root) path as allowed, then restore. Tool dispatch within a
+        // turn is serialized, so the brief cwd swap is safe (documented TOCTOU caveat in PathGuard).
+        let saved = FileManager.default.currentDirectoryPath
+        FileManager.default.changeCurrentDirectoryPath("/")
+        defer { FileManager.default.changeCurrentDirectoryPath(saved) }
+        return try await dispatchTool(tool, argumentsJSON: argumentsJSON)
+      }
+    )
   }
 }
 
 // MARK: - Consent / observation tool wrapper
 
 /// Observes one wrapped tool's dispatches for a single loop, and owns the consent decision when the
-/// tool reports a Sortie-4 path escape. The observer is `Sendable` (state behind a lock) so the
-/// generic `Tool` wrapper it vends can be dispatched off the loop's actor by the framework.
+/// tool reports a Sortie-4 path escape. The observer is `Sendable` (state behind a lock) so it can
+/// be shared across the loop's tool dispatch and the generic `Tool` wrapper it vends for the
+/// Foundation Models path.
 @available(macOS 26.0, *)
 final class ConsentToolObserver: @unchecked Sendable {
   let name: String
-  private let inner: any Tool
+  private let inner: any FoundationModels.Tool
   private let io: IOCoordinator
 
   private struct State {
@@ -402,7 +492,7 @@ final class ConsentToolObserver: @unchecked Sendable {
   /// Tool results observed since the last ``beginTurn()``.
   var results: [String] { state.withLock { $0.results } }
 
-  init(inner: any Tool, io: IOCoordinator) {
+  init(inner: any FoundationModels.Tool, io: IOCoordinator) {
     self.name = inner.name
     self.inner = inner
     self.io = io
@@ -461,13 +551,13 @@ final class ConsentToolObserver: @unchecked Sendable {
     }
   }
 
-  /// Vend the generic, type-erased `Tool` the session is built with. The wrapper forwards
-  /// `Arguments` verbatim to the inner tool and routes the result through ``handle``.
+  /// Vend the generic, type-erased `Tool` the Foundation Models session is built with. The wrapper
+  /// forwards `Arguments` verbatim to the inner tool and routes the result through ``handle``.
   ///
-  /// `inner` is an existential `any Tool`; we open it via the generic helper so the wrapper's
+  /// `inner` is an existential `any FoundationModels.Tool`; we open it via the generic helper so the wrapper's
   /// associated `Arguments` type binds to the concrete inner tool's `Arguments`.
-  func makeWrapper() -> any Tool {
-    // Open the `any Tool` existential. Every registry tool returns `String`; the
+  func makeWrapper() -> any FoundationModels.Tool {
+    // Open the `any FoundationModels.Tool` existential. Every registry tool returns `String`; the
     // `StringOutputTool` refinement lets the opened type bind `Output == String` so the typed
     // `ConsentToolWrapper` can be constructed. A tool that did not return String (none today) would
     // fall through to the unwrapped tool.
@@ -480,7 +570,7 @@ final class ConsentToolObserver: @unchecked Sendable {
   /// Build a typed wrapper from an opened `StringOutputTool` existential.
   private static func wrap<T: StringOutputTool>(
     _ tool: T, observer: ConsentToolObserver
-  ) -> any Tool {
+  ) -> any FoundationModels.Tool {
     ConsentToolWrapper(observer: observer, inner: tool)
   }
 
@@ -500,28 +590,15 @@ final class ConsentToolObserver: @unchecked Sendable {
   }
 }
 
-/// A `Tool` whose `Output` is `String`. Used to open `any Tool` existentials to a concrete type the
-/// `ConsentToolWrapper` can bind `Arguments` against. Every tool in ``ToolRegistry`` returns String.
-@available(macOS 26.0, *)
-protocol StringOutputTool: Tool where Output == String {}
-
-@available(macOS 26.0, *) extension ReadFileTool: StringOutputTool {}
-@available(macOS 26.0, *) extension WriteFileTool: StringOutputTool {}
-@available(macOS 26.0, *) extension EditFileTool: StringOutputTool {}
-@available(macOS 26.0, *) extension ListDirTool: StringOutputTool {}
-@available(macOS 26.0, *) extension GrepTool: StringOutputTool {}
-@available(macOS 26.0, *) extension GlobTool: StringOutputTool {}
-@available(macOS 26.0, *) extension RunShellTool: StringOutputTool {}
-
 /// A generic, type-erased forwarding `Tool` that preserves an inner tool's `Arguments`/name/
 /// description while routing the result through its ``ConsentToolObserver``.
 ///
-/// We cannot intercept *between* the model emitting a tool call and the framework dispatching it,
-/// so the consent gate lives here, inside the dispatched tool: the inner tool classifies the path
-/// (Sortie 4) and returns the escape outcome; we detect it, prompt, and either rerun with cwd
-/// relaxed or deny — all before the result returns to the framework.
+/// Used only by the Foundation Models path, where the framework dispatches `Tool`s and we cannot
+/// intercept *between* the model emitting a tool call and the framework dispatching it — so the
+/// consent gate lives here, inside the dispatched tool. (The MLX path owns its round-trip and routes
+/// consent through ``ConsentToolDispatcher`` instead.)
 @available(macOS 26.0, *)
-private struct ConsentToolWrapper<Inner: StringOutputTool>: Tool {
+private struct ConsentToolWrapper<Inner: StringOutputTool>: FoundationModels.Tool {
   typealias Arguments = Inner.Arguments
   typealias Output = String
 
@@ -543,10 +620,6 @@ private struct ConsentToolWrapper<Inner: StringOutputTool>: Tool {
       argumentSummary: Self.summarizeArguments(arguments),
       rawResult: raw,
       rerun: {
-        // Re-run with cwd confinement relaxed: temporarily set the process cwd to "/" so PathGuard
-        // re-classifies the (now in-root) path as allowed, then restore. POC-grade: tool dispatch
-        // within a turn is serialized, so the brief cwd swap is safe (documented TOCTOU caveat in
-        // PathGuard). This is how a granted consent lets the inner tool actually touch the path.
         let saved = FileManager.default.currentDirectoryPath
         FileManager.default.changeCurrentDirectoryPath("/")
         defer { FileManager.default.changeCurrentDirectoryPath(saved) }

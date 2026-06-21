@@ -1,157 +1,58 @@
 import XCTest
 
 import MLXLMCommon
-import FoundationModels
 
 @testable import SwiftBruja
 
-/// Sortie 5 exit-criteria tests for `MLXLanguageModelExecutor` hardening.
+/// Exit-criteria tests for the macOS-26 ``MLXAgentLoop`` (the hand-rolled replacement for the
+/// removed macOS-27 `MLXLanguageModelExecutor` seam).
 ///
-/// All three tests run with a MOCK ``GenerationSource`` — no MLX model, no `ModelContainer`, no
-/// network — so they execute under the standard `make test`:
-///   (a) the running transcript is mapped into ordered MLX chat messages across two turns,
+/// All tests run with a MOCK ``GenerationSource`` — no MLX model, no `ModelContainer`, no network —
+/// so they execute under the standard `make test`:
+///   (a) the running transcript is built into ordered MLX chat messages across two turns,
 ///   (b) the configured step cap throws ``BrujaError/agentStepLimitExceeded(limit:)`` at the limit,
 ///   (c) a simulated context overflow yields a typed ``BrujaError`` (no crash).
-@available(macOS 27.0, *)
-final class ExecutorTranscriptTests: XCTestCase {
+@available(macOS 26.0, *)
+final class MLXAgentLoopTranscriptTests: XCTestCase {
 
-  // MARK: - Mock generation source
+  private static let instructions = "You are a helpful assistant."
 
-  /// Records the chat messages it was handed each turn, and replays scripted events. Optionally
-  /// throws to simulate a generation/context failure.
-  ///
-  /// `@unchecked Sendable`: `generate` is invoked strictly sequentially by the tests (each turn is
-  /// awaited before the next), and the concurrent channel-drain task touches only the channel, never
-  /// this object — so the unsynchronized mutable state is accessed single-threaded in practice.
-  final class MockGenerationSource: GenerationSource, @unchecked Sendable {
-    /// The messages captured from each `generate` call, one entry per turn, in call order.
-    private(set) var receivedTurns: [[Chat.Message]] = []
-
-    /// Scripted events to replay each turn. A `nil` entry means "throw `errorToThrow`".
-    private var scripts: [[BrujaGenerationEvent]?]
-    private let errorToThrow: (any Error)?
-
-    init(scripts: [[BrujaGenerationEvent]?], errorToThrow: (any Error)? = nil) {
-      self.scripts = scripts
-      self.errorToThrow = errorToThrow
-    }
-
-    func generate(
-      messages: [Chat.Message],
-      toolSpecs: [ToolSpec],
-      parameters: GenerateParameters,
-      turnState: TurnState
-    ) async throws -> AsyncThrowingStream<BrujaGenerationEvent, any Error> {
-      receivedTurns.append(messages)
-      let script = scripts.isEmpty ? [] : scripts.removeFirst()
-
-      guard let events = script else {
-        throw errorToThrow ?? BrujaError.queryFailed("mock failure")
-      }
-
-      return AsyncThrowingStream { continuation in
-        for event in events {
-          continuation.yield(event)
-        }
-        continuation.finish()
-      }
-    }
-  }
-
-  // MARK: - Channel-event collection helper
-
-  /// Drive `respond` to completion. A detached task drains the channel concurrently (so suspended
-  /// `send`s make progress); once `respond` returns or throws, that drain task is cancelled. The
-  /// channel never auto-`finish()`es — the framework, not the executor, owns its lifetime — so we
-  /// must not block waiting for it to end. These tests assert on the mock's captured state and on
-  /// thrown errors rather than on collected channel events, so the drained events are discarded.
-  private func runRespond(
-    executor: MLXLanguageModelExecutor,
-    model: MLXLanguageModel,
-    request: LanguageModelExecutorGenerationRequest
-  ) async throws {
-    let channel = LanguageModelExecutorGenerationChannel()
-
-    let drain = Task {
-      for try await _ in channel { /* discard; keeps the producer unblocked */ }
-    }
-    defer { drain.cancel() }
-
-    try await executor.respond(to: request, model: model, streamingInto: channel)
-  }
-
-  // MARK: - Transcript construction helpers
-
-  private func instructions(_ text: String) -> Transcript.Entry {
-    .instructions(
-      Transcript.Instructions(
-        segments: [.text(Transcript.TextSegment(content: text))],
-        toolDefinitions: []
-      )
+  private func makeLoop(
+    source: any GenerationSource,
+    maxSteps: Int = 8
+  ) -> MLXAgentLoop {
+    MLXAgentLoop(
+      configuration: MLXAgentLoop.Configuration(
+        modelId: "mock/test-model",
+        maxSteps: maxSteps,
+        instructions: Self.instructions
+      ),
+      tools: RegistryToolHandler(tools: []),
+      source: source
     )
-  }
-
-  private func prompt(_ text: String) -> Transcript.Entry {
-    .prompt(Transcript.Prompt(segments: [.text(Transcript.TextSegment(content: text))]))
-  }
-
-  private func response(_ text: String) -> Transcript.Entry {
-    .response(Transcript.Response(segments: [.text(Transcript.TextSegment(content: text))]))
-  }
-
-  private func makeRequest(_ entries: [Transcript.Entry]) -> LanguageModelExecutorGenerationRequest {
-    LanguageModelExecutorGenerationRequest(
-      id: UUID(),
-      transcript: Transcript(entries: entries),
-      enabledTools: [],
-      generationOptions: GenerationOptions(),
-      contextOptions: ContextOptions(),
-      metadata: [:]
-    )
-  }
-
-  private func makeModel() -> MLXLanguageModel {
-    MLXLanguageModel(modelId: "mock/test-model", maxSteps: 8)
   }
 
   // MARK: - (a) Two-turn transcript ordering
 
   func testTranscriptMappingOrderedAcrossTwoTurns() async throws {
-    let mock = MockGenerationSource(
+    let mock = SharedMockGenerationSource(
       scripts: [
         [.text("Hi there!")],
         [.text("Two plus two is four.")],
       ]
     )
-    let config = MLXLanguageModel.Configuration(modelId: "mock/test-model", maxSteps: 8)
-    let turnState = TurnState(maxSteps: 8)
-    let executor = MLXLanguageModelExecutor(
-      configuration: config, source: mock, turnState: turnState)
-    let model = makeModel()
+    let loop = makeLoop(source: mock)
 
-    // Turn 1: system + first user prompt.
-    let turn1 = makeRequest([
-      instructions("You are a helpful assistant."),
-      prompt("Hello"),
-    ])
-    try await runRespond(executor: executor, model: model, request: turn1)
-
-    // Turn 2: the running transcript now includes the assistant's first response and the new prompt.
-    let turn2 = makeRequest([
-      instructions("You are a helpful assistant."),
-      prompt("Hello"),
-      response("Hi there!"),
-      prompt("What is two plus two?"),
-    ])
-    try await runRespond(executor: executor, model: model, request: turn2)
+    try await loop.runTurn("Hello") { _ in }
+    try await loop.runTurn("What is two plus two?") { _ in }
 
     let turns = mock.receivedTurns
-    XCTAssertEqual(turns.count, 2, "executor should call the source once per turn")
+    XCTAssertEqual(turns.count, 2, "the loop should call the source once per turn")
 
     // Turn 1 mapping: [system, user].
     let t1 = turns[0]
     XCTAssertEqual(t1.map(\.role), [.system, .user])
-    XCTAssertEqual(t1.map(\.content), ["You are a helpful assistant.", "Hello"])
+    XCTAssertEqual(t1.map(\.content), [Self.instructions, "Hello"])
 
     // Turn 2 mapping must preserve full conversation order:
     // [system, user("Hello"), assistant("Hi there!"), user("What is two plus two?")].
@@ -160,7 +61,7 @@ final class ExecutorTranscriptTests: XCTestCase {
     XCTAssertEqual(
       t2.map(\.content),
       [
-        "You are a helpful assistant.",
+        Self.instructions,
         "Hello",
         "Hi there!",
         "What is two plus two?",
@@ -172,26 +73,20 @@ final class ExecutorTranscriptTests: XCTestCase {
 
   func testStepCapThrowsAgentStepLimitExceeded() async throws {
     let limit = 3
-    let mock = MockGenerationSource(
+    let mock = SharedMockGenerationSource(
       scripts: Array(repeating: [.text("ok")], count: 10)
     )
-    let config = MLXLanguageModel.Configuration(modelId: "mock/test-model", maxSteps: limit)
-    // Share one TurnState across all turns so the step counter accumulates.
-    let turnState = TurnState(maxSteps: limit)
-    let executor = MLXLanguageModelExecutor(
-      configuration: config, source: mock, turnState: turnState)
-    let model = makeModel()
+    // One loop instance shares its TurnState across turns, so the step counter accumulates.
+    let loop = makeLoop(source: mock, maxSteps: limit)
 
-    // The first `limit` turns must succeed.
+    // The first `limit` turns (one model step each) must succeed.
     for i in 0..<limit {
-      let request = makeRequest([prompt("turn \(i)")])
-      try await runRespond(executor: executor, model: model, request: request)
+      try await loop.runTurn("turn \(i)") { _ in }
     }
 
     // The next turn must throw the typed step-limit error.
     do {
-      let request = makeRequest([prompt("one too many")])
-      try await runRespond(executor: executor, model: model, request: request)
+      try await loop.runTurn("one too many") { _ in }
       XCTFail("expected agentStepLimitExceeded once the step cap is reached")
     } catch let error as BrujaError {
       guard case .agentStepLimitExceeded(let reported) = error else {
@@ -206,16 +101,11 @@ final class ExecutorTranscriptTests: XCTestCase {
   func testSimulatedContextOverflowYieldsTypedError() async throws {
     struct OverflowError: Error { let message = "model context window overflow: sequence too long" }
 
-    let mock = MockGenerationSource(scripts: [nil], errorToThrow: OverflowError())
-    let config = MLXLanguageModel.Configuration(modelId: "mock/test-model", maxSteps: 8)
-    let executor = MLXLanguageModelExecutor(
-      configuration: config, source: mock, turnState: TurnState(maxSteps: 8))
-    let model = makeModel()
-
-    let request = makeRequest([prompt("a very long prompt that overflows the window")])
+    let mock = SharedMockGenerationSource(scripts: [nil], errorToThrow: OverflowError())
+    let loop = makeLoop(source: mock)
 
     do {
-      try await runRespond(executor: executor, model: model, request: request)
+      try await loop.runTurn("a very long prompt that overflows the window") { _ in }
       XCTFail("expected a typed BrujaError on simulated context overflow")
     } catch let error as BrujaError {
       // The "context"/"overflow" keywords route to contextWindowExceeded; either way it must be a

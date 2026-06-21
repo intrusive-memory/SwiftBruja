@@ -8,7 +8,7 @@ import FoundationModels
 /// S8 wires selection + the FM-unavailable error path.
 /// S9 wires the actual FM session and streaming.
 public enum AgentBackend: String, CaseIterable, Sendable {
-  /// Any SwiftAcervo / mlx-community model id — routed through `MLXLanguageModelExecutor`.
+  /// Any SwiftAcervo / mlx-community model id — driven by the hand-rolled `MLXAgentLoop`.
   case mlx
   /// The on-device Foundation Models system model (`SystemLanguageModel`).
   case foundation

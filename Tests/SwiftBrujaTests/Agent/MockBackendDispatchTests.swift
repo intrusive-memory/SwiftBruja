@@ -4,6 +4,12 @@ import XCTest
 
 @testable import SwiftBruja
 
+/// Thread-safe boolean flag for the agent loop's `@Sendable` event callback.
+private actor ToolCallFlag {
+  private(set) var value = false
+  func set() { value = true }
+}
+
 // MARK: - Tool Dispatch Harness (S11, R8.3)
 
 /// A minimal test-only harness that mirrors the dispatch logic performed by
@@ -395,62 +401,58 @@ final class MockBackendDispatchTests: XCTestCase {
       "Escaping read must return the escape-marker result; got: \(escapingResult)")
   }
 
-  // MARK: - 6. SharedMockGenerationSource reuse (S5 seam)
+  // MARK: - 6. SharedMockGenerationSource drives the MLX agent loop
 
-  /// Prove the ``SharedMockGenerationSource`` (the promoted S5 seam) is accessible from this
-  /// target and drives `MLXLanguageModelExecutor` correctly without any model or network.
-  ///
-  /// Scripts `.toolCall` + `.text` events through the executor and asserts the source was
-  /// invoked once with the expected chat messages — the same seam used by S5 executor tests.
-  @available(macOS 27.0, *)
-  func testSharedMockGenerationSourceDrivesExecutorWithoutModel() async throws {
+  /// Prove the ``SharedMockGenerationSource`` drives ``MLXAgentLoop`` correctly without any model or
+  /// network: a scripted `.toolCall` triggers a native tool round-trip (the loop dispatches the tool
+  /// and re-generates), and the model's prompt is mapped into a user message.
+  func testSharedMockGenerationSourceDrivesAgentLoopWithoutModel() async throws {
     let mock = SharedMockGenerationSource(
       scripts: [
-        [
-          .toolCall(id: "call-1", name: "read_file", argumentsJSON: #"{"path":"test.txt"}"#),
-          .text("Here is the file content."),
-        ]
+        // Turn 1: the model requests a tool call (no final text yet).
+        [.toolCall(id: "call-1", name: "read_file", argumentsJSON: #"{"path":"test.txt"}"#)]
+        // Turn 2: the mock has no more scripts, so it replays an empty turn → loop completes.
       ]
     )
 
-    let config = MLXLanguageModel.Configuration(modelId: "mock/test-model", maxSteps: 8)
-    let executor = MLXLanguageModelExecutor(
-      configuration: config, source: mock, turnState: TurnState(maxSteps: 8))
-    let model = MLXLanguageModel(modelId: "mock/test-model", maxSteps: 8)
-
-    let channel = LanguageModelExecutorGenerationChannel()
-
-    // Drain the channel concurrently so the executor's `send` calls don't block.
-    let drain = Task {
-      for try await _ in channel { /* discard events — assertion is on the mock's captured state */ }
-    }
-    defer { drain.cancel() }
-
-    let request = LanguageModelExecutorGenerationRequest(
-      id: UUID(),
-      transcript: Transcript(
-        entries: [
-          .prompt(Transcript.Prompt(segments: [.text(Transcript.TextSegment(content: "hello"))]))
-        ]),
-      enabledTools: [],
-      generationOptions: GenerationOptions(),
-      contextOptions: ContextOptions(),
-      metadata: [:]
+    let loop = MLXAgentLoop(
+      configuration: MLXAgentLoop.Configuration(
+        modelId: "mock/test-model",
+        maxSteps: 8,
+        instructions: "You are a test agent."
+      ),
+      tools: RegistryToolHandler(),
+      source: mock
     )
 
-    try await executor.respond(to: request, model: model, streamingInto: channel)
+    let sawToolCall = ToolCallFlag()
+    try await loop.runTurn("hello") { event in
+      if case .toolCallStarted(let name, _) = event, name == "read_file" {
+        await sawToolCall.set()
+      }
+    }
 
-    // The mock source was invoked exactly once (one executor turn).
-    XCTAssertEqual(mock.receivedTurns.count, 1, "Executor must call the source exactly once")
+    // The tool call surfaced through the loop's event stream.
+    let observed = await sawToolCall.value
+    XCTAssertTrue(observed, "The loop must surface the scripted read_file tool call")
 
-    // The executor translated the prompt into a user message.
+    // Two generations occurred: the initial turn (which emitted the tool call) and the round-trip
+    // after the tool result was appended.
+    XCTAssertEqual(
+      mock.receivedTurns.count, 2,
+      "A tool call must trigger a native round-trip (initial generation + re-generation)")
+
+    // The first generation mapped the prompt into a user message.
     let turn = try XCTUnwrap(mock.receivedTurns.first, "receivedTurns must be non-empty")
-    XCTAssertTrue(
-      turn.map(\.role).contains(.user),
-      "The executor must send at least one user message; got roles: \(turn.map(\.role))")
     XCTAssertTrue(
       turn.map(\.content).contains("hello"),
       "The user message must carry the prompt text; got content: \(turn.map(\.content))")
+
+    // The second generation includes the tool result as a `.tool` message (the round-trip).
+    let secondTurn = mock.receivedTurns[1]
+    XCTAssertTrue(
+      secondTurn.map(\.role).contains(.tool),
+      "The round-trip generation must include the tool output; got roles: \(secondTurn.map(\.role))")
   }
 
   // MARK: - 7. No model/network confirmation

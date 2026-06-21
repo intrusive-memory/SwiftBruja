@@ -8,8 +8,9 @@ import XCTest
 /// assertion, and session construction.
 ///
 /// These tests are deterministic and require no model inference. They prove:
-/// (a) `FoundationModelBackend.mapFMError` maps every `LanguageModelError` case to the correct
-///     typed `BrujaError` (availability-error mapping — host-independent).
+/// (a) `FoundationModelBackend.mapFMError` classifies errors by message text into the right typed
+///     `BrujaError` (the typed `LanguageModelError` enum is macOS-27-only, so the backend maps by
+///     message text to stay macOS-26-compatible — host-independent).
 /// (b) `FoundationModelBackend.makeSession(tools:instructions:)` accepts the SAME `[any Tool]`
 ///     array that `ToolRegistry.defaultTools()` yields — asserting both backends share one
 ///     registry call with no second tool adapter (R4).
@@ -18,73 +19,38 @@ final class FoundationBackendTests: XCTestCase {
 
   // MARK: - (a) Error mapping — host-independent, no inference required
 
-  func testContextSizeExceededMapsToContextWindowExceeded() {
-    let fmError = LanguageModelError.contextSizeExceeded(
-      LanguageModelError.ContextSizeExceeded(
-        contextSize: 4096, tokenCount: 5000, debugDescription: "too many tokens"))
-    let brujaError = FoundationModelBackend.mapFMError(fmError)
-    guard case .contextWindowExceeded(let count, let limit) = brujaError else {
+  /// An error whose description mentions a context-window overflow maps to `.contextWindowExceeded`.
+  func testContextOverflowMessageMapsToContextWindowExceeded() {
+    struct ContextError: Error, CustomStringConvertible {
+      var description: String { "the prompt exceeded the model context window size" }
+    }
+    let brujaError = FoundationModelBackend.mapFMError(ContextError())
+    guard case .contextWindowExceeded = brujaError else {
       XCTFail("Expected .contextWindowExceeded, got \(brujaError)")
       return
     }
-    XCTAssertEqual(count, 5000)
-    XCTAssertEqual(limit, 4096)
   }
 
-  func testRateLimitedMapsToQueryFailed() {
-    let fmError = LanguageModelError.rateLimited(
-      LanguageModelError.RateLimited(
-        resetDate: nil, debugDescription: "quota exceeded"))
-    let brujaError = FoundationModelBackend.mapFMError(fmError)
-    guard case .queryFailed(let msg) = brujaError else {
-      XCTFail("Expected .queryFailed, got \(brujaError)")
+  /// "sequence length" is one of the recognized context-overflow keywords.
+  func testSequenceLengthMessageMapsToContextWindowExceeded() {
+    struct SeqError: Error, CustomStringConvertible {
+      var description: String { "maximum sequence length reached" }
+    }
+    guard case .contextWindowExceeded = FoundationModelBackend.mapFMError(SeqError()) else {
+      XCTFail("Expected .contextWindowExceeded for a sequence-length error")
       return
     }
-    XCTAssertTrue(
-      msg.contains("rate-limited"),
-      "Error message should mention rate-limiting. Got: \(msg)")
-    XCTAssertTrue(
-      msg.contains("quota exceeded"),
-      "Error message should include the debugDescription. Got: \(msg)")
   }
 
-  func testGuardrailViolationMapsToQueryFailed() {
-    let fmError = LanguageModelError.guardrailViolation(
-      LanguageModelError.GuardrailViolation(debugDescription: "harmful content detected"))
-    let brujaError = FoundationModelBackend.mapFMError(fmError)
-    guard case .queryFailed(let msg) = brujaError else {
-      XCTFail("Expected .queryFailed, got \(brujaError)")
+  /// A non-context error maps to `.queryFailed` carrying the localized description.
+  func testNonContextErrorMapsToQueryFailed() {
+    struct RateError: Error, CustomStringConvertible {
+      var description: String { "request was rate limited; quota hit" }
+    }
+    guard case .queryFailed = FoundationModelBackend.mapFMError(RateError()) else {
+      XCTFail("Expected .queryFailed for a non-context error")
       return
     }
-    XCTAssertTrue(
-      msg.contains("guardrail"),
-      "Error message should mention guardrail. Got: \(msg)")
-  }
-
-  func testRefusalMapsToQueryFailed() {
-    let fmError = LanguageModelError.refusal(
-      LanguageModelError.Refusal(debugDescription: "request not allowed"))
-    let brujaError = FoundationModelBackend.mapFMError(fmError)
-    guard case .queryFailed(let msg) = brujaError else {
-      XCTFail("Expected .queryFailed, got \(brujaError)")
-      return
-    }
-    XCTAssertTrue(
-      msg.contains("refused"),
-      "Error message should mention refusal. Got: \(msg)")
-  }
-
-  func testTimeoutMapsToQueryFailed() {
-    let fmError = LanguageModelError.timeout(
-      LanguageModelError.Timeout(debugDescription: "deadline exceeded"))
-    let brujaError = FoundationModelBackend.mapFMError(fmError)
-    guard case .queryFailed(let msg) = brujaError else {
-      XCTFail("Expected .queryFailed, got \(brujaError)")
-      return
-    }
-    XCTAssertTrue(
-      msg.contains("timed out"),
-      "Error message should mention timeout. Got: \(msg)")
   }
 
   func testExistingBrujaErrorPassesThroughUnchanged() {

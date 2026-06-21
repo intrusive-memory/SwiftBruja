@@ -18,7 +18,7 @@ jobs:
   # Step 1: Code Quality
   code-quality:
     name: Code Quality
-    runs-on: macos-27
+    runs-on: macos-26
 
     steps:
       - name: Checkout code
@@ -41,40 +41,24 @@ jobs:
           fi
 
   # Step 2: Build and Test on macOS
-  # Note: Must use xcodebuild because Metal shaders cannot be compiled with swift build
-  # CAVEAT: this job RUNS the test binary, whose deployment target is now macOS 27.
-  # A macOS 26 host cannot launch it. This job cannot pass until a macos-27 hosted runner
-  # image exists (macOS 27 is currently beta) or a self-hosted macOS 27 runner is used.
-  #
-  # TEMPORARY (2026-06-20): continue-on-error so this required check does not hard-block
-  # the development -> main merge while no macOS 27 hosted image exists. As of June 2026
-  # GitHub's newest image is macos-26 (host macOS 26.4, Xcode <= 26.5); Xcode 27 is only an
-  # open request (actions/runner-images#14196) and even that would not let a macOS-27-target
-  # binary launch on a macOS 26 host. REMOVE this once a macOS 27 runner (hosted or
-  # self-hosted) is available, so the test gate is real again.
+  # Note: Must use xcodebuild because Metal shaders cannot be compiled with swift build.
+  # Package.swift targets macOS 26 (swift-tools-version: 6.2, .macOS(.v26)); the agent stack
+  # is macOS-26-only (the macOS-27 FoundationModels custom-provider seam was removed), so this
+  # builds and runs on the hosted macos-26 image with its default Xcode 26.
   macos-tests:
     name: macOS Tests
-    runs-on: macos-27
+    runs-on: macos-26
     needs: [code-quality]
-    continue-on-error: true
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      # Requires Xcode 27 (Swift 6.4 / macOS 27 SDK): Package.swift is now
-      # `swift-tools-version: 6.4` with `.macOS(.v27)`, which Xcode 26.3 cannot even parse.
-      # NOTE: Xcode 27 is currently beta and is NOT on the hosted macos-26 image. This step
-      # will fail until the runner image ships Xcode 27 (or a self-hosted macOS 27 box is used).
-      # Adjust the app path to match the runner's installed beta name if needed.
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-
       - name: Show Swift version
         run: swift --version
 
       - name: Build and test
-        run: make test 2>&1 | tee test_output.txt
+        run: make test-ci 2>&1 | tee test_output.txt
 
       - name: Upload test results
         if: always()
@@ -85,32 +69,20 @@ jobs:
           retention-days: 7
 
   # Step 2b: Integration Tests (CLI binary smoke test + dist artifact)
-  # CAVEAT: builds AND runs the macOS-27-target `bruja` binary (make dist + smoke test).
-  # Same constraint as macos-tests — needs a macOS 27 host to launch the binary.
-  #
-  # TEMPORARY (2026-06-20): continue-on-error for the same reason as macos-tests above
-  # (no macOS 27 hosted image exists; see actions/runner-images#14196). REMOVE once a
-  # macOS 27 runner is available so this gate is enforced again.
+  # Builds AND runs the macOS-26-target `bruja` binary (make dist + smoke test) on the hosted
+  # macos-26 image. No special Xcode selection needed — the image's default Xcode 26 ships the
+  # Swift 6.2 toolchain the manifest now targets.
   integration-tests:
     name: Integration Tests
-    runs-on: macos-27
+    runs-on: macos-26
     needs: [code-quality]
     timeout-minutes: 15
-    continue-on-error: true
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      # Requires Xcode 27 (Swift 6.4 / macOS 27 SDK): Package.swift is now
-      # `swift-tools-version: 6.4` with `.macOS(.v27)`, which Xcode 26.3 cannot even parse.
-      # NOTE: Xcode 27 is currently beta and is NOT on the hosted macos-26 image. This step
-      # will fail until the runner image ships Xcode 27 (or a self-hosted macOS 27 box is used).
-      # Adjust the app path to match the runner's installed beta name if needed.
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Build distributable tarball
         run: make dist

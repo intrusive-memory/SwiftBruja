@@ -1,4 +1,4 @@
-// swift-tools-version: 6.4
+// swift-tools-version: 6.2
 
 import Foundation
 import PackageDescription
@@ -43,11 +43,13 @@ func sibling(_ name: String, remote: String, branch: String) -> Package.Dependen
 let package = Package(
   name: "SwiftBruja",
   platforms: [
-    // macOS 27 only. This is a macOS-first CLI; iOS is out of scope for now.
-    // macOS 27 is required for the FoundationModels custom-provider seam
-    // (`LanguageModel` + `LanguageModelExecutor`, @available macOS 27.0+) that lets the
-    // MLX backend plug into the same `LanguageModelSession(model:tools:)` as the system model.
-    .macOS(.v27),
+    // macOS 26+ only. This is a macOS-first CLI; iOS is out of scope for now.
+    // The agent stack runs entirely on macOS 26 APIs: `FoundationModels.Tool` +
+    // `@Generable` + `LanguageModelSession` (system-model backend) and `MLXLMCommon`
+    // generation with native tool-call parsing (MLX backend, hand-rolled loop). The
+    // macOS-27-only custom-provider seam (`LanguageModel`/`LanguageModelExecutor`) was
+    // removed so the project builds and tests on the macOS 26 CI image.
+    .macOS(.v26),
   ],
   products: [
     // Library for programmatic access

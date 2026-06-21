@@ -3,13 +3,13 @@ import FoundationModels
 
 // MARK: - Foundation Models Backend (S9)
 
-/// The Foundation Models backend that drives `SystemLanguageModel.default` through the SAME
-/// `LanguageModelSession(model:tools:instructions:)` seam as the MLX path.
+/// The Foundation Models backend that drives `SystemLanguageModel.default` through
+/// `LanguageModelSession(model:tools:instructions:)` (macOS 26). The framework owns the tool
+/// round-trip for this backend.
 ///
-/// **THE PROOF of the architecture**: this is the second conformer. It consumes the SAME
-/// `[any Tool]` array from `ToolRegistry.defaultTools()` with NO second tool adapter. The only
-/// difference from the MLX path is the `model:` argument — `SystemLanguageModel.default` instead
-/// of `MLXLanguageModel(...)`. The framework handles tool dispatch identically for both.
+/// It consumes the SAME `[any Tool]` array from `ToolRegistry.defaultTools()` as the MLX backend —
+/// there is NO second tool adapter (R4). The MLX backend drives those same tools through its own
+/// hand-rolled `MLXAgentLoop` instead of `LanguageModelSession`.
 ///
 /// Responsibility split:
 /// - This type (in `SwiftBruja`) builds the session and maps FM-specific errors — it is
@@ -55,28 +55,18 @@ public enum FoundationModelBackend {
 
   /// Map a Foundation Models error into a typed ``BrujaError``.
   ///
-  /// FM errors come as `LanguageModelError` (the current non-deprecated enum) or as the older
-  /// `LanguageModelSession.GenerationError`. Both are mapped to the closest `BrujaError` case:
-  ///
-  /// | FM Error | BrujaError |
-  /// |---|---|
-  /// | `.contextSizeExceeded` | `.contextWindowExceeded(tokenCount:limit:)` |
-  /// | `.rateLimited` | `.queryFailed("rate limited …")` |
-  /// | `.guardrailViolation` | `.queryFailed("content guardrail triggered …")` |
-  /// | `.refusal` | `.queryFailed("model refused request …")` |
-  /// | `.timeout` | `.queryFailed("request timed out …")` |
-  /// | `.unsupportedCapability` | `.queryFailed("unsupported capability …")` |
-  /// | anything else | `.queryFailed(localizedDescription)` |
+  /// The typed FM error enum (`LanguageModelError`) is macOS-27-only, and the older
+  /// `LanguageModelSession.GenerationError` is deprecated as of macOS 27 — so to keep this one code
+  /// path compiling cleanly against the macOS 26 SDK we classify by message text rather than by
+  /// switching on a versioned enum. The heuristic routes context-window overflows to
+  /// `.contextWindowExceeded` and everything else to `.queryFailed(localizedDescription)`.
   ///
   /// Already-typed `BrujaError`s pass through unchanged (idempotent).
   public static func mapFMError(_ error: any Error) -> BrujaError {
     if let bruja = error as? BrujaError { return bruja }
 
-    if let lmError = error as? LanguageModelError {
-      return mapLanguageModelError(lmError)
-    }
-
-    // Fall back to the string-based heuristic (mirrors MLXLanguageModelExecutor.mapGenerationError).
+    // Classify on the structural description only. (Swift's default `localizedDescription` for a
+    // plain `Error` embeds the literal string "unknown context", which would false-match "context".)
     let text = String(describing: error).lowercased()
     if text.contains("context") || text.contains("overflow") || text.contains("too long")
       || text.contains("exceed") || text.contains("window") || text.contains("max position")
@@ -85,49 +75,5 @@ public enum FoundationModelBackend {
       return .contextWindowExceeded(tokenCount: 0, limit: 0)
     }
     return .queryFailed(error.localizedDescription)
-  }
-
-  // MARK: - Private helpers
-
-  private static func mapLanguageModelError(_ error: LanguageModelError) -> BrujaError {
-    switch error {
-    case .contextSizeExceeded(let info):
-      return .contextWindowExceeded(tokenCount: info.tokenCount, limit: info.contextSize)
-
-    case .rateLimited(let info):
-      return .queryFailed("Foundation Models rate-limited this request: \(info.debugDescription)")
-
-    case .guardrailViolation(let info):
-      return .queryFailed(
-        "Foundation Models content guardrail triggered: \(info.debugDescription)")
-
-    case .refusal(let info):
-      return .queryFailed("Foundation Models refused the request: \(info.debugDescription)")
-
-    case .timeout(let info):
-      return .queryFailed("Foundation Models request timed out: \(info.debugDescription)")
-
-    case .unsupportedCapability(let info):
-      return .queryFailed(
-        "Foundation Models does not support this capability on this device: \(info.debugDescription)"
-      )
-
-    case .unsupportedTranscriptContent(let info):
-      return .queryFailed(
-        "Foundation Models does not support this transcript content: \(info.debugDescription)")
-
-    case .unsupportedGenerationGuide(let info):
-      return .queryFailed(
-        "Foundation Models does not support the requested generation guide: \(info.debugDescription)"
-      )
-
-    case .unsupportedLanguageOrLocale(let info):
-      return .queryFailed(
-        "Foundation Models does not support the requested language or locale: \(info.debugDescription)"
-      )
-
-    @unknown default:
-      return .queryFailed(error.localizedDescription)
-    }
   }
 }

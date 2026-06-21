@@ -13,7 +13,7 @@ VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || 
 SMALL_FIXTURE_MODEL = mlx-community/Qwen2.5-0.5B-Instruct-4bit
 MISSING_MODEL_ID    = mlx-community/__nope__
 
-.PHONY: all build release install clean test test-agent-seam test-agent-repl test-agent-fm resolve dist lint help reference-check codesign-cli
+.PHONY: all build release install clean test test-ci test-agent-seam test-agent-repl test-agent-fm resolve dist lint help reference-check codesign-cli
 
 all: install
 
@@ -82,9 +82,27 @@ install: resolve
 		exit 1; \
 	fi
 
-# Run tests
+# Run tests (full local suite)
 test: resolve
 	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+
+# Run tests for CI (hosted macos-26 runner).
+#
+# Skips the known-environmental tests that cannot pass in a SANDBOXED, network-restricted hosted
+# runner without the App Group container — the SAME set `reference-check` Step 1 carves out. These
+# are pre-existing environmental constraints (App Group container / live CDN), NOT code regressions;
+# they run locally via `make reference-check`. Everything else gates for real.
+test-ci: resolve
+	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' \
+		-skip-testing:BrujaIntegrationTests/InferenceIntegrationTest \
+		-skip-testing:BrujaIntegrationTests/ErrorReportingSmokeTest \
+		-skip-testing:SwiftBrujaTests/AcervoComponentReadyTests/testDownloadModelLevel2PathWorksForUnregisteredRepoId \
+		-skip-testing:SwiftBrujaTests/AcervoComponentReadyTests/testEnsureComponentReadyHydratesFiles \
+		-skip-testing:SwiftBrujaTests/AcervoManifestFetchTests/testEstimatedSizeForProductionModelIsNonZeroAndCreatesNoFiles \
+		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testComponentRetrievalByID \
+		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testQwen3CoderNextComponentIsRegistered \
+		-skip-testing:SwiftBrujaTests/BrujaModelManagerTests/testRegisteredComponentsNotEmpty \
+		-skip-testing:SwiftBrujaTests/SwiftBrujaTests/testListModels_ReturnsArray
 
 # Run the S2 agent-seam spike against the fixture model.
 #
@@ -309,7 +327,8 @@ help:
 	@echo "  install          - Debug build with xcodebuild + copy to ./bin (default)"
 	@echo "  release          - Release build with xcodebuild + copy to ./bin"
 	@echo "  dist             - Release build + create distributable tarball in ./dist"
-	@echo "  test             - Run tests with xcodebuild"
+	@echo "  test             - Run the full test suite with xcodebuild"
+	@echo "  test-ci          - Run tests for hosted CI (skips known-environmental App Group/CDN tests)"
 	@echo "  test-agent-seam  - Run the S2 read_file round-trip spike via an unsandboxed xctest host"
 	@echo "  test-agent-repl  - Run the S7 'bruja agent' end-to-end REPL test against ./bin/bruja"
 	@echo "  test-agent-fm    - Run the S9 Foundation Models backend integration test against ./bin/bruja"

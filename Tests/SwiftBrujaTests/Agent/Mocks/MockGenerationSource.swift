@@ -9,14 +9,12 @@ import MLXLMCommon
 /// without touching any MLX model, model container, or network. Each call pops the front of
 /// `scripts`; a `nil` entry throws `errorToThrow` (or a generic failure if none is set).
 ///
-/// This is a promoted, shareable version of the inline mock originally defined inside
-/// ``ExecutorTranscriptTests`` (S5). Both S5 tests and S11 dispatch tests can use this type;
-/// the S5 file retains its own nested copy for backward-compatibility so no churn is needed
-/// there. New tests should import via this file.
+/// This is a shareable scripted ``GenerationSource`` used by the ``MLXAgentLoop`` transcript/step
+/// tests and the S11 dispatch tests — no MLX model, container, or network required.
 ///
 /// `@unchecked Sendable`: `generate` is invoked strictly sequentially by the tests (each turn is
 /// awaited before the next), so unsynchronised mutable state is accessed single-threaded in practice.
-@available(macOS 27.0, *)
+@available(macOS 26.0, *)
 public final class SharedMockGenerationSource: GenerationSource, @unchecked Sendable {
 
   /// The messages captured from each `generate` call, one entry per turn, in call order.
