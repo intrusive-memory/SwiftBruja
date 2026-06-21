@@ -16,6 +16,22 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 
 **`BrujaDownloadManager` has been removed** — call `Acervo.*` directly for model lifecycle operations (download, list, info, delete, manifest fetch). The component-registry shim in `BrujaModelManager` (static `registeredComponents` / `isComponentRegistered` / `component(for:)`) and the `fetchManifestForBrujaId` dispatcher have also been removed; use `Acervo.registeredComponents(ofType:)`, `Acervo.component(_:)`, and `Acervo.fetchManifest(for:)` directly.
 
+## Queryable Codemap
+
+A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
+codebase lives in [`graphify-out/`](graphify-out/) (762 nodes · 1296 edges). **Prefer
+querying it before grepping** for architecture or "what connects to what" questions:
+
+```bash
+graphify query "How does X flow through the system?"
+graphify path "TypeA" "TypeB"      # shortest path between two nodes
+graphify explain "SomeType"        # plain-language node explanation
+```
+
+Human-readable summary: [`graphify-out/GRAPH_REPORT.md`](graphify-out/GRAPH_REPORT.md).
+Refresh after significant changes with `/codemap` (or
+`graphify . --backend claude-cli`).
+
 ## Project Structure
 
 - `Sources/SwiftBruja/` -- Library target with static `Bruja` API
