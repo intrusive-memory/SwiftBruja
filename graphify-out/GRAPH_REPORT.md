@@ -1,15 +1,15 @@
-# Graph Report - .  (2026-06-21)
+# Graph Report - .  (2026-06-23)
 
 ## Corpus Check
 - cluster-only mode — file stats not available
 
 ## Summary
-- 762 nodes · 1296 edges · 44 communities (34 shown, 10 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 93 edges (avg confidence: 0.8)
+- 772 nodes · 1319 edges · 46 communities (37 shown, 9 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 97 edges (avg confidence: 0.79)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a06ff93e`
+- Built from commit: `3cc4250e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -57,6 +57,8 @@
 - [[_COMMUNITY_Lighthouse & Snakeskin Docs|Lighthouse & Snakeskin Docs]]
 - [[_COMMUNITY_Swift Transformers Tokenizer|Swift Transformers Tokenizer]]
 - [[_COMMUNITY_Bruja Error|Bruja Error]]
+- [[_COMMUNITY_Package Manifest|Package Manifest]]
+- [[_COMMUNITY_Community 44|Community 44]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `ToolSuiteTests` - 33 edges
@@ -79,13 +81,13 @@
   .github/workflows/tests.yml → AGENTS.md
 - `SwiftBruja Logo (wooden mannequin wizard meditating)` --references--> `SwiftBruja README`  [EXTRACTED]
   SwiftBruja.jpg → README.md
-- `Claude Agent Instructions` --references--> `SwiftBruja AGENTS.md`  [EXTRACTED]
-  CLAUDE.md → AGENTS.md
+- `RecordingOutputWriter` --inherits--> `OutputWriter`  [EXTRACTED]
+  Tests/ProgressRendererTests/IOCoordinatorTests.swift → Sources/BrujaHelpers/IOCoordinator.swift
 
 ## Import Cycles
 - None detected.
 
-## Communities (44 total, 10 thin omitted)
+## Communities (46 total, 9 thin omitted)
 
 ### Community 0 - "Agent Backend Selection"
 Cohesion: 0.05
@@ -100,122 +102,134 @@ Cohesion: 0.08
 Nodes (21): SwiftTransformersTokenizer, SwiftTransformersTokenizerLoader, BrujaModelManager, BrujaQuery, MLXLMCommon, Bool, Int, Sendable (+13 more)
 
 ### Community 3 - "IO Coordinator"
-Cohesion: 0.11
-Nodes (13): IOCoordinator, LineReader, OutputWriter, StandardLineReader, StandardOutputWriter, IOCoordinatorTests, RecordingOutputWriter, ScriptedLineReader (+5 more)
+Cohesion: 0.06
+Nodes (40): AgentBackendSelector, bruja agent command, Bruja Static API, bruja CLI, BrujaMemory, BrujaModelManager, BrujaQuery, BrujaTypes (+32 more)
 
 ### Community 4 - "Bruja CLI Commands"
-Cohesion: 0.09
-Nodes (27): AsyncParsableCommand, BrujaCLI, ChatCommand, DownloadCommand, InfoCommand, ListCommand, QueryCommand, CLIError (+19 more)
-
-### Community 5 - "Mock Backend Dispatch Tests"
 Cohesion: 0.08
 Nodes (14): MockBackendDispatchTests, ToolCallFlag, ToolDispatchHarness, ReadFileToolTests, String, Bool, String, T (+6 more)
+
+### Community 5 - "Mock Backend Dispatch Tests"
+Cohesion: 0.09
+Nodes (26): AsyncParsableCommand, BrujaCLI, ChatCommand, DownloadCommand, InfoCommand, ListCommand, QueryCommand, CLIError (+18 more)
 
 ### Community 6 - "MLX Agent Loop & Generation"
 Cohesion: 0.08
 Nodes (26): Configuration, MLXAgentLoop, BrujaGenerationEvent, info, text, toolCall, ChatInputBox, ContainerGenerationSource (+18 more)
 
 ### Community 7 - "Bruja Core Types"
-Cohesion: 0.09
-Nodes (20): AcervoModel, BrujaModelInfo, Codable, BrujaQueryResult, Date, Bool, BrujaQueryResult, Float (+12 more)
+Cohesion: 0.11
+Nodes (12): StandardErrorOutputStream, ProgressRenderer, ProgressRendererNonTTYTests, Bool, Double, Int, Sendable, String (+4 more)
 
 ### Community 8 - "Bruja Static API Overview"
-Cohesion: 0.06
-Nodes (35): AgentBackendSelector, bruja agent command, Bruja Static API, BrujaMemory, BrujaModelManager, BrujaQuery, BrujaTypes, FoundationModelBackend (+27 more)
-
-### Community 9 - "Progress Renderer"
-Cohesion: 0.12
-Nodes (11): StandardErrorOutputStream, ProgressRenderer, ProgressRendererNonTTYTests, Bool, Double, Int, Sendable, String (+3 more)
-
-### Community 10 - "Bruja Integration Tests"
 Cohesion: 0.09
 Nodes (21): BrujaIntegrationTests, IntegrationTestError, binaryNotFound, processFailure, timeout, BrujaError, agentStepLimitExceeded, contextWindowExceeded (+13 more)
 
-### Community 11 - "Tool Dispatch"
+### Community 9 - "Progress Renderer"
 Cohesion: 0.14
 Nodes (17): AgentToolHandling, AgentTurnEvent, assistantText, toolCallStarted, toolFinished, dispatchStringTool(), dispatchTool(), MLXToolEncoding (+9 more)
 
+### Community 10 - "Bruja Integration Tests"
+Cohesion: 0.21
+Nodes (5): IOCoordinatorTests, RecordingOutputWriter, ScriptedLineReader, Int, String
+
+### Community 11 - "Tool Dispatch"
+Cohesion: 0.16
+Nodes (10): AcervoModel, BrujaModelInfo, Codable, BrujaQueryResult, Date, Double, Int, Int64 (+2 more)
+
 ### Community 12 - "Tool Suite Tests"
-Cohesion: 0.14
-Nodes (6): ToolSuiteTests, String, String, URL, Arguments, GlobTool
+Cohesion: 0.22
+Nodes (8): IOCoordinator, LineReader, OutputWriter, StandardLineReader, StandardOutputWriter, Sendable, Bool, String
 
 ### Community 13 - "MLX Agent Loop Transcript Tests"
 Cohesion: 0.16
-Nodes (13): MLXAgentLoopTranscriptTests, BrujaGenerationEvent, GenerationSource, MLXAgentLoop, SharedMockGenerationSource, GenerationSource, Int, AsyncThrowingStream (+5 more)
+Nodes (14): BrujaQueryResult, ModelContainer, Bool, BrujaQueryResult, Float, Int, Int64, ModelContainer (+6 more)
 
 ### Community 14 - "Path Guard Tests"
-Cohesion: 0.21
-Nodes (3): PathGuardTests, String, URL
+Cohesion: 0.16
+Nodes (13): MLXAgentLoopTranscriptTests, BrujaGenerationEvent, GenerationSource, MLXAgentLoop, SharedMockGenerationSource, GenerationSource, Int, AsyncThrowingStream (+5 more)
 
 ### Community 15 - "Path Guard"
+Cohesion: 0.18
+Nodes (4): ToolSuiteTests, String, URL, GlobTool
+
+### Community 16 - "Edit File Tool & Registry"
+Cohesion: 0.22
+Nodes (3): PathGuardTests, String, URL
+
+### Community 17 - "Grep Tool"
 Cohesion: 0.25
 Nodes (8): Decision, allowed, denied, escapeRequested, PathGuard, Equatable, Bool, String
 
-### Community 16 - "Edit File Tool & Registry"
-Cohesion: 0.18
-Nodes (5): String, Tool, Arguments, EditFileTool, ToolRegistry
+### Community 18 - "Preflight Manifest Test"
+Cohesion: 0.16
+Nodes (5): Tool, String, ToolRegistry, Arguments, WriteFileTool
 
-### Community 17 - "Grep Tool"
+### Community 19 - "Run Shell Tool"
 Cohesion: 0.23
 Nodes (5): Bool, String, URL, Arguments, GrepTool
 
-### Community 18 - "Preflight Manifest Test"
+### Community 20 - "Shared Models Logging Test"
 Cohesion: 0.26
 Nodes (7): PreflightManifestTest, ProcessResult, Int32, Set, String, TimeInterval, URL
 
-### Community 19 - "Run Shell Tool"
+### Community 21 - "List Directory Tool"
 Cohesion: 0.22
 Nodes (3): String, Arguments, RunShellTool
 
-### Community 20 - "Shared Models Logging Test"
+### Community 22 - "Inference Integration Test"
 Cohesion: 0.29
 Nodes (5): ProcessResult, SharedModelsLoggingTest, Int32, String, TimeInterval
 
-### Community 21 - "List Directory Tool"
+### Community 23 - "Foundation Model Backend"
 Cohesion: 0.24
 Nodes (3): String, Arguments, ListDirTool
 
-### Community 22 - "Inference Integration Test"
+### Community 24 - "Write File Tool"
 Cohesion: 0.22
 Nodes (3): InferenceIntegrationTest, String, TimeInterval
 
-### Community 23 - "Foundation Model Backend"
+### Community 25 - "Agent Seam Spike Test"
 Cohesion: 0.22
 Nodes (6): FoundationModelBackend, LanguageModelSession, BrujaError, Error, String, Tool
 
-### Community 24 - "Write File Tool"
-Cohesion: 0.28
-Nodes (4): String, Tool, Arguments, WriteFileTool
-
-### Community 25 - "Agent Seam Spike Test"
-Cohesion: 0.28
-Nodes (5): AgentTurnEvent, AgentSeamSpikeTest, EventLog, String, XCTestCase
-
 ### Community 26 - "Error Reporting Smoke Test"
+Cohesion: 0.28
+Nodes (4): String, Tool, Arguments, EditFileTool
+
+### Community 27 - "Project Execution Plans"
 Cohesion: 0.33
 Nodes (5): ErrorReportingSmokeTest, ProcessResult, Int32, String, TimeInterval
 
-### Community 27 - "Project Execution Plans"
+### Community 28 - "Bruja Memory Management"
 Cohesion: 0.39
 Nodes (9): BrujaDownloadManager, SwiftAcervo / Acervo Storage API, Operation Cauldron Whisper — Execution Plan, Operation Manifest Airdrop — Execution Plan, Operation Cauldron Whisper — Iteration 01 Brief, Archived Documentation: Incomplete Tasks (README), CDN Model Distribution for SwiftBruja (Requirements), Snakeskin Molt 01 — Shed the Download Manager Wrapper (Requirements) (+1 more)
 
-### Community 28 - "Bruja Memory Management"
+### Community 29 - "Tool Result Type"
 Cohesion: 0.44
 Nodes (4): BrujaMemory, Int, Int64, UInt64
 
-### Community 29 - "Tool Result Type"
+### Community 30 - "Foundation Backend Integration Test"
 Cohesion: 0.42
 Nodes (3): Int, String, ToolResult
 
-### Community 30 - "Foundation Backend Integration Test"
+### Community 31 - "Acervo Component Readiness Tests"
+Cohesion: 0.25
+Nodes (3): AcervoComponentReadyTests, BrujaConcurrencyTests, XCTestCase
+
+### Community 32 - "Bruja Error Tests"
+Cohesion: 0.32
+Nodes (4): AgentTurnEvent, AgentSeamSpikeTest, EventLog, String
+
+### Community 33 - "Bruja Memory Tests"
 Cohesion: 0.32
 Nodes (3): FoundationBackendIntegrationTest, Bool, URL
 
-### Community 34 - "Acervo Manifest Fetch Tests"
+### Community 36 - "Agent REPL Test"
 Cohesion: 0.38
 Nodes (4): AcervoManifestFetchTests, Set, String, URL
 
-### Community 40 - "Lighthouse & Snakeskin Docs"
+### Community 42 - "Bruja Error"
 Cohesion: 0.67
 Nodes (4): Lighthouse Plumbing Execution Plan, Lighthouse Plumbing Requirements, Snakeskin Molt Brief, Snakeskin Molt Execution Plan
 
@@ -224,24 +238,24 @@ Nodes (4): Lighthouse Plumbing Execution Plan, Lighthouse Plumbing Requirements,
   docs/complete/snakeskin-molt-01-requirements.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **125 isolated node(s):** `Double`, `Sendable`, `mlx`, `foundation`, `Set` (+120 more)
+- **126 isolated node(s):** `Double`, `Sendable`, `mlx`, `foundation`, `Set` (+121 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Snakeskin Molt 01 — Shed the Download Manager Wrapper (Requirements)` and `CDN Model Distribution for SwiftBruja (Requirements)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `ToolSuiteTests` connect `Tool Suite Tests` to `Edit File Tool & Registry`, `Grep Tool`, `Run Shell Tool`, `List Directory Tool`, `Write File Tool`, `Agent Seam Spike Test`?**
-  _High betweenness centrality (0.089) - this node is a cross-community bridge._
-- **Why does `ProgressRenderer` connect `Progress Renderer` to `Agent Command & Loop`, `Bruja CLI Commands`?**
-  _High betweenness centrality (0.085) - this node is a cross-community bridge._
-- **Why does `ProgressRendererNonTTYTests` connect `Progress Renderer` to `Agent Seam Spike Test`?**
+- **Why does `ToolSuiteTests` connect `Path Guard` to `Preflight Manifest Test`, `Run Shell Tool`, `List Directory Tool`, `Foundation Model Backend`, `Error Reporting Smoke Test`, `Acervo Component Readiness Tests`?**
+  _High betweenness centrality (0.087) - this node is a cross-community bridge._
+- **Why does `ProgressRenderer` connect `Bruja Core Types` to `Agent Command & Loop`, `Mock Backend Dispatch Tests`?**
   _High betweenness centrality (0.083) - this node is a cross-community bridge._
+- **Why does `ProgressRendererNonTTYTests` connect `Bruja Core Types` to `Acervo Component Readiness Tests`?**
+  _High betweenness centrality (0.081) - this node is a cross-community bridge._
 - **Are the 13 inferred relationships involving `ProgressRenderer` (e.g. with `.run()` and `.testLogStartup_WritesToStderr()`) actually correct?**
   _`ProgressRenderer` has 13 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Double`, `Sendable`, `mlx` to the rest of the system?**
-  _125 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _126 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Agent Backend Selection` be split into smaller, more focused modules?**
   _Cohesion score 0.05429864253393665 - nodes in this community are weakly interconnected._

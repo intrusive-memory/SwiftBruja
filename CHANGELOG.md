@@ -1,9 +1,24 @@
+---
+type: doc
+updated: 2026-06-23
+---
+
 # Changelog
 
 All notable changes to SwiftBruja will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.8.1] - 2026-06-23
+
+### Fixed
+- **`Package.swift` manifest** — restored the `import Foundation` the sibling-dependency helper relies on, so the manifest evaluates cleanly on a fresh checkout instead of failing to resolve.
+
+### Changed
+- **Release hygiene** — `Package.swift` ships in remote-only shape (sibling scaffolding stripped, `SwiftAcervo` pinned to `.upToNextMajor(from: "0.20.0")`); docs and the queryable codemap refreshed for the release.
 
 ---
 

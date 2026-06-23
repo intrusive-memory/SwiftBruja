@@ -1,8 +1,13 @@
+---
+type: reference
+updated: 2026-06-23
+---
+
 # AGENTS.md
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.8.0
+**Current Version**: 1.8.1
 
 ---
 

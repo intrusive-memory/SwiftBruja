@@ -9,7 +9,7 @@
       "source_file": "Package.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 43,
+      "community": 45,
       "norm_label": "package.swift",
       "id": "package"
     },
@@ -19,7 +19,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "iocoordinator.swift",
       "id": "brujahelpers_iocoordinator"
     },
@@ -29,7 +29,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "outputwriter",
       "id": "brujahelpers_iocoordinator_outputwriter"
     },
@@ -39,7 +39,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "sendable",
       "id": "sendable"
     },
@@ -49,7 +49,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "linereader",
       "id": "brujahelpers_iocoordinator_linereader"
     },
@@ -59,7 +59,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "standardoutputwriter",
       "id": "brujahelpers_iocoordinator_standardoutputwriter"
     },
@@ -69,7 +69,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".init()",
       "id": "brujahelpers_iocoordinator_standardoutputwriter_init"
     },
@@ -79,7 +79,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".write()",
       "id": "brujahelpers_iocoordinator_standardoutputwriter_write"
     },
@@ -89,7 +89,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "string",
       "id": "sources_brujahelpers_iocoordinator_swift_string"
     },
@@ -99,7 +99,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".flush()",
       "id": "brujahelpers_iocoordinator_standardoutputwriter_flush"
     },
@@ -109,7 +109,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "standardlinereader",
       "id": "brujahelpers_iocoordinator_standardlinereader"
     },
@@ -119,7 +119,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".init()",
       "id": "brujahelpers_iocoordinator_standardlinereader_init"
     },
@@ -129,7 +129,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".readline()",
       "id": "brujahelpers_iocoordinator_standardlinereader_readline"
     },
@@ -139,7 +139,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L96",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "iocoordinator",
       "id": "brujahelpers_iocoordinator_iocoordinator"
     },
@@ -149,7 +149,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L111",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": "bool",
       "id": "sources_brujahelpers_iocoordinator_swift_bool"
     },
@@ -159,7 +159,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L129",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".init()",
       "id": "brujahelpers_iocoordinator_iocoordinator_init"
     },
@@ -169,7 +169,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L165",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".streamtoken()",
       "id": "brujahelpers_iocoordinator_iocoordinator_streamtoken"
     },
@@ -179,7 +179,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L177",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".flushoutput()",
       "id": "brujahelpers_iocoordinator_iocoordinator_flushoutput"
     },
@@ -189,7 +189,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L202",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".promptuser()",
       "id": "brujahelpers_iocoordinator_iocoordinator_promptuser"
     },
@@ -199,7 +199,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L245",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".emitline()",
       "id": "brujahelpers_iocoordinator_iocoordinator_emitline"
     },
@@ -209,7 +209,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L252",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".streamline()",
       "id": "brujahelpers_iocoordinator_iocoordinator_streamline"
     },
@@ -219,7 +219,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L258",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".prompt()",
       "id": "brujahelpers_iocoordinator_iocoordinator_prompt"
     },
@@ -229,7 +229,7 @@
       "source_file": "Sources/BrujaHelpers/IOCoordinator.swift",
       "source_location": "L276",
       "_origin": "ast",
-      "community": 3,
+      "community": 12,
       "norm_label": ".requestpathescapeconsent()",
       "id": "brujahelpers_iocoordinator_iocoordinator_requestpathescapeconsent"
     },
@@ -239,7 +239,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "progressrenderer.swift",
       "id": "brujahelpers_progressrenderer"
     },
@@ -249,7 +249,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "bool",
       "id": "sources_brujahelpers_progressrenderer_swift_bool"
     },
@@ -259,7 +259,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "int",
       "id": "sources_brujahelpers_progressrenderer_swift_int"
     },
@@ -269,7 +269,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".init()",
       "id": "brujahelpers_progressrenderer_progressrenderer_init"
     },
@@ -279,7 +279,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".reportprogress()",
       "id": "brujahelpers_progressrenderer_progressrenderer_reportprogress"
     },
@@ -289,7 +289,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "double",
       "id": "sources_brujahelpers_progressrenderer_swift_double"
     },
@@ -299,7 +299,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L95",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".reportcompletion()",
       "id": "brujahelpers_progressrenderer_progressrenderer_reportcompletion"
     },
@@ -309,7 +309,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L95",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "string",
       "id": "sources_brujahelpers_progressrenderer_swift_string"
     },
@@ -319,7 +319,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L120",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".logstartup()",
       "id": "brujahelpers_progressrenderer_progressrenderer_logstartup"
     },
@@ -329,7 +329,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L137",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".makeprogresscallback()",
       "id": "brujahelpers_progressrenderer_progressrenderer_makeprogresscallback"
     },
@@ -339,7 +339,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L137",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "sendable",
       "id": "sources_brujahelpers_progressrenderer_swift_sendable"
     },
@@ -349,7 +349,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L150",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "standarderroroutputstream",
       "id": "brujahelpers_progressrenderer_standarderroroutputstream"
     },
@@ -359,7 +359,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 4,
+      "community": 7,
       "norm_label": "textoutputstream",
       "id": "textoutputstream"
     },
@@ -369,7 +369,7 @@
       "source_file": "Sources/BrujaHelpers/ProgressRenderer.swift",
       "source_location": "L151",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".write()",
       "id": "brujahelpers_progressrenderer_standarderroroutputstream_write"
     },
@@ -559,7 +559,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 4,
+      "community": 0,
       "norm_label": "error",
       "id": "error"
     },
@@ -569,7 +569,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 5,
       "norm_label": "customstringconvertible",
       "id": "customstringconvertible"
     },
@@ -609,7 +609,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": "foundationmodelbackend.swift",
       "id": "agent_foundationmodelbackend"
     },
@@ -619,7 +619,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": "foundationmodelbackend",
       "id": "agent_foundationmodelbackend_foundationmodelbackend"
     },
@@ -629,7 +629,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": ".makesession()",
       "id": "agent_foundationmodelbackend_foundationmodelbackend_makesession"
     },
@@ -639,7 +639,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": "tool",
       "id": "sources_swiftbruja_agent_foundationmodelbackend_swift_tool"
     },
@@ -649,7 +649,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_foundationmodelbackend_swift_string"
     },
@@ -659,7 +659,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": "languagemodelsession",
       "id": "languagemodelsession"
     },
@@ -669,7 +669,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": ".mapfmerror()",
       "id": "agent_foundationmodelbackend_foundationmodelbackend_mapfmerror"
     },
@@ -679,7 +679,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": "error",
       "id": "sources_swiftbruja_agent_foundationmodelbackend_swift_error"
     },
@@ -689,7 +689,7 @@
       "source_file": "Sources/SwiftBruja/Agent/FoundationModelBackend.swift",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 23,
+      "community": 25,
       "norm_label": "brujaerror",
       "id": "sources_swiftbruja_agent_foundationmodelbackend_swift_brujaerror"
     },
@@ -1099,7 +1099,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "pathguard.swift",
       "id": "agent_pathguard"
     },
@@ -1109,7 +1109,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "pathguard",
       "id": "agent_pathguard_pathguard"
     },
@@ -1119,7 +1119,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "decision",
       "id": "agent_pathguard_decision"
     },
@@ -1129,7 +1129,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "equatable",
       "id": "equatable"
     },
@@ -1139,7 +1139,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "allowed",
       "id": "agent_pathguard_decision_allowed"
     },
@@ -1149,7 +1149,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "escaperequested",
       "id": "agent_pathguard_decision_escaperequested"
     },
@@ -1159,7 +1159,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "denied",
       "id": "agent_pathguard_decision_denied"
     },
@@ -1169,7 +1169,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": ".classify()",
       "id": "agent_pathguard_pathguard_classify"
     },
@@ -1179,7 +1179,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_pathguard_swift_string"
     },
@@ -1189,7 +1189,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": ".canonicalize()",
       "id": "agent_pathguard_pathguard_canonicalize"
     },
@@ -1199,7 +1199,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L113",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": ".canonicalizeallowingmissingleaf()",
       "id": "agent_pathguard_pathguard_canonicalizeallowingmissingleaf"
     },
@@ -1209,7 +1209,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L149",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": ".isinside()",
       "id": "agent_pathguard_pathguard_isinside"
     },
@@ -1219,7 +1219,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L149",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "bool",
       "id": "sources_swiftbruja_agent_pathguard_swift_bool"
     },
@@ -1229,7 +1229,7 @@
       "source_file": "Sources/SwiftBruja/Agent/PathGuard.swift",
       "source_location": "L170",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": ".suspiciousoutsidepaths()",
       "id": "agent_pathguard_pathguard_suspiciousoutsidepaths"
     },
@@ -1419,7 +1419,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "tooldispatch.swift",
       "id": "agent_tooldispatch"
     },
@@ -1429,7 +1429,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "mlxtoolencoding",
       "id": "agent_tooldispatch_mlxtoolencoding"
     },
@@ -1439,7 +1439,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": ".toolspecs()",
       "id": "agent_tooldispatch_mlxtoolencoding_toolspecs"
     },
@@ -1449,7 +1449,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "foundationmodels",
       "id": "sources_swiftbruja_agent_tooldispatch_swift_foundationmodels"
     },
@@ -1459,7 +1459,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "toolspec",
       "id": "sources_swiftbruja_agent_tooldispatch_swift_toolspec"
     },
@@ -1469,7 +1469,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": ".schemaobject()",
       "id": "agent_tooldispatch_mlxtoolencoding_schemaobject"
     },
@@ -1479,7 +1479,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "generationschema",
       "id": "sources_swiftbruja_agent_tooldispatch_swift_generationschema"
     },
@@ -1489,7 +1489,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tooldispatch_swift_string"
     },
@@ -1499,7 +1499,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "sendable",
       "id": "sources_swiftbruja_agent_tooldispatch_swift_sendable"
     },
@@ -1509,7 +1509,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": ".argumentsjson()",
       "id": "agent_tooldispatch_mlxtoolencoding_argumentsjson"
     },
@@ -1519,7 +1519,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "toolcall",
       "id": "toolcall"
     },
@@ -1529,7 +1529,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "stringoutputtool",
       "id": "agent_tooldispatch_stringoutputtool"
     },
@@ -1539,7 +1539,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L76",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "dispatchtool()",
       "id": "agent_tooldispatch_dispatchtool"
     },
@@ -1549,7 +1549,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "dispatchstringtool()",
       "id": "agent_tooldispatch_dispatchstringtool"
     },
@@ -1559,7 +1559,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "t",
       "id": "sources_swiftbruja_agent_tooldispatch_swift_t"
     },
@@ -1569,7 +1569,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "agenttoolhandling",
       "id": "agent_tooldispatch_agenttoolhandling"
     },
@@ -1579,7 +1579,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L126",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "registrytoolhandler",
       "id": "agent_tooldispatch_registrytoolhandler"
     },
@@ -1589,7 +1589,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L130",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": ".init()",
       "id": "agent_tooldispatch_registrytoolhandler_init"
     },
@@ -1599,7 +1599,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L134",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": ".toolspecs()",
       "id": "agent_tooldispatch_registrytoolhandler_toolspecs"
     },
@@ -1609,7 +1609,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L138",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": ".dispatch()",
       "id": "agent_tooldispatch_registrytoolhandler_dispatch"
     },
@@ -1619,7 +1619,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L150",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "agentturnevent",
       "id": "agent_tooldispatch_agentturnevent"
     },
@@ -1629,7 +1629,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L152",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "assistanttext",
       "id": "agent_tooldispatch_agentturnevent_assistanttext"
     },
@@ -1639,7 +1639,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L154",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "toolcallstarted",
       "id": "agent_tooldispatch_agentturnevent_toolcallstarted"
     },
@@ -1649,7 +1649,7 @@
       "source_file": "Sources/SwiftBruja/Agent/ToolDispatch.swift",
       "source_location": "L156",
       "_origin": "ast",
-      "community": 11,
+      "community": 9,
       "norm_label": "toolfinished",
       "id": "agent_tooldispatch_agentturnevent_toolfinished"
     },
@@ -1659,7 +1659,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/EditFileTool.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 16,
+      "community": 26,
       "norm_label": "editfiletool.swift",
       "id": "tools_editfiletool"
     },
@@ -1669,7 +1669,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/EditFileTool.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 16,
+      "community": 26,
       "norm_label": "editfiletool",
       "id": "tools_editfiletool_editfiletool"
     },
@@ -1679,7 +1679,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 24,
+      "community": 26,
       "norm_label": "tool",
       "id": "tool"
     },
@@ -1689,7 +1689,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/EditFileTool.swift",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 16,
+      "community": 26,
       "norm_label": "arguments",
       "id": "tools_editfiletool_arguments"
     },
@@ -1699,7 +1699,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/EditFileTool.swift",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 16,
+      "community": 26,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tools_editfiletool_swift_string"
     },
@@ -1709,7 +1709,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/EditFileTool.swift",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 16,
+      "community": 26,
       "norm_label": ".init()",
       "id": "tools_editfiletool_editfiletool_init"
     },
@@ -1719,7 +1719,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/EditFileTool.swift",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 16,
+      "community": 26,
       "norm_label": ".call()",
       "id": "tools_editfiletool_editfiletool_call"
     },
@@ -1729,7 +1729,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GlobTool.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 12,
+      "community": 43,
       "norm_label": "globtool.swift",
       "id": "tools_globtool"
     },
@@ -1739,7 +1739,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GlobTool.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": "globtool",
       "id": "tools_globtool_globtool"
     },
@@ -1749,7 +1749,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GlobTool.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 12,
+      "community": 43,
       "norm_label": "arguments",
       "id": "tools_globtool_arguments"
     },
@@ -1759,7 +1759,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GlobTool.swift",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 12,
+      "community": 43,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tools_globtool_swift_string"
     },
@@ -1769,7 +1769,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GlobTool.swift",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".init()",
       "id": "tools_globtool_globtool_init"
     },
@@ -1779,7 +1779,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GlobTool.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 12,
+      "community": 43,
       "norm_label": ".call()",
       "id": "tools_globtool_globtool_call"
     },
@@ -1789,7 +1789,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": "greptool.swift",
       "id": "tools_greptool"
     },
@@ -1799,7 +1799,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": "greptool",
       "id": "tools_greptool_greptool"
     },
@@ -1809,7 +1809,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": "arguments",
       "id": "tools_greptool_arguments"
     },
@@ -1819,7 +1819,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tools_greptool_swift_string"
     },
@@ -1829,7 +1829,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": "bool",
       "id": "sources_swiftbruja_agent_tools_greptool_swift_bool"
     },
@@ -1839,7 +1839,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": ".init()",
       "id": "tools_greptool_greptool_init"
     },
@@ -1849,7 +1849,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": ".call()",
       "id": "tools_greptool_greptool_call"
     },
@@ -1859,7 +1859,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L113",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": ".collecttextfiles()",
       "id": "tools_greptool_greptool_collecttextfiles"
     },
@@ -1869,7 +1869,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L113",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": "url",
       "id": "sources_swiftbruja_agent_tools_greptool_swift_url"
     },
@@ -1879,7 +1879,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/GrepTool.swift",
       "source_location": "L130",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": ".matchesregex()",
       "id": "tools_greptool_greptool_matchesregex"
     },
@@ -1889,7 +1889,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ListDirTool.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": "listdirtool.swift",
       "id": "tools_listdirtool"
     },
@@ -1899,7 +1899,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ListDirTool.swift",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": "listdirtool",
       "id": "tools_listdirtool_listdirtool"
     },
@@ -1909,7 +1909,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ListDirTool.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": "arguments",
       "id": "tools_listdirtool_arguments"
     },
@@ -1919,7 +1919,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ListDirTool.swift",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tools_listdirtool_swift_string"
     },
@@ -1929,7 +1929,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ListDirTool.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": ".init()",
       "id": "tools_listdirtool_listdirtool_init"
     },
@@ -1939,7 +1939,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ListDirTool.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": ".call()",
       "id": "tools_listdirtool_listdirtool_call"
     },
@@ -1949,7 +1949,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ReadFileTool.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "readfiletool.swift",
       "id": "tools_readfiletool"
     },
@@ -1959,7 +1959,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ReadFileTool.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "readfiletool",
       "id": "tools_readfiletool_readfiletool"
     },
@@ -1969,7 +1969,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ReadFileTool.swift",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "arguments",
       "id": "tools_readfiletool_arguments"
     },
@@ -1979,7 +1979,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ReadFileTool.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tools_readfiletool_swift_string"
     },
@@ -1989,7 +1989,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ReadFileTool.swift",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".init()",
       "id": "tools_readfiletool_readfiletool_init"
     },
@@ -1999,7 +1999,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ReadFileTool.swift",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".call()",
       "id": "tools_readfiletool_readfiletool_call"
     },
@@ -2009,7 +2009,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/RunShellTool.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": "runshelltool.swift",
       "id": "tools_runshelltool"
     },
@@ -2019,7 +2019,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/RunShellTool.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": "runshelltool",
       "id": "tools_runshelltool_runshelltool"
     },
@@ -2029,7 +2029,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/RunShellTool.swift",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": "arguments",
       "id": "tools_runshelltool_arguments"
     },
@@ -2039,7 +2039,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/RunShellTool.swift",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tools_runshelltool_swift_string"
     },
@@ -2049,7 +2049,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/RunShellTool.swift",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": ".init()",
       "id": "tools_runshelltool_runshelltool_init"
     },
@@ -2059,7 +2059,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/RunShellTool.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": ".call()",
       "id": "tools_runshelltool_runshelltool_call"
     },
@@ -2069,7 +2069,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolRegistry.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 16,
+      "community": 18,
       "norm_label": "toolregistry.swift",
       "id": "tools_toolregistry"
     },
@@ -2079,7 +2079,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolRegistry.swift",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 16,
+      "community": 18,
       "norm_label": "toolregistry",
       "id": "tools_toolregistry_toolregistry"
     },
@@ -2089,7 +2089,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolRegistry.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 16,
+      "community": 18,
       "norm_label": ".defaulttools()",
       "id": "tools_toolregistry_toolregistry_defaulttools"
     },
@@ -2099,7 +2099,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolRegistry.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 16,
+      "community": 18,
       "norm_label": "tool",
       "id": "sources_swiftbruja_agent_tools_toolregistry_swift_tool"
     },
@@ -2109,7 +2109,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": "toolresult.swift",
       "id": "tools_toolresult"
     },
@@ -2119,7 +2119,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": "toolresult",
       "id": "tools_toolresult_toolresult"
     },
@@ -2129,7 +2129,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": ".truncated()",
       "id": "tools_toolresult_toolresult_truncated"
     },
@@ -2139,7 +2139,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tools_toolresult_swift_string"
     },
@@ -2149,7 +2149,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": "int",
       "id": "sources_swiftbruja_agent_tools_toolresult_swift_int"
     },
@@ -2159,7 +2159,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L59",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": ".ok()",
       "id": "tools_toolresult_toolresult_ok"
     },
@@ -2169,7 +2169,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L72",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": ".error()",
       "id": "tools_toolresult_toolresult_error"
     },
@@ -2179,7 +2179,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": ".escaperequested()",
       "id": "tools_toolresult_toolresult_escaperequested"
     },
@@ -2189,7 +2189,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/ToolResult.swift",
       "source_location": "L111",
       "_origin": "ast",
-      "community": 29,
+      "community": 30,
       "norm_label": ".audit()",
       "id": "tools_toolresult_toolresult_audit"
     },
@@ -2199,7 +2199,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/WriteFileTool.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 24,
+      "community": 18,
       "norm_label": "writefiletool.swift",
       "id": "tools_writefiletool"
     },
@@ -2209,7 +2209,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/WriteFileTool.swift",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 24,
+      "community": 18,
       "norm_label": "writefiletool",
       "id": "tools_writefiletool_writefiletool"
     },
@@ -2219,7 +2219,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/WriteFileTool.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 24,
+      "community": 18,
       "norm_label": "arguments",
       "id": "tools_writefiletool_arguments"
     },
@@ -2229,7 +2229,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/WriteFileTool.swift",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 24,
+      "community": 18,
       "norm_label": "string",
       "id": "sources_swiftbruja_agent_tools_writefiletool_swift_string"
     },
@@ -2239,7 +2239,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/WriteFileTool.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 24,
+      "community": 18,
       "norm_label": ".init()",
       "id": "tools_writefiletool_writefiletool_init"
     },
@@ -2249,7 +2249,7 @@
       "source_file": "Sources/SwiftBruja/Agent/Tools/WriteFileTool.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 24,
+      "community": 18,
       "norm_label": ".call()",
       "id": "tools_writefiletool_writefiletool_call"
     },
@@ -2269,7 +2269,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "bruja",
       "id": "swiftbruja_bruja_bruja"
     },
@@ -2279,7 +2279,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "url",
       "id": "sources_swiftbruja_bruja_swift_url"
     },
@@ -2289,7 +2289,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": ".modelexists()",
       "id": "swiftbruja_bruja_bruja_modelexists"
     },
@@ -2299,7 +2299,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "string",
       "id": "sources_swiftbruja_bruja_swift_string"
     },
@@ -2309,7 +2309,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "bool",
       "id": "sources_swiftbruja_bruja_swift_bool"
     },
@@ -2319,7 +2319,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": ".modelinfo()",
       "id": "swiftbruja_bruja_bruja_modelinfo"
     },
@@ -2329,7 +2329,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "brujamodelinfo",
       "id": "brujamodelinfo"
     },
@@ -2339,7 +2339,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".listmodels()",
       "id": "swiftbruja_bruja_bruja_listmodels"
     },
@@ -2349,7 +2349,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": ".loadmodel()",
       "id": "swiftbruja_bruja_bruja_loadmodel"
     },
@@ -2359,7 +2359,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "modelcontainer",
       "id": "sources_swiftbruja_bruja_swift_modelcontainer"
     },
@@ -2369,7 +2369,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L112",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": ".query()",
       "id": "swiftbruja_bruja_bruja_query"
     },
@@ -2379,7 +2379,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L112",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "float",
       "id": "sources_swiftbruja_bruja_swift_float"
     },
@@ -2389,7 +2389,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L112",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "int",
       "id": "sources_swiftbruja_bruja_swift_int"
     },
@@ -2399,7 +2399,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L129",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": ".querywithmetadata()",
       "id": "swiftbruja_bruja_bruja_querywithmetadata"
     },
@@ -2409,7 +2409,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L129",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "brujaqueryresult",
       "id": "sources_swiftbruja_bruja_swift_brujaqueryresult"
     },
@@ -2419,7 +2419,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L159",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "t",
       "id": "sources_swiftbruja_bruja_swift_t"
     },
@@ -2429,7 +2429,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L179",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": ".resolvepath()",
       "id": "swiftbruja_bruja_bruja_resolvepath"
     },
@@ -2439,7 +2439,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L186",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": ".calculatedirectorysize()",
       "id": "swiftbruja_bruja_bruja_calculatedirectorysize"
     },
@@ -2449,7 +2449,7 @@
       "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L186",
       "_origin": "ast",
-      "community": 7,
+      "community": 13,
       "norm_label": "int64",
       "id": "sources_swiftbruja_bruja_swift_int64"
     },
@@ -2459,7 +2459,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "brujaerror.swift",
       "id": "core_brujaerror"
     },
@@ -2469,7 +2469,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "brujaerror",
       "id": "core_brujaerror_brujaerror"
     },
@@ -2479,7 +2479,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "localizederror",
       "id": "localizederror"
     },
@@ -2489,7 +2489,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "modelnotfound",
       "id": "core_brujaerror_brujaerror_modelnotfound"
     },
@@ -2499,7 +2499,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "modelloadfailed",
       "id": "core_brujaerror_brujaerror_modelloadfailed"
     },
@@ -2509,7 +2509,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "queryfailed",
       "id": "core_brujaerror_brujaerror_queryfailed"
     },
@@ -2519,7 +2519,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "invalidresponse",
       "id": "core_brujaerror_brujaerror_invalidresponse"
     },
@@ -2529,7 +2529,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "jsonparsingfailed",
       "id": "core_brujaerror_brujaerror_jsonparsingfailed"
     },
@@ -2539,7 +2539,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "invalidmodelpath",
       "id": "core_brujaerror_brujaerror_invalidmodelpath"
     },
@@ -2549,7 +2549,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "insufficientmemory",
       "id": "core_brujaerror_brujaerror_insufficientmemory"
     },
@@ -2559,7 +2559,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "pathescapesworkingdirectory",
       "id": "core_brujaerror_brujaerror_pathescapesworkingdirectory"
     },
@@ -2569,7 +2569,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "toolexecutionfailed",
       "id": "core_brujaerror_brujaerror_toolexecutionfailed"
     },
@@ -2579,7 +2579,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "agentsteplimitexceeded",
       "id": "core_brujaerror_brujaerror_agentsteplimitexceeded"
     },
@@ -2589,7 +2589,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "contextwindowexceeded",
       "id": "core_brujaerror_brujaerror_contextwindowexceeded"
     },
@@ -2599,7 +2599,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaError.swift",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "string",
       "id": "sources_swiftbruja_core_brujaerror_swift_string"
     },
@@ -2609,7 +2609,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": "brujamemory.swift",
       "id": "core_brujamemory"
     },
@@ -2619,7 +2619,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": "brujamemory",
       "id": "core_brujamemory_brujamemory"
     },
@@ -2629,7 +2629,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": ".availablememory()",
       "id": "core_brujamemory_brujamemory_availablememory"
     },
@@ -2639,7 +2639,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": "uint64",
       "id": "uint64"
     },
@@ -2649,7 +2649,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": ".recommendedmaxtokens()",
       "id": "core_brujamemory_brujamemory_recommendedmaxtokens"
     },
@@ -2659,7 +2659,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": "int64",
       "id": "sources_swiftbruja_core_brujamemory_swift_int64"
     },
@@ -2669,7 +2669,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": "int",
       "id": "sources_swiftbruja_core_brujamemory_swift_int"
     },
@@ -2679,7 +2679,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": ".tokensforavailablememory()",
       "id": "core_brujamemory_brujamemory_tokensforavailablememory"
     },
@@ -2689,7 +2689,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaMemory.swift",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 28,
+      "community": 29,
       "norm_label": ".validatememoryformodel()",
       "id": "core_brujamemory_brujamemory_validatememoryformodel"
     },
@@ -2939,7 +2939,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "brujatypes.swift",
       "id": "core_brujatypes"
     },
@@ -2949,7 +2949,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "brujaqueryresult",
       "id": "core_brujatypes_brujaqueryresult"
     },
@@ -2959,7 +2959,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "codable",
       "id": "codable"
     },
@@ -2969,7 +2969,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "string",
       "id": "sources_swiftbruja_core_brujatypes_swift_string"
     },
@@ -2979,7 +2979,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "int",
       "id": "sources_swiftbruja_core_brujatypes_swift_int"
     },
@@ -2989,7 +2989,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "double",
       "id": "sources_swiftbruja_core_brujatypes_swift_double"
     },
@@ -2999,7 +2999,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".init()",
       "id": "core_brujatypes_brujaqueryresult_init"
     },
@@ -3009,7 +3009,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "int64",
       "id": "sources_swiftbruja_core_brujatypes_swift_int64"
     },
@@ -3019,7 +3019,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "date",
       "id": "date"
     },
@@ -3029,7 +3029,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".init()",
       "id": "core_brujatypes_brujamodelinfo_init"
     },
@@ -3039,7 +3039,7 @@
       "source_file": "Sources/SwiftBruja/Core/BrujaTypes.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "acervomodel",
       "id": "acervomodel"
     },
@@ -3069,7 +3069,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "asyncparsablecommand",
       "id": "asyncparsablecommand"
     },
@@ -3529,7 +3529,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "brujacli.swift",
       "id": "bruja_brujacli"
     },
@@ -3539,7 +3539,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "brujacli",
       "id": "bruja_brujacli_brujacli"
     },
@@ -3549,7 +3549,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "downloadcommand",
       "id": "bruja_brujacli_downloadcommand"
     },
@@ -3559,7 +3559,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "string",
       "id": "sources_bruja_brujacli_swift_string"
     },
@@ -3569,7 +3569,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L82",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".validate()",
       "id": "bruja_brujacli_downloadcommand_validate"
     },
@@ -3579,7 +3579,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".run()",
       "id": "bruja_brujacli_downloadcommand_run"
     },
@@ -3589,7 +3589,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".runsinglemodel()",
       "id": "bruja_brujacli_downloadcommand_runsinglemodel"
     },
@@ -3599,7 +3599,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "progressrenderer",
       "id": "progressrenderer"
     },
@@ -3609,7 +3609,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L132",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".runbatch()",
       "id": "bruja_brujacli_downloadcommand_runbatch"
     },
@@ -3619,7 +3619,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L153",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "querycommand",
       "id": "bruja_brujacli_querycommand"
     },
@@ -3629,7 +3629,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L186",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "float",
       "id": "sources_bruja_brujacli_swift_float"
     },
@@ -3639,7 +3639,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L189",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "int",
       "id": "sources_bruja_brujacli_swift_int"
     },
@@ -3649,7 +3649,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L201",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".run()",
       "id": "bruja_brujacli_querycommand_run"
     },
@@ -3659,7 +3659,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L228",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "chatcommand",
       "id": "bruja_brujacli_chatcommand"
     },
@@ -3669,7 +3669,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L265",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".run()",
       "id": "bruja_brujacli_chatcommand_run"
     },
@@ -3679,7 +3679,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L346",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "listcommand",
       "id": "bruja_brujacli_listcommand"
     },
@@ -3689,7 +3689,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L369",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".run()",
       "id": "bruja_brujacli_listcommand_run"
     },
@@ -3699,7 +3699,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L399",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".formatbytes()",
       "id": "bruja_brujacli_listcommand_formatbytes"
     },
@@ -3709,7 +3709,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L399",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "int64",
       "id": "sources_bruja_brujacli_swift_int64"
     },
@@ -3719,7 +3719,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L408",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "infocommand",
       "id": "bruja_brujacli_infocommand"
     },
@@ -3729,7 +3729,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L432",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "bool",
       "id": "sources_bruja_brujacli_swift_bool"
     },
@@ -3739,7 +3739,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L438",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".run()",
       "id": "bruja_brujacli_infocommand_run"
     },
@@ -3749,7 +3749,7 @@
       "source_file": "Sources/bruja/BrujaCLI.swift",
       "source_location": "L470",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".formatbytes()",
       "id": "bruja_brujacli_infocommand_formatbytes"
     },
@@ -3759,7 +3759,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "errorreporting.swift",
       "id": "bruja_errorreporting"
     },
@@ -3769,7 +3769,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "clierror",
       "id": "bruja_errorreporting_clierror"
     },
@@ -3779,7 +3779,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "string",
       "id": "sources_bruja_errorreporting_swift_string"
     },
@@ -3789,7 +3789,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".init()",
       "id": "bruja_errorreporting_clierror_init"
     },
@@ -3799,7 +3799,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "runcli()",
       "id": "bruja_errorreporting_runcli"
     },
@@ -3809,7 +3809,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "t",
       "id": "sources_bruja_errorreporting_swift_t"
     },
@@ -3819,7 +3819,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "humanreadable()",
       "id": "bruja_errorreporting_humanreadable"
     },
@@ -3829,7 +3829,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "acervoerror",
       "id": "sources_bruja_errorreporting_swift_acervoerror"
     },
@@ -3839,7 +3839,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L142",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "printstderr()",
       "id": "bruja_errorreporting_printstderr"
     },
@@ -3849,7 +3849,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L148",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "standarderrorwriter",
       "id": "bruja_errorreporting_standarderrorwriter"
     },
@@ -3859,7 +3859,7 @@
       "source_file": "Sources/bruja/ErrorReporting.swift",
       "source_location": "L149",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": ".write()",
       "id": "bruja_errorreporting_standarderrorwriter_write"
     },
@@ -3869,7 +3869,7 @@
       "source_file": "Sources/bruja/ModelPreflight.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "modelpreflight.swift",
       "id": "bruja_modelpreflight"
     },
@@ -3879,7 +3879,7 @@
       "source_file": "Sources/bruja/ModelPreflight.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "ensuremodelobtainable()",
       "id": "bruja_modelpreflight_ensuremodelobtainable"
     },
@@ -3889,7 +3889,7 @@
       "source_file": "Sources/bruja/ModelPreflight.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "string",
       "id": "sources_bruja_modelpreflight_swift_string"
     },
@@ -3899,7 +3899,7 @@
       "source_file": "Sources/bruja/ModelPreflight.swift",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "modelisnotpublished()",
       "id": "bruja_modelpreflight_modelisnotpublished"
     },
@@ -3909,7 +3909,7 @@
       "source_file": "Sources/bruja/ModelPreflight.swift",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "acervoerror",
       "id": "sources_bruja_modelpreflight_swift_acervoerror"
     },
@@ -3919,7 +3919,7 @@
       "source_file": "Sources/bruja/ModelPreflight.swift",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 4,
+      "community": 5,
       "norm_label": "bool",
       "id": "sources_bruja_modelpreflight_swift_bool"
     },
@@ -3929,7 +3929,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentReplTest.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 36,
+      "community": 38,
       "norm_label": "agentrepltest.swift",
       "id": "brujaintegrationtests_agentrepltest"
     },
@@ -3939,7 +3939,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentReplTest.swift",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 36,
+      "community": 38,
       "norm_label": "agentrepltest",
       "id": "brujaintegrationtests_agentrepltest_agentrepltest"
     },
@@ -3949,7 +3949,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 25,
+      "community": 31,
       "norm_label": "xctestcase",
       "id": "xctestcase"
     },
@@ -3959,7 +3959,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentReplTest.swift",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 36,
+      "community": 38,
       "norm_label": ".setup()",
       "id": "brujaintegrationtests_agentrepltest_agentrepltest_setup"
     },
@@ -3969,7 +3969,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentReplTest.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 36,
+      "community": 38,
       "norm_label": ".brujabinaryurl()",
       "id": "brujaintegrationtests_agentrepltest_agentrepltest_brujabinaryurl"
     },
@@ -3979,7 +3979,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentReplTest.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 36,
+      "community": 38,
       "norm_label": "url",
       "id": "tests_brujaintegrationtests_agentrepltest_swift_url"
     },
@@ -3989,7 +3989,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentReplTest.swift",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 36,
+      "community": 38,
       "norm_label": ".testagentverbroundtripsreadfileagainstfixturemodel()",
       "id": "brujaintegrationtests_agentrepltest_agentrepltest_testagentverbroundtripsreadfileagainstfixturemodel"
     },
@@ -3999,7 +3999,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentSeamSpikeTest.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 25,
+      "community": 32,
       "norm_label": "agentseamspiketest.swift",
       "id": "brujaintegrationtests_agentseamspiketest"
     },
@@ -4009,7 +4009,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentSeamSpikeTest.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 25,
+      "community": 32,
       "norm_label": "agentseamspiketest",
       "id": "brujaintegrationtests_agentseamspiketest_agentseamspiketest"
     },
@@ -4019,7 +4019,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentSeamSpikeTest.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 25,
+      "community": 32,
       "norm_label": ".setup()",
       "id": "brujaintegrationtests_agentseamspiketest_agentseamspiketest_setup"
     },
@@ -4029,7 +4029,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentSeamSpikeTest.swift",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 25,
+      "community": 32,
       "norm_label": "eventlog",
       "id": "brujaintegrationtests_agentseamspiketest_eventlog"
     },
@@ -4039,7 +4039,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentSeamSpikeTest.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 25,
+      "community": 32,
       "norm_label": "string",
       "id": "tests_brujaintegrationtests_agentseamspiketest_swift_string"
     },
@@ -4049,7 +4049,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentSeamSpikeTest.swift",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 25,
+      "community": 32,
       "norm_label": ".record()",
       "id": "brujaintegrationtests_agentseamspiketest_eventlog_record"
     },
@@ -4059,7 +4059,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentSeamSpikeTest.swift",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 25,
+      "community": 32,
       "norm_label": "agentturnevent",
       "id": "agentturnevent"
     },
@@ -4069,7 +4069,7 @@
       "source_file": "Tests/BrujaIntegrationTests/AgentSeamSpikeTest.swift",
       "source_location": "L59",
       "_origin": "ast",
-      "community": 25,
+      "community": 32,
       "norm_label": ".testreadfiletoolroundtripsthroughmlxsession()",
       "id": "brujaintegrationtests_agentseamspiketest_agentseamspiketest_testreadfiletoolroundtripsthroughmlxsession"
     },
@@ -4079,7 +4079,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "brujaintegrationtests.swift",
       "id": "brujaintegrationtests_brujaintegrationtests"
     },
@@ -4089,7 +4089,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "brujaintegrationtests",
       "id": "brujaintegrationtests_brujaintegrationtests_brujaintegrationtests"
     },
@@ -4099,7 +4099,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "string",
       "id": "tests_brujaintegrationtests_brujaintegrationtests_swift_string"
     },
@@ -4109,7 +4109,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": ".setup()",
       "id": "brujaintegrationtests_brujaintegrationtests_brujaintegrationtests_setup"
     },
@@ -4119,7 +4119,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": ".testversioncommand()",
       "id": "brujaintegrationtests_brujaintegrationtests_brujaintegrationtests_testversioncommand"
     },
@@ -4129,7 +4129,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L57",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": ".testlistcommand()",
       "id": "brujaintegrationtests_brujaintegrationtests_brujaintegrationtests_testlistcommand"
     },
@@ -4139,7 +4139,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": ".testsimplequery()",
       "id": "brujaintegrationtests_brujaintegrationtests_brujaintegrationtests_testsimplequery"
     },
@@ -4149,7 +4149,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L90",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": ".testquerywithjsonoutput()",
       "id": "brujaintegrationtests_brujaintegrationtests_brujaintegrationtests_testquerywithjsonoutput"
     },
@@ -4159,7 +4159,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L122",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": ".testcomplexquery()",
       "id": "brujaintegrationtests_brujaintegrationtests_brujaintegrationtests_testcomplexquery"
     },
@@ -4169,7 +4169,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L150",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": ".runbruja()",
       "id": "brujaintegrationtests_brujaintegrationtests_brujaintegrationtests_runbruja"
     },
@@ -4179,7 +4179,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L150",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "timeinterval",
       "id": "tests_brujaintegrationtests_brujaintegrationtests_swift_timeinterval"
     },
@@ -4189,7 +4189,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L196",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "integrationtesterror",
       "id": "brujaintegrationtests_brujaintegrationtests_integrationtesterror"
     },
@@ -4199,7 +4199,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L197",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "binarynotfound",
       "id": "brujaintegrationtests_brujaintegrationtests_integrationtesterror_binarynotfound"
     },
@@ -4209,7 +4209,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L198",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "timeout",
       "id": "brujaintegrationtests_brujaintegrationtests_integrationtesterror_timeout"
     },
@@ -4219,7 +4219,7 @@
       "source_file": "Tests/BrujaIntegrationTests/BrujaIntegrationTests.swift",
       "source_location": "L199",
       "_origin": "ast",
-      "community": 10,
+      "community": 8,
       "norm_label": "processfailure",
       "id": "brujaintegrationtests_brujaintegrationtests_integrationtesterror_processfailure"
     },
@@ -4229,7 +4229,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": "errorreportingsmoketest.swift",
       "id": "brujaintegrationtests_errorreportingsmoketest"
     },
@@ -4239,7 +4239,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": "errorreportingsmoketest",
       "id": "brujaintegrationtests_errorreportingsmoketest_errorreportingsmoketest"
     },
@@ -4249,7 +4249,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": "string",
       "id": "tests_brujaintegrationtests_errorreportingsmoketest_swift_string"
     },
@@ -4259,7 +4259,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": ".setup()",
       "id": "brujaintegrationtests_errorreportingsmoketest_errorreportingsmoketest_setup"
     },
@@ -4269,7 +4269,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": ".testdownloadmissingmodelexitsnonzerowithcanonicalmessage()",
       "id": "brujaintegrationtests_errorreportingsmoketest_errorreportingsmoketest_testdownloadmissingmodelexitsnonzerowithcanonicalmessage"
     },
@@ -4279,7 +4279,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L93",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": "processresult",
       "id": "brujaintegrationtests_errorreportingsmoketest_processresult"
     },
@@ -4289,7 +4289,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L94",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": "int32",
       "id": "tests_brujaintegrationtests_errorreportingsmoketest_swift_int32"
     },
@@ -4299,7 +4299,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L104",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": ".runbrujacapturingall()",
       "id": "brujaintegrationtests_errorreportingsmoketest_errorreportingsmoketest_runbrujacapturingall"
     },
@@ -4309,7 +4309,7 @@
       "source_file": "Tests/BrujaIntegrationTests/ErrorReportingSmokeTest.swift",
       "source_location": "L104",
       "_origin": "ast",
-      "community": 26,
+      "community": 27,
       "norm_label": "timeinterval",
       "id": "tests_brujaintegrationtests_errorreportingsmoketest_swift_timeinterval"
     },
@@ -4319,7 +4319,7 @@
       "source_file": "Tests/BrujaIntegrationTests/FoundationBackendIntegrationTest.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 30,
+      "community": 33,
       "norm_label": "foundationbackendintegrationtest.swift",
       "id": "brujaintegrationtests_foundationbackendintegrationtest"
     },
@@ -4329,7 +4329,7 @@
       "source_file": "Tests/BrujaIntegrationTests/FoundationBackendIntegrationTest.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 30,
+      "community": 33,
       "norm_label": "foundationbackendintegrationtest",
       "id": "brujaintegrationtests_foundationbackendintegrationtest_foundationbackendintegrationtest"
     },
@@ -4339,7 +4339,7 @@
       "source_file": "Tests/BrujaIntegrationTests/FoundationBackendIntegrationTest.swift",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 30,
+      "community": 33,
       "norm_label": ".setup()",
       "id": "brujaintegrationtests_foundationbackendintegrationtest_foundationbackendintegrationtest_setup"
     },
@@ -4349,7 +4349,7 @@
       "source_file": "Tests/BrujaIntegrationTests/FoundationBackendIntegrationTest.swift",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 30,
+      "community": 33,
       "norm_label": ".brujabinaryurl()",
       "id": "brujaintegrationtests_foundationbackendintegrationtest_foundationbackendintegrationtest_brujabinaryurl"
     },
@@ -4359,7 +4359,7 @@
       "source_file": "Tests/BrujaIntegrationTests/FoundationBackendIntegrationTest.swift",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 30,
+      "community": 33,
       "norm_label": "url",
       "id": "tests_brujaintegrationtests_foundationbackendintegrationtest_swift_url"
     },
@@ -4369,7 +4369,7 @@
       "source_file": "Tests/BrujaIntegrationTests/FoundationBackendIntegrationTest.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 30,
+      "community": 33,
       "norm_label": ".fmisavailable()",
       "id": "brujaintegrationtests_foundationbackendintegrationtest_foundationbackendintegrationtest_fmisavailable"
     },
@@ -4379,7 +4379,7 @@
       "source_file": "Tests/BrujaIntegrationTests/FoundationBackendIntegrationTest.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 30,
+      "community": 33,
       "norm_label": "bool",
       "id": "tests_brujaintegrationtests_foundationbackendintegrationtest_swift_bool"
     },
@@ -4389,7 +4389,7 @@
       "source_file": "Tests/BrujaIntegrationTests/FoundationBackendIntegrationTest.swift",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 30,
+      "community": 33,
       "norm_label": ".testfoundationbackendroundtripsorfailsloudly()",
       "id": "brujaintegrationtests_foundationbackendintegrationtest_foundationbackendintegrationtest_testfoundationbackendroundtripsorfailsloudly"
     },
@@ -4399,7 +4399,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": "inferenceintegrationtest.swift",
       "id": "brujaintegrationtests_inferenceintegrationtest"
     },
@@ -4409,7 +4409,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": "inferenceintegrationtest",
       "id": "brujaintegrationtests_inferenceintegrationtest_inferenceintegrationtest"
     },
@@ -4419,7 +4419,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": "timeinterval",
       "id": "tests_brujaintegrationtests_inferenceintegrationtest_swift_timeinterval"
     },
@@ -4429,7 +4429,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": ".setup()",
       "id": "brujaintegrationtests_inferenceintegrationtest_inferenceintegrationtest_setup"
     },
@@ -4439,7 +4439,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": ".teardown()",
       "id": "brujaintegrationtests_inferenceintegrationtest_inferenceintegrationtest_teardown"
     },
@@ -4449,7 +4449,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": ".testbrujaquerywithqwen3modelexecutesinference()",
       "id": "brujaintegrationtests_inferenceintegrationtest_inferenceintegrationtest_testbrujaquerywithqwen3modelexecutesinference"
     },
@@ -4459,7 +4459,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L106",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": ".testbrujaquerywithmetadatareturnscompleteresult()",
       "id": "brujaintegrationtests_inferenceintegrationtest_inferenceintegrationtest_testbrujaquerywithmetadatareturnscompleteresult"
     },
@@ -4469,7 +4469,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L157",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": ".testresponsevalidation()",
       "id": "brujaintegrationtests_inferenceintegrationtest_inferenceintegrationtest_testresponsevalidation"
     },
@@ -4479,7 +4479,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L178",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": ".formatduration()",
       "id": "brujaintegrationtests_inferenceintegrationtest_inferenceintegrationtest_formatduration"
     },
@@ -4489,7 +4489,7 @@
       "source_file": "Tests/BrujaIntegrationTests/InferenceIntegrationTest.swift",
       "source_location": "L178",
       "_origin": "ast",
-      "community": 22,
+      "community": 24,
       "norm_label": "string",
       "id": "tests_brujaintegrationtests_inferenceintegrationtest_swift_string"
     },
@@ -4499,7 +4499,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": "preflightmanifesttest.swift",
       "id": "brujaintegrationtests_preflightmanifesttest"
     },
@@ -4509,7 +4509,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": "preflightmanifesttest",
       "id": "brujaintegrationtests_preflightmanifesttest_preflightmanifesttest"
     },
@@ -4519,7 +4519,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": "string",
       "id": "tests_brujaintegrationtests_preflightmanifesttest_swift_string"
     },
@@ -4529,7 +4529,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": ".setup()",
       "id": "brujaintegrationtests_preflightmanifesttest_preflightmanifesttest_setup"
     },
@@ -4539,7 +4539,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L69",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": ".testinforemoteprintsthreelinesandcreatesnofiles()",
       "id": "brujaintegrationtests_preflightmanifesttest_preflightmanifesttest_testinforemoteprintsthreelinesandcreatesnofiles"
     },
@@ -4549,7 +4549,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L149",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": "processresult",
       "id": "brujaintegrationtests_preflightmanifesttest_processresult"
     },
@@ -4559,7 +4559,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L150",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": "int32",
       "id": "tests_brujaintegrationtests_preflightmanifesttest_swift_int32"
     },
@@ -4569,7 +4569,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L159",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": ".runbrujacapturingall()",
       "id": "brujaintegrationtests_preflightmanifesttest_preflightmanifesttest_runbrujacapturingall"
     },
@@ -4579,7 +4579,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L159",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": "timeinterval",
       "id": "tests_brujaintegrationtests_preflightmanifesttest_swift_timeinterval"
     },
@@ -4589,7 +4589,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L203",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": ".snapshotdirectory()",
       "id": "brujaintegrationtests_preflightmanifesttest_preflightmanifesttest_snapshotdirectory"
     },
@@ -4599,7 +4599,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L203",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": "url",
       "id": "tests_brujaintegrationtests_preflightmanifesttest_swift_url"
     },
@@ -4609,7 +4609,7 @@
       "source_file": "Tests/BrujaIntegrationTests/PreflightManifestTest.swift",
       "source_location": "L203",
       "_origin": "ast",
-      "community": 18,
+      "community": 20,
       "norm_label": "set",
       "id": "tests_brujaintegrationtests_preflightmanifesttest_swift_set"
     },
@@ -4619,7 +4619,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": "sharedmodelsloggingtest.swift",
       "id": "brujaintegrationtests_sharedmodelsloggingtest"
     },
@@ -4629,7 +4629,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": "sharedmodelsloggingtest",
       "id": "brujaintegrationtests_sharedmodelsloggingtest_sharedmodelsloggingtest"
     },
@@ -4639,7 +4639,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": "string",
       "id": "tests_brujaintegrationtests_sharedmodelsloggingtest_swift_string"
     },
@@ -4649,7 +4649,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": ".setup()",
       "id": "brujaintegrationtests_sharedmodelsloggingtest_sharedmodelsloggingtest_setup"
     },
@@ -4659,7 +4659,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": ".testqueryjsonstdoutremainsvalidjson()",
       "id": "brujaintegrationtests_sharedmodelsloggingtest_sharedmodelsloggingtest_testqueryjsonstdoutremainsvalidjson"
     },
@@ -4669,7 +4669,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L113",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": ".testqueryemitssharedmodelslineonstderr()",
       "id": "brujaintegrationtests_sharedmodelsloggingtest_sharedmodelsloggingtest_testqueryemitssharedmodelslineonstderr"
     },
@@ -4679,7 +4679,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L133",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": ".testquerywithquietsuppressessharedmodelsline()",
       "id": "brujaintegrationtests_sharedmodelsloggingtest_sharedmodelsloggingtest_testquerywithquietsuppressessharedmodelsline"
     },
@@ -4689,7 +4689,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L155",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": "processresult",
       "id": "brujaintegrationtests_sharedmodelsloggingtest_processresult"
     },
@@ -4699,7 +4699,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L156",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": "int32",
       "id": "tests_brujaintegrationtests_sharedmodelsloggingtest_swift_int32"
     },
@@ -4709,7 +4709,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L165",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": ".runbrujacapturingall()",
       "id": "brujaintegrationtests_sharedmodelsloggingtest_sharedmodelsloggingtest_runbrujacapturingall"
     },
@@ -4719,7 +4719,7 @@
       "source_file": "Tests/BrujaIntegrationTests/SharedModelsLoggingTest.swift",
       "source_location": "L165",
       "_origin": "ast",
-      "community": 20,
+      "community": 22,
       "norm_label": "timeinterval",
       "id": "tests_brujaintegrationtests_sharedmodelsloggingtest_swift_timeinterval"
     },
@@ -4729,7 +4729,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": "iocoordinatortests.swift",
       "id": "progressrenderertests_iocoordinatortests"
     },
@@ -4739,7 +4739,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": "recordingoutputwriter",
       "id": "progressrenderertests_iocoordinatortests_recordingoutputwriter"
     },
@@ -4749,7 +4749,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": "string",
       "id": "tests_progressrenderertests_iocoordinatortests_swift_string"
     },
@@ -4759,7 +4759,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": "int",
       "id": "tests_progressrenderertests_iocoordinatortests_swift_int"
     },
@@ -4769,7 +4769,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".write()",
       "id": "progressrenderertests_iocoordinatortests_recordingoutputwriter_write"
     },
@@ -4779,7 +4779,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".flush()",
       "id": "progressrenderertests_iocoordinatortests_recordingoutputwriter_flush"
     },
@@ -4789,7 +4789,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": "scriptedlinereader",
       "id": "progressrenderertests_iocoordinatortests_scriptedlinereader"
     },
@@ -4799,7 +4799,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".init()",
       "id": "progressrenderertests_iocoordinatortests_scriptedlinereader_init"
     },
@@ -4809,7 +4809,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".readline()",
       "id": "progressrenderertests_iocoordinatortests_scriptedlinereader_readline"
     },
@@ -4819,7 +4819,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L67",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": "iocoordinatortests",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests"
     },
@@ -4829,7 +4829,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L72",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".teststreamtoken_writesimmediatelywhennotpaused()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_teststreamtoken_writesimmediatelywhennotpaused"
     },
@@ -4839,7 +4839,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testpromptduringstream_nointerleaving()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testpromptduringstream_nointerleaving"
     },
@@ -4849,7 +4849,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L197",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testpromptuser_flushesbeforeprompt()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testpromptuser_flushesbeforeprompt"
     },
@@ -4859,7 +4859,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L224",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testttymode_prependnewlinebeforeprompt()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testttymode_prependnewlinebeforeprompt"
     },
@@ -4869,7 +4869,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L247",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testnonttymode_noleadingnewlinebeforeprompt()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testnonttymode_noleadingnewlinebeforeprompt"
     },
@@ -4879,7 +4879,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L267",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testpromptuser_returnsniloneof()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testpromptuser_returnsniloneof"
     },
@@ -4889,7 +4889,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L281",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testpromptuser_trimsresponse()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testpromptuser_trimsresponse"
     },
@@ -4899,7 +4899,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L295",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testrequestpathescapeconsent_grantedony()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testrequestpathescapeconsent_grantedony"
     },
@@ -4909,7 +4909,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L310",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testrequestpathescapeconsent_grantedonyes()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testrequestpathescapeconsent_grantedonyes"
     },
@@ -4919,7 +4919,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L325",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testrequestpathescapeconsent_deniedonn()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testrequestpathescapeconsent_deniedonn"
     },
@@ -4929,7 +4929,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L340",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testrequestpathescapeconsent_deniedoneof()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testrequestpathescapeconsent_deniedoneof"
     },
@@ -4939,7 +4939,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L357",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testmultipletokensbufferedanddrainedinorder()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testmultipletokensbufferedanddrainedinorder"
     },
@@ -4949,7 +4949,7 @@
       "source_file": "Tests/ProgressRendererTests/IOCoordinatorTests.swift",
       "source_location": "L393",
       "_origin": "ast",
-      "community": 3,
+      "community": 10,
       "norm_label": ".testflushoutput_callsflush()",
       "id": "progressrenderertests_iocoordinatortests_iocoordinatortests_testflushoutput_callsflush"
     },
@@ -4959,7 +4959,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "progressrenderertests.swift",
       "id": "progressrenderertests_progressrenderertests"
     },
@@ -4969,7 +4969,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "progressrenderernonttytests",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests"
     },
@@ -4979,7 +4979,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".capture()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_capture"
     },
@@ -4989,7 +4989,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "int32",
       "id": "tests_progressrenderertests_progressrenderertests_swift_int32"
     },
@@ -4999,7 +4999,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "void",
       "id": "void"
     },
@@ -5009,7 +5009,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": "string",
       "id": "tests_progressrenderertests_progressrenderertests_swift_string"
     },
@@ -5019,7 +5019,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L59",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testnontty_emitsonelineperdecile()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testnontty_emitsonelineperdecile"
     },
@@ -5029,7 +5029,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testnontty_noduplicateswithinbucket()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testnontty_noduplicateswithinbucket"
     },
@@ -5039,7 +5039,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L93",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testnontty_noansiescapes()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testnontty_noansiescapes"
     },
@@ -5049,7 +5049,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L107",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testnontty_completionline()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testnontty_completionline"
     },
@@ -5059,7 +5059,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L121",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testnontty_completionensures100percent()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testnontty_completionensures100percent"
     },
@@ -5069,7 +5069,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L141",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testtty_usesansiredrawsequence()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testtty_usesansiredrawsequence"
     },
@@ -5079,7 +5079,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L158",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testtty_completionclearsline()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testtty_completionclearsline"
     },
@@ -5089,7 +5089,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L177",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testquiet_suppressesprogressoutput()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testquiet_suppressesprogressoutput"
     },
@@ -5099,7 +5099,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L193",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testquiet_suppresseslogstartup()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testquiet_suppresseslogstartup"
     },
@@ -5109,7 +5109,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L208",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testlogstartup_writestostderr()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testlogstartup_writestostderr"
     },
@@ -5119,7 +5119,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L233",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testmakeprogresscallback_iscallable()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testmakeprogresscallback_iscallable"
     },
@@ -5129,7 +5129,7 @@
       "source_file": "Tests/ProgressRendererTests/ProgressRendererTests.swift",
       "source_location": "L246",
       "_origin": "ast",
-      "community": 9,
+      "community": 7,
       "norm_label": ".testmakeprogresscallback_issendableandconcurrentlysafe()",
       "id": "progressrenderertests_progressrenderertests_progressrenderernonttytests_testmakeprogresscallback_issendableandconcurrentlysafe"
     },
@@ -5309,7 +5309,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ExecutorTranscriptTests.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "mlxagentlooptranscripttests",
       "id": "agent_executortranscripttests_mlxagentlooptranscripttests"
     },
@@ -5319,7 +5319,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ExecutorTranscriptTests.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": ".makeloop()",
       "id": "agent_executortranscripttests_mlxagentlooptranscripttests_makeloop"
     },
@@ -5329,7 +5329,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ExecutorTranscriptTests.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "generationsource",
       "id": "tests_swiftbrujatests_agent_executortranscripttests_swift_generationsource"
     },
@@ -5339,7 +5339,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ExecutorTranscriptTests.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "int",
       "id": "tests_swiftbrujatests_agent_executortranscripttests_swift_int"
     },
@@ -5349,7 +5349,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ExecutorTranscriptTests.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "mlxagentloop",
       "id": "mlxagentloop"
     },
@@ -5359,7 +5359,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ExecutorTranscriptTests.swift",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": ".testtranscriptmappingorderedacrosstwoturns()",
       "id": "agent_executortranscripttests_mlxagentlooptranscripttests_testtranscriptmappingorderedacrosstwoturns"
     },
@@ -5369,7 +5369,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ExecutorTranscriptTests.swift",
       "source_location": "L73",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": ".teststepcapthrowsagentsteplimitexceeded()",
       "id": "agent_executortranscripttests_mlxagentlooptranscripttests_teststepcapthrowsagentsteplimitexceeded"
     },
@@ -5379,7 +5379,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ExecutorTranscriptTests.swift",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": ".testsimulatedcontextoverflowyieldstypederror()",
       "id": "agent_executortranscripttests_mlxagentlooptranscripttests_testsimulatedcontextoverflowyieldstypederror"
     },
@@ -5529,7 +5529,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "mockbackenddispatchtests.swift",
       "id": "agent_mockbackenddispatchtests"
     },
@@ -5539,7 +5539,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "toolcallflag",
       "id": "agent_mockbackenddispatchtests_toolcallflag"
     },
@@ -5549,7 +5549,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".set()",
       "id": "agent_mockbackenddispatchtests_toolcallflag_set"
     },
@@ -5559,7 +5559,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "tooldispatchharness",
       "id": "agent_mockbackenddispatchtests_tooldispatchharness"
     },
@@ -5569,7 +5569,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "string",
       "id": "tests_swiftbrujatests_agent_mockbackenddispatchtests_swift_string"
     },
@@ -5579,7 +5579,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".dispatch()",
       "id": "agent_mockbackenddispatchtests_tooldispatchharness_dispatch"
     },
@@ -5589,7 +5589,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "t",
       "id": "tests_swiftbrujatests_agent_mockbackenddispatchtests_swift_t"
     },
@@ -5599,7 +5599,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "bool",
       "id": "tests_swiftbrujatests_agent_mockbackenddispatchtests_swift_bool"
     },
@@ -5609,7 +5609,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L90",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "tool",
       "id": "tests_swiftbrujatests_agent_mockbackenddispatchtests_swift_tool"
     },
@@ -5619,7 +5619,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L110",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".reset()",
       "id": "agent_mockbackenddispatchtests_tooldispatchharness_reset"
     },
@@ -5629,7 +5629,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "mockbackenddispatchtests",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests"
     },
@@ -5639,7 +5639,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L134",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "url",
       "id": "tests_swiftbrujatests_agent_mockbackenddispatchtests_swift_url"
     },
@@ -5649,7 +5649,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L137",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".setupwitherror()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_setupwitherror"
     },
@@ -5659,7 +5659,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L150",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".teardownwitherror()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_teardownwitherror"
     },
@@ -5669,7 +5669,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L156",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".canonicalize()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_canonicalize"
     },
@@ -5679,7 +5679,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L166",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".makefile()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_makefile"
     },
@@ -5689,7 +5689,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L178",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testregistryyieldsexpectedtools()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testregistryyieldsexpectedtools"
     },
@@ -5699,7 +5699,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L199",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testscriptedreadfileflowsfulldispatchpath()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testscriptedreadfileflowsfulldispatchpath"
     },
@@ -5709,7 +5709,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L234",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testdispatchviaregistryanytoolarray()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testdispatchviaregistryanytoolarray"
     },
@@ -5719,7 +5719,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L266",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testconsecutivedispatchesaccumulateresults()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testconsecutivedispatchesaccumulateresults"
     },
@@ -5729,7 +5729,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L299",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testescapingpathyieldsdenialnotdiskoperation()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testescapingpathyieldsdenialnotdiskoperation"
     },
@@ -5739,7 +5739,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L345",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testescapingpathwithgrantedconsentrunstool()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testescapingpathwithgrantedconsentrunstool"
     },
@@ -5749,7 +5749,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L378",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testpathguarddecisionattoolboundary()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testpathguarddecisionattoolboundary"
     },
@@ -5759,7 +5759,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L409",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testsharedmockgenerationsourcedrivesagentloopwithoutmodel()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testsharedmockgenerationsourcedrivesagentloopwithoutmodel"
     },
@@ -5769,7 +5769,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/MockBackendDispatchTests.swift",
       "source_location": "L465",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testsuiterequiresnomodelornetwork()",
       "id": "agent_mockbackenddispatchtests_mockbackenddispatchtests_testsuiterequiresnomodelornetwork"
     },
@@ -5789,7 +5789,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "sharedmockgenerationsource",
       "id": "mocks_mockgenerationsource_sharedmockgenerationsource"
     },
@@ -5799,7 +5799,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "generationsource",
       "id": "generationsource"
     },
@@ -5809,7 +5809,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "chat",
       "id": "tests_swiftbrujatests_agent_mocks_mockgenerationsource_swift_chat"
     },
@@ -5819,7 +5819,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "brujagenerationevent",
       "id": "brujagenerationevent"
     },
@@ -5829,7 +5829,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "error",
       "id": "tests_swiftbrujatests_agent_mocks_mockgenerationsource_swift_error"
     },
@@ -5839,7 +5839,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": ".init()",
       "id": "mocks_mockgenerationsource_sharedmockgenerationsource_init"
     },
@@ -5849,7 +5849,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": ".generate()",
       "id": "mocks_mockgenerationsource_sharedmockgenerationsource_generate"
     },
@@ -5859,7 +5859,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "toolspec",
       "id": "tests_swiftbrujatests_agent_mocks_mockgenerationsource_swift_toolspec"
     },
@@ -5869,7 +5869,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "generateparameters",
       "id": "tests_swiftbrujatests_agent_mocks_mockgenerationsource_swift_generateparameters"
     },
@@ -5879,7 +5879,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "turnstate",
       "id": "tests_swiftbrujatests_agent_mocks_mockgenerationsource_swift_turnstate"
     },
@@ -5889,7 +5889,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/Mocks/MockGenerationSource.swift",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 13,
+      "community": 14,
       "norm_label": "asyncthrowingstream",
       "id": "tests_swiftbrujatests_agent_mocks_mockgenerationsource_swift_asyncthrowingstream"
     },
@@ -5899,7 +5899,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "pathguardtests.swift",
       "id": "agent_pathguardtests"
     },
@@ -5909,7 +5909,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "pathguardtests",
       "id": "agent_pathguardtests_pathguardtests"
     },
@@ -5919,7 +5919,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".makeworkdir()",
       "id": "agent_pathguardtests_pathguardtests_makeworkdir"
     },
@@ -5929,7 +5929,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "url",
       "id": "tests_swiftbrujatests_agent_pathguardtests_swift_url"
     },
@@ -5939,7 +5939,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".realpathstring()",
       "id": "agent_pathguardtests_pathguardtests_realpathstring"
     },
@@ -5949,7 +5949,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "string",
       "id": "tests_swiftbrujatests_agent_pathguardtests_swift_string"
     },
@@ -5959,7 +5959,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testincwdpathisallowed()",
       "id": "agent_pathguardtests_pathguardtests_testincwdpathisallowed"
     },
@@ -5969,7 +5969,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testworkdiritselfisallowed()",
       "id": "agent_pathguardtests_pathguardtests_testworkdiritselfisallowed"
     },
@@ -5979,7 +5979,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testdotdotescapeisflagged()",
       "id": "agent_pathguardtests_pathguardtests_testdotdotescapeisflagged"
     },
@@ -5989,7 +5989,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testabsolutepathescapeisflagged()",
       "id": "agent_pathguardtests_pathguardtests_testabsolutepathescapeisflagged"
     },
@@ -5999,7 +5999,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L89",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testsymlinkinsidecwdresolvingoutsideisflagged()",
       "id": "agent_pathguardtests_pathguardtests_testsymlinkinsidecwdresolvingoutsideisflagged"
     },
@@ -6009,7 +6009,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L112",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testsymlinkinsidecwdresolvinginsideisallowed()",
       "id": "agent_pathguardtests_pathguardtests_testsymlinkinsidecwdresolvinginsideisallowed"
     },
@@ -6019,7 +6019,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L129",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testunresolvableworkingdirectoryisdenied()",
       "id": "agent_pathguardtests_pathguardtests_testunresolvableworkingdirectoryisdenied"
     },
@@ -6029,7 +6029,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L141",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testsuspiciousoutsidepathsdetectsabsoluteanddotdot()",
       "id": "agent_pathguardtests_pathguardtests_testsuspiciousoutsidepathsdetectsabsoluteanddotdot"
     },
@@ -6039,7 +6039,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L155",
       "_origin": "ast",
-      "community": 14,
+      "community": 18,
       "norm_label": ".testwritefiletoolrejectsescapingpathanddoesnotwrite()",
       "id": "agent_pathguardtests_pathguardtests_testwritefiletoolrejectsescapingpathanddoesnotwrite"
     },
@@ -6049,7 +6049,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/PathGuardTests.swift",
       "source_location": "L183",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": ".testwritefiletoolallowsincwdpath()",
       "id": "agent_pathguardtests_pathguardtests_testwritefiletoolallowsincwdpath"
     },
@@ -6059,7 +6059,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "readfiletooltests.swift",
       "id": "agent_readfiletooltests"
     },
@@ -6069,7 +6069,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "readfiletooltests",
       "id": "agent_readfiletooltests_readfiletooltests"
     },
@@ -6079,7 +6079,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "url",
       "id": "tests_swiftbrujatests_agent_readfiletooltests_swift_url"
     },
@@ -6089,7 +6089,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": "string",
       "id": "tests_swiftbrujatests_agent_readfiletooltests_swift_string"
     },
@@ -6099,7 +6099,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".setupwitherror()",
       "id": "agent_readfiletooltests_readfiletooltests_setupwitherror"
     },
@@ -6109,7 +6109,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".teardownwitherror()",
       "id": "agent_readfiletooltests_readfiletooltests_teardownwitherror"
     },
@@ -6119,7 +6119,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testreadfilereturnscontent()",
       "id": "agent_readfiletooltests_readfiletooltests_testreadfilereturnscontent"
     },
@@ -6129,7 +6129,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testmissingfilereturnstypederrorstring()",
       "id": "agent_readfiletooltests_readfiletooltests_testmissingfilereturnstypederrorstring"
     },
@@ -6139,7 +6139,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L66",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testdirectorypathreturnstypederrorstring()",
       "id": "agent_readfiletooltests_readfiletooltests_testdirectorypathreturnstypederrorstring"
     },
@@ -6149,7 +6149,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ReadFileToolTests.swift",
       "source_location": "L79",
       "_origin": "ast",
-      "community": 5,
+      "community": 4,
       "norm_label": ".testregistryexposesreadfiletool()",
       "id": "agent_readfiletooltests_readfiletooltests_testregistryexposesreadfiletool"
     },
@@ -6159,7 +6159,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": "toolsuitetests.swift",
       "id": "agent_toolsuitetests"
     },
@@ -6169,7 +6169,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": "toolsuitetests",
       "id": "agent_toolsuitetests_toolsuitetests"
     },
@@ -6179,7 +6179,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": "url",
       "id": "tests_swiftbrujatests_agent_toolsuitetests_swift_url"
     },
@@ -6189,7 +6189,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": "string",
       "id": "tests_swiftbrujatests_agent_toolsuitetests_swift_string"
     },
@@ -6199,7 +6199,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".setupwitherror()",
       "id": "agent_toolsuitetests_toolsuitetests_setupwitherror"
     },
@@ -6209,7 +6209,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".teardownwitherror()",
       "id": "agent_toolsuitetests_toolsuitetests_teardownwitherror"
     },
@@ -6219,7 +6219,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".makefile()",
       "id": "agent_toolsuitetests_toolsuitetests_makefile"
     },
@@ -6229,7 +6229,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".testregistryreturnsfulltoolsuite()",
       "id": "agent_toolsuitetests_toolsuitetests_testregistryreturnsfulltoolsuite"
     },
@@ -6239,7 +6239,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L63",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": ".testrunshellreturnsstdout()",
       "id": "agent_toolsuitetests_toolsuitetests_testrunshellreturnsstdout"
     },
@@ -6249,7 +6249,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L74",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": ".testrunshellcapturesstderr()",
       "id": "agent_toolsuitetests_toolsuitetests_testrunshellcapturesstderr"
     },
@@ -6259,7 +6259,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L83",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": ".testrunshellnonzeroexitcode()",
       "id": "agent_toolsuitetests_toolsuitetests_testrunshellnonzeroexitcode"
     },
@@ -6269,7 +6269,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L90",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": ".testrunshellwithworkingdirectory()",
       "id": "agent_toolsuitetests_toolsuitetests_testrunshellwithworkingdirectory"
     },
@@ -6279,7 +6279,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L99",
       "_origin": "ast",
-      "community": 19,
+      "community": 21,
       "norm_label": ".testrunshelltruncateslargeoutput()",
       "id": "agent_toolsuitetests_toolsuitetests_testrunshelltruncateslargeoutput"
     },
@@ -6289,7 +6289,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L116",
       "_origin": "ast",
-      "community": 24,
+      "community": 18,
       "norm_label": ".testwritefilecreatesfile()",
       "id": "agent_toolsuitetests_toolsuitetests_testwritefilecreatesfile"
     },
@@ -6299,7 +6299,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 12,
+      "community": 18,
       "norm_label": ".testwritefileoverwritesexistingfile()",
       "id": "agent_toolsuitetests_toolsuitetests_testwritefileoverwritesexistingfile"
     },
@@ -6309,7 +6309,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L137",
       "_origin": "ast",
-      "community": 24,
+      "community": 18,
       "norm_label": ".testwritefilemissingparentreturnserror()",
       "id": "agent_toolsuitetests_toolsuitetests_testwritefilemissingparentreturnserror"
     },
@@ -6319,7 +6319,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L149",
       "_origin": "ast",
-      "community": 16,
+      "community": 26,
       "norm_label": ".testeditfilereplacesstring()",
       "id": "agent_toolsuitetests_toolsuitetests_testeditfilereplacesstring"
     },
@@ -6329,7 +6329,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L161",
       "_origin": "ast",
-      "community": 16,
+      "community": 15,
       "norm_label": ".testeditfileoldstringnotfoundreturnserror()",
       "id": "agent_toolsuitetests_toolsuitetests_testeditfileoldstringnotfoundreturnserror"
     },
@@ -6339,7 +6339,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L173",
       "_origin": "ast",
-      "community": 16,
+      "community": 26,
       "norm_label": ".testeditfilemissingfilereturnserror()",
       "id": "agent_toolsuitetests_toolsuitetests_testeditfilemissingfilereturnserror"
     },
@@ -6349,7 +6349,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L187",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": ".testlistdirreturnsentries()",
       "id": "agent_toolsuitetests_toolsuitetests_testlistdirreturnsentries"
     },
@@ -6359,7 +6359,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L203",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": ".testlistdironemptydirectoryreturnsmarker()",
       "id": "agent_toolsuitetests_toolsuitetests_testlistdironemptydirectoryreturnsmarker"
     },
@@ -6369,7 +6369,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L213",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": ".testlistdironfilereturnserror()",
       "id": "agent_toolsuitetests_toolsuitetests_testlistdironfilereturnserror"
     },
@@ -6379,7 +6379,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L223",
       "_origin": "ast",
-      "community": 21,
+      "community": 23,
       "norm_label": ".testlistdirmissingpathreturnserror()",
       "id": "agent_toolsuitetests_toolsuitetests_testlistdirmissingpathreturnserror"
     },
@@ -6389,7 +6389,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L235",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": ".testgrepfindsliteralmatch()",
       "id": "agent_toolsuitetests_toolsuitetests_testgrepfindsliteralmatch"
     },
@@ -6399,7 +6399,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L248",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": ".testgrepreturnsnomatchmessage()",
       "id": "agent_toolsuitetests_toolsuitetests_testgrepreturnsnomatchmessage"
     },
@@ -6409,7 +6409,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L258",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".testgrepregexmode()",
       "id": "agent_toolsuitetests_toolsuitetests_testgrepregexmode"
     },
@@ -6419,7 +6419,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L271",
       "_origin": "ast",
-      "community": 17,
+      "community": 19,
       "norm_label": ".testgrepmissingpathreturnserror()",
       "id": "agent_toolsuitetests_toolsuitetests_testgrepmissingpathreturnserror"
     },
@@ -6429,7 +6429,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L283",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".testglobmatchesswiftfiles()",
       "id": "agent_toolsuitetests_toolsuitetests_testglobmatchesswiftfiles"
     },
@@ -6439,7 +6439,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L299",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".testglobnomatchreturnsmessage()",
       "id": "agent_toolsuitetests_toolsuitetests_testglobnomatchreturnsmessage"
     },
@@ -6449,7 +6449,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L309",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".testglobmissingbasepathreturnserror()",
       "id": "agent_toolsuitetests_toolsuitetests_testglobmissingbasepathreturnserror"
     },
@@ -6459,7 +6459,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L319",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".testglobbasepathisfilereturnserror()",
       "id": "agent_toolsuitetests_toolsuitetests_testglobbasepathisfilereturnserror"
     },
@@ -6469,7 +6469,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L332",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".testtoolresulttruncationpolicy()",
       "id": "agent_toolsuitetests_toolsuitetests_testtoolresulttruncationpolicy"
     },
@@ -6479,7 +6479,7 @@
       "source_file": "Tests/SwiftBrujaTests/Agent/ToolSuiteTests.swift",
       "source_location": "L346",
       "_origin": "ast",
-      "community": 12,
+      "community": 15,
       "norm_label": ".testtoolresultunderlimitisnottruncated()",
       "id": "agent_toolsuitetests_toolsuitetests_testtoolresultunderlimitisnottruncated"
     },
@@ -6499,7 +6499,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": "swiftbrujatests",
       "id": "swiftbrujatests_swiftbrujatests_swiftbrujatests"
     },
@@ -6509,7 +6509,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": ".testbrujadefaultmodel()",
       "id": "swiftbrujatests_swiftbrujatests_swiftbrujatests_testbrujadefaultmodel"
     },
@@ -6519,7 +6519,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": ".testbrujadefaultmodelsdirectory()",
       "id": "swiftbrujatests_swiftbrujatests_swiftbrujatests_testbrujadefaultmodelsdirectory"
     },
@@ -6529,7 +6529,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": ".testmodelexistsatpath_nonexistentpath()",
       "id": "swiftbrujatests_swiftbrujatests_swiftbrujatests_testmodelexistsatpath_nonexistentpath"
     },
@@ -6539,7 +6539,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": ".testmodelexistsatpath_withtildeexpansion()",
       "id": "swiftbrujatests_swiftbrujatests_swiftbrujatests_testmodelexistsatpath_withtildeexpansion"
     },
@@ -6549,7 +6549,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": ".testmodelexistsbyid_nonexistentmodel()",
       "id": "swiftbrujatests_swiftbrujatests_swiftbrujatests_testmodelexistsbyid_nonexistentmodel"
     },
@@ -6559,7 +6559,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 35,
+      "community": 37,
       "norm_label": ".testlistmodels_returnsarray()",
       "id": "swiftbrujatests_swiftbrujatests_swiftbrujatests_testlistmodels_returnsarray"
     },
@@ -6569,7 +6569,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": "brujamemorytests",
       "id": "swiftbrujatests_swiftbrujatests_brujamemorytests"
     },
@@ -6579,7 +6579,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": ".testminimumfloor_zeromemoryaftermodel()",
       "id": "swiftbrujatests_swiftbrujatests_brujamemorytests_testminimumfloor_zeromemoryaftermodel"
     },
@@ -6589,7 +6589,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": ".testminimumfloor_modelexceedsmemory()",
       "id": "swiftbrujatests_swiftbrujatests_brujamemorytests_testminimumfloor_modelexceedsmemory"
     },
@@ -6599,7 +6599,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L63",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": ".testminimumfloor_verylowremainingmemory()",
       "id": "swiftbrujatests_swiftbrujatests_brujamemorytests_testminimumfloor_verylowremainingmemory"
     },
@@ -6609,7 +6609,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": ".testminimumfloor_eightgbremaining()",
       "id": "swiftbrujatests_swiftbrujatests_brujamemorytests_testminimumfloor_eightgbremaining"
     },
@@ -6619,7 +6619,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": ".testtier_sixteengbremaining()",
       "id": "swiftbrujatests_swiftbrujatests_brujamemorytests_testtier_sixteengbremaining"
     },
@@ -6629,7 +6629,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L84",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": ".testtier_abovethirtytwogb()",
       "id": "swiftbrujatests_swiftbrujatests_brujamemorytests_testtier_abovethirtytwogb"
     },
@@ -6639,7 +6639,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 33,
+      "community": 35,
       "norm_label": ".testneverbelowfloor_alltiers()",
       "id": "swiftbrujatests_swiftbrujatests_brujamemorytests_testneverbelowfloor_alltiers"
     },
@@ -6649,7 +6649,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L106",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": "brujaerrortests",
       "id": "swiftbrujatests_swiftbrujatests_brujaerrortests"
     },
@@ -6659,7 +6659,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L108",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": ".testmodelnotfounderror()",
       "id": "swiftbrujatests_swiftbrujatests_brujaerrortests_testmodelnotfounderror"
     },
@@ -6669,7 +6669,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L115",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": ".testmodelloadfailederror()",
       "id": "swiftbrujatests_swiftbrujatests_brujaerrortests_testmodelloadfailederror"
     },
@@ -6679,7 +6679,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L123",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": ".testqueryfailederror()",
       "id": "swiftbrujatests_swiftbrujatests_brujaerrortests_testqueryfailederror"
     },
@@ -6689,7 +6689,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L130",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": ".testinvalidresponseerror()",
       "id": "swiftbrujatests_swiftbrujatests_brujaerrortests_testinvalidresponseerror"
     },
@@ -6699,7 +6699,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L137",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": ".testjsonparsingfailederror()",
       "id": "swiftbrujatests_swiftbrujatests_brujaerrortests_testjsonparsingfailederror"
     },
@@ -6709,7 +6709,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L144",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": ".testinvalidmodelpatherror()",
       "id": "swiftbrujatests_swiftbrujatests_brujaerrortests_testinvalidmodelpatherror"
     },
@@ -6719,7 +6719,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L151",
       "_origin": "ast",
-      "community": 32,
+      "community": 34,
       "norm_label": ".testallerrorsconformtolocalizederror()",
       "id": "swiftbrujatests_swiftbrujatests_brujaerrortests_testallerrorsconformtolocalizederror"
     },
@@ -6729,7 +6729,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L170",
       "_origin": "ast",
-      "community": 39,
+      "community": 41,
       "norm_label": "brujaqueryresulttests",
       "id": "swiftbrujatests_swiftbrujatests_brujaqueryresulttests"
     },
@@ -6739,7 +6739,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L172",
       "_origin": "ast",
-      "community": 39,
+      "community": 41,
       "norm_label": ".testinitialization()",
       "id": "swiftbrujatests_swiftbrujatests_brujaqueryresulttests_testinitialization"
     },
@@ -6749,7 +6749,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L188",
       "_origin": "ast",
-      "community": 39,
+      "community": 41,
       "norm_label": ".testcodableroundtrip()",
       "id": "swiftbrujatests_swiftbrujatests_brujaqueryresulttests_testcodableroundtrip"
     },
@@ -6759,7 +6759,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L210",
       "_origin": "ast",
-      "community": 39,
+      "community": 41,
       "norm_label": ".testjsonserialization()",
       "id": "swiftbrujatests_swiftbrujatests_brujaqueryresulttests_testjsonserialization"
     },
@@ -6769,7 +6769,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L230",
       "_origin": "ast",
-      "community": 39,
+      "community": 41,
       "norm_label": ".testemptyresponse()",
       "id": "swiftbrujatests_swiftbrujatests_brujaqueryresulttests_testemptyresponse"
     },
@@ -6779,7 +6779,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L246",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": "brujamodelinfotests",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests"
     },
@@ -6789,7 +6789,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L248",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".testinitialization()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests_testinitialization"
     },
@@ -6799,7 +6799,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L263",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".testcodableroundtrip()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests_testcodableroundtrip"
     },
@@ -6809,7 +6809,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L289",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".testformattedsize_bytes()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests_testformattedsize_bytes"
     },
@@ -6819,7 +6819,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L295",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".testformattedsize_kilobytes()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests_testformattedsize_kilobytes"
     },
@@ -6829,7 +6829,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L300",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".testformattedsize_megabytes()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests_testformattedsize_megabytes"
     },
@@ -6839,7 +6839,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L306",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".testformattedsize_gigabytes()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests_testformattedsize_gigabytes"
     },
@@ -6849,7 +6849,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L312",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".testformattedsize_zero()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests_testformattedsize_zero"
     },
@@ -6859,7 +6859,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L317",
       "_origin": "ast",
-      "community": 7,
+      "community": 11,
       "norm_label": ".testbridgefromacervomodel()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelinfotests_testbridgefromacervomodel"
     },
@@ -6869,7 +6869,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L337",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": "brujamodelmanagertests",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelmanagertests"
     },
@@ -6879,7 +6879,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L341",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": ".testmodelnotavailablebydefault()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelmanagertests_testmodelnotavailablebydefault"
     },
@@ -6889,7 +6889,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L348",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": ".testmodelsdirectory()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelmanagertests_testmodelsdirectory"
     },
@@ -6899,7 +6899,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L356",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": ".testunloadmodel_noerror()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelmanagertests_testunloadmodel_noerror"
     },
@@ -6909,7 +6909,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L362",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": ".testunloadallmodels_noerror()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelmanagertests_testunloadallmodels_noerror"
     },
@@ -6919,7 +6919,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L370",
       "_origin": "ast",
-      "community": 37,
+      "community": 39,
       "norm_label": ".testdefaultmodelconstant()",
       "id": "swiftbrujatests_swiftbrujatests_brujamodelmanagertests_testdefaultmodelconstant"
     },
@@ -6929,7 +6929,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L377",
       "_origin": "ast",
-      "community": 38,
+      "community": 40,
       "norm_label": "brujapathresolutiontests",
       "id": "swiftbrujatests_swiftbrujatests_brujapathresolutiontests"
     },
@@ -6939,7 +6939,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L379",
       "_origin": "ast",
-      "community": 38,
+      "community": 40,
       "norm_label": ".testmodelexistsat_absolutepath()",
       "id": "swiftbrujatests_swiftbrujatests_brujapathresolutiontests_testmodelexistsat_absolutepath"
     },
@@ -6949,7 +6949,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L384",
       "_origin": "ast",
-      "community": 38,
+      "community": 40,
       "norm_label": ".testmodelexistsat_tildepath()",
       "id": "swiftbrujatests_swiftbrujatests_brujapathresolutiontests_testmodelexistsat_tildepath"
     },
@@ -6959,7 +6959,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L389",
       "_origin": "ast",
-      "community": 38,
+      "community": 40,
       "norm_label": ".testmodelexistsat_relativepath()",
       "id": "swiftbrujatests_swiftbrujatests_brujapathresolutiontests_testmodelexistsat_relativepath"
     },
@@ -6969,7 +6969,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L394",
       "_origin": "ast",
-      "community": 38,
+      "community": 40,
       "norm_label": ".testmodelexistsat_withconfigjson()",
       "id": "swiftbrujatests_swiftbrujatests_brujapathresolutiontests_testmodelexistsat_withconfigjson"
     },
@@ -7019,7 +7019,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L600",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "acervomanifestfetchtests",
       "id": "swiftbrujatests_swiftbrujatests_acervomanifestfetchtests"
     },
@@ -7029,7 +7029,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L614",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": ".testestimatedsizeforproductionmodelisnonzeroandcreatesnofiles()",
       "id": "swiftbrujatests_swiftbrujatests_acervomanifestfetchtests_testestimatedsizeforproductionmodelisnonzeroandcreatesnofiles"
     },
@@ -7039,7 +7039,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L639",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": ".testmanifestfilesforsmallfixturemodelreturnsnonemptyarray()",
       "id": "swiftbrujatests_swiftbrujatests_acervomanifestfetchtests_testmanifestfilesforsmallfixturemodelreturnsnonemptyarray"
     },
@@ -7049,7 +7049,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L666",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": ".snapshotdirectory()",
       "id": "swiftbrujatests_swiftbrujatests_acervomanifestfetchtests_snapshotdirectory"
     },
@@ -7059,7 +7059,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L666",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "url",
       "id": "tests_swiftbrujatests_swiftbrujatests_swift_url"
     },
@@ -7069,7 +7069,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L666",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "set",
       "id": "tests_swiftbrujatests_swiftbrujatests_swift_set"
     },
@@ -7079,7 +7079,7 @@
       "source_file": "Tests/SwiftBrujaTests/SwiftBrujaTests.swift",
       "source_location": "L666",
       "_origin": "ast",
-      "community": 34,
+      "community": 36,
       "norm_label": "string",
       "id": "tests_swiftbrujatests_swiftbrujatests_swift_string"
     },
@@ -7122,7 +7122,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "swiftbruja agents.md",
       "id": "agents_swiftbruja"
     },
@@ -7135,7 +7135,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "bruja static api",
       "id": "agents_bruja_api"
     },
@@ -7148,7 +7148,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "brujamodelmanager",
       "id": "agents_brujamodelmanager"
     },
@@ -7161,7 +7161,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "brujaquery",
       "id": "agents_brujaquery"
     },
@@ -7174,7 +7174,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "brujamemory",
       "id": "agents_brujamemory"
     },
@@ -7187,7 +7187,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "brujatypes",
       "id": "agents_brujatypes"
     },
@@ -7200,7 +7200,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 42,
+      "community": 44,
       "norm_label": "brujaerror",
       "id": "agents_brujaerror"
     },
@@ -7213,7 +7213,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "mlxagentloop",
       "id": "agents_mlxagentloop"
     },
@@ -7226,7 +7226,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "mlxgeneration",
       "id": "agents_mlxgeneration"
     },
@@ -7239,7 +7239,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "tooldispatch",
       "id": "agents_tooldispatch"
     },
@@ -7252,7 +7252,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "foundationmodelbackend",
       "id": "agents_foundationmodelbackend"
     },
@@ -7265,7 +7265,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "agentbackendselector",
       "id": "agents_agentbackendselector"
     },
@@ -7278,7 +7278,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "pathguard",
       "id": "agents_pathguard"
     },
@@ -7291,7 +7291,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 3,
       "norm_label": "tokenizerbridge",
       "id": "agents_tokenizerbridge"
     },
@@ -7304,7 +7304,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "toolregistry",
       "id": "agents_toolregistry"
     },
@@ -7317,7 +7317,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "bruja agent command",
       "id": "agents_agentcommand"
     },
@@ -7330,7 +7330,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "swiftacervo dependency",
       "id": "agents_swiftacervo"
     },
@@ -7343,7 +7343,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "mlx-swift dependency",
       "id": "agents_mlx_swift"
     },
@@ -7356,7 +7356,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 3,
       "norm_label": "huggingface/swift-transformers",
       "id": "agents_swift_transformers"
     },
@@ -7369,7 +7369,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "foundationmodels framework",
       "id": "agents_foundationmodels"
     },
@@ -7382,7 +7382,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "swiftbruja readme",
       "id": "readme_swiftbruja"
     },
@@ -7395,7 +7395,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "swiftbruja changelog",
       "id": "changelog_swiftbruja"
     },
@@ -7408,7 +7408,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "claude agent instructions",
       "id": "claude_swiftbruja"
     },
@@ -7421,7 +7421,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "gemini agent instructions",
       "id": "gemini_swiftbruja"
     },
@@ -7434,7 +7434,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "development workflow",
       "id": "workflow_dev"
     },
@@ -7447,7 +7447,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "ensure model cdn workflow",
       "id": "ensuremodelcdn_workflow"
     },
@@ -7460,7 +7460,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "release binary workflow",
       "id": "release_workflow"
     },
@@ -7473,7 +7473,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "tests workflow",
       "id": "tests_workflow"
     },
@@ -7486,7 +7486,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "agentic cli requirements",
       "id": "requirements_agentic_cli"
     },
@@ -7499,7 +7499,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "swiftacervo 0.16.0 upgrade audit",
       "id": "todo_acervo_upgrade"
     },
@@ -7512,7 +7512,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "wwdc2026-232 transcript",
       "id": "wwdc2026_232"
     },
@@ -7525,7 +7525,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "execution plan: acervo cdn",
       "id": "execplan_acervo_cdn"
     },
@@ -7538,7 +7538,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 42,
       "norm_label": "lighthouse plumbing execution plan",
       "id": "lighthouse_execplan"
     },
@@ -7551,7 +7551,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 42,
       "norm_label": "lighthouse plumbing requirements",
       "id": "lighthouse_requirements"
     },
@@ -7564,7 +7564,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "manifest airdrop brief",
       "id": "airdrop_brief"
     },
@@ -7577,7 +7577,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "manifest airdrop completion log",
       "id": "airdrop_completion_log"
     },
@@ -7590,7 +7590,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "manifest airdrop execution plan",
       "id": "airdrop_execplan"
     },
@@ -7603,7 +7603,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "manifest airdrop supervisor state",
       "id": "airdrop_supervisor_state"
     },
@@ -7616,7 +7616,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 42,
       "norm_label": "snakeskin molt brief",
       "id": "snakeskin_brief"
     },
@@ -7629,7 +7629,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 42,
       "norm_label": "snakeskin molt execution plan",
       "id": "snakeskin_execplan"
     },
@@ -7642,7 +7642,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "swiftbruja logo (wooden mannequin wizard meditating)",
       "id": "swiftbruja_jpg"
     },
@@ -7655,7 +7655,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 3,
       "norm_label": "swiftbruja icon (small mannequin wizard)",
       "id": "icon_sm_png"
     },
@@ -7668,7 +7668,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "snakeskin molt 01 \u2014 shed the download manager wrapper (requirements)",
       "id": "snakeskin_molt_01_requirements_requirements"
     },
@@ -7681,7 +7681,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "operation cauldron whisper \u2014 execution plan",
       "id": "execution_plan_cauldron_whisper"
     },
@@ -7694,7 +7694,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "operation cauldron whisper \u2014 iteration 01 brief",
       "id": "operation_cauldron_whisper_01_brief_brief"
     },
@@ -7707,7 +7707,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "operation cauldron whisper \u2014 test cleanup report",
       "id": "test_cleanup_report_report"
     },
@@ -7720,7 +7720,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "archived documentation: incomplete tasks (readme)",
       "id": "readme_incomplete_archive"
     },
@@ -7733,7 +7733,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "cdn model distribution for swiftbruja (requirements)",
       "id": "requirements_cdn_workflow_requirements"
     },
@@ -7746,7 +7746,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "operation manifest airdrop \u2014 execution plan",
       "id": "execution_plan_manifest_airdrop"
     },
@@ -7759,7 +7759,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "brujadownloadmanager",
       "id": "concept_bruja_download_manager"
     },
@@ -7772,9 +7772,127 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "swiftacervo / acervo storage api",
       "id": "concept_swiftacervo"
+    },
+    {
+      "label": "URL",
+      "file_type": "code",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L32",
+      "_origin": "ast",
+      "community": 13,
+      "norm_label": "url",
+      "id": "url"
+    },
+    {
+      "label": "ModelContainer",
+      "file_type": "code",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L91",
+      "_origin": "ast",
+      "community": 13,
+      "norm_label": "modelcontainer",
+      "id": "modelcontainer"
+    },
+    {
+      "label": "BrujaQueryResult",
+      "file_type": "code",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L129",
+      "_origin": "ast",
+      "community": 13,
+      "norm_label": "brujaqueryresult",
+      "id": "brujaqueryresult"
+    },
+    {
+      "label": "T",
+      "file_type": "code",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L159",
+      "_origin": "ast",
+      "community": 13,
+      "norm_label": "t",
+      "id": "t"
+    },
+    {
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "agents.md",
+      "id": "agents_md"
+    },
+    {
+      "label": "CHANGELOG.md",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "changelog.md",
+      "id": "changelog_md"
+    },
+    {
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "readme.md",
+      "id": "readme_md"
+    },
+    {
+      "label": "bruja CLI",
+      "file_type": "code",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "bruja cli",
+      "id": "agents_bruja_cli"
+    },
+    {
+      "label": "mlx-swift-lm (MLXLMCommon)",
+      "file_type": "code",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "mlx-swift-lm (mlxlmcommon)",
+      "id": "agents_mlx_swift_lm"
+    },
+    {
+      "label": "swift-argument-parser",
+      "file_type": "code",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "swift-argument-parser",
+      "id": "agents_swift_argument_parser"
     }
   ],
   "links": [
@@ -12584,6 +12702,17 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "field",
+      "confidence_score": 1.0,
+      "source": "swiftbruja_bruja_bruja",
+      "target": "url"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L186",
       "weight": 1.0,
       "context": "parameter_type",
@@ -12894,6 +13023,17 @@
       "context": "return_type",
       "confidence_score": 1.0,
       "source": "swiftbruja_bruja_bruja_loadmodel",
+      "target": "modelcontainer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L91",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "swiftbruja_bruja_bruja_loadmodel",
       "target": "sources_swiftbruja_bruja_swift_modelcontainer"
     },
     {
@@ -12933,6 +13073,17 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L159",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "swiftbruja_bruja_bruja_query",
+      "target": "t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
       "source_location": "L129",
       "weight": 1.0,
       "context": "parameter_type",
@@ -12960,7 +13111,29 @@
       "context": "return_type",
       "confidence_score": 1.0,
       "source": "swiftbruja_bruja_bruja_querywithmetadata",
+      "target": "brujaqueryresult"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L129",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "swiftbruja_bruja_bruja_querywithmetadata",
       "target": "sources_swiftbruja_bruja_swift_brujaqueryresult"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L179",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "swiftbruja_bruja_bruja_resolvepath",
+      "target": "url"
     },
     {
       "relation": "references",
@@ -12972,6 +13145,17 @@
       "confidence_score": 1.0,
       "source": "swiftbruja_bruja_bruja_calculatedirectorysize",
       "target": "sources_swiftbruja_bruja_swift_int64"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "Sources/SwiftBruja/Bruja.swift",
+      "source_location": "L186",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "swiftbruja_bruja_bruja_calculatedirectorysize",
+      "target": "url"
     },
     {
       "relation": "contains",
@@ -20822,12 +21006,32 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_md",
+      "target": "agents_swiftbruja"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
       "confidence_score": 0.7,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 0.8,
       "source": "agents_swiftbruja",
       "target": "readme_swiftbruja"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "changelog_md",
+      "target": "agents_swiftbruja"
     },
     {
       "relation": "references",
@@ -20888,6 +21092,36 @@
       "weight": 1.0,
       "source": "agents_bruja_api",
       "target": "agents_brujaquery"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_bruja_api",
+      "target": "agents_swiftacervo"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_bruja_cli",
+      "target": "agents_bruja_api"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_md",
+      "target": "agents_bruja_api"
     },
     {
       "relation": "references",
@@ -20962,6 +21196,16 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_brujaquery",
+      "target": "agents_mlx_swift_lm"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
       "confidence_score": 0.95,
       "source_file": "AGENTS.md",
       "source_location": null,
@@ -20972,10 +21216,20 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.8,
+      "confidence_score": 1.0,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
+      "source": "agents_md",
+      "target": "agents_brujaquery"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 0.8,
       "source": "agents_agentbackendselector",
       "target": "agents_mlxagentloop"
     },
@@ -20986,13 +21240,33 @@
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
+      "source": "agents_agentcommand",
+      "target": "agents_mlxagentloop"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_md",
+      "target": "agents_mlxagentloop"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
       "source": "agents_mlxagentloop",
       "target": "agents_mlxgeneration"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.85,
+      "confidence_score": 0.9,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
@@ -21001,8 +21275,18 @@
     },
     {
       "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.6,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 0.7,
+      "source": "agents_tooldispatch",
+      "target": "agents_pathguard"
+    },
+    {
+      "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.85,
+      "confidence_score": 0.9,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
@@ -21012,7 +21296,7 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.8,
+      "confidence_score": 0.9,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
@@ -21032,7 +21316,7 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "confidence_score": 0.85,
+      "confidence_score": 0.9,
       "source_file": "AGENTS.md",
       "source_location": null,
       "weight": 1.0,
@@ -21048,6 +21332,16 @@
       "weight": 1.0,
       "source": "agents_agentcommand",
       "target": "agents_pathguard"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_tokenizerbridge",
+      "target": "agents_mlx_swift_lm"
     },
     {
       "relation": "references",
@@ -21076,8 +21370,28 @@
       "source_file": "CHANGELOG.md",
       "source_location": null,
       "weight": 1.0,
+      "source": "changelog_md",
+      "target": "agents_agentcommand"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.85,
+      "source_file": "CHANGELOG.md",
+      "source_location": null,
+      "weight": 1.0,
       "source": "changelog_swiftbruja",
       "target": "agents_agentcommand"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_md",
+      "target": "agents_swiftacervo"
     },
     {
       "relation": "references",
@@ -21108,6 +21422,16 @@
       "weight": 1.0,
       "source": "todo_acervo_upgrade",
       "target": "agents_swiftacervo"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 0.8,
+      "source": "agents_mlx_swift_lm",
+      "target": "agents_mlx_swift"
     },
     {
       "relation": "references",
@@ -21388,8 +21712,38 @@
       "weight": 0.8,
       "source": "concept_bruja_download_manager",
       "target": "concept_swiftacervo"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.6,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 0.6,
+      "source": "readme_md",
+      "target": "agents_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_md",
+      "target": "agents_bruja_cli"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.85,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents_bruja_cli",
+      "target": "agents_swift_argument_parser"
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "a06ff93e3fff861f9343111f5ef950cee48d73b7"
+  "built_at_commit": "3cc4250e90cebcadbb09a6d58ea23fa22fbd9b82"
 }
