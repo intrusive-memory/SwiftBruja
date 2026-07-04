@@ -28,7 +28,7 @@ all: install
 
 # Resolve all SPM package dependencies via xcodebuild
 resolve:
-	xcodebuild -resolvePackageDependencies -scheme $(SCHEME) -destination '$(DESTINATION)'
+	xcodebuild -resolvePackageDependencies -scheme $(SCHEME) -destination '$(DESTINATION)' $(MACRO_FLAG)
 	@echo "Package dependencies resolved."
 
 # Debug build with xcodebuild (includes Metal shaders)
@@ -92,7 +92,14 @@ install: resolve
 	fi
 
 # Run tests (full local suite)
+#
+# `xcodebuild test` runs the bundle in a SANDBOXED runner that does NOT inherit this shell's
+# environment. The `--remote` manifest tests call `Acervo.cdnBaseURL`, which hard-`fatalError`s
+# when `ACERVO_CDN_BASE_URL` is unset (SwiftAcervo 0.21+ refuses a hardcoded default). Forward it
+# into the runner via xcodebuild's `TEST_RUNNER_` prefix so those tests reach the CDN instead of
+# trapping. No-op if the var is unset in this shell. (Same forwarding as `test-ci`.)
 test: resolve
+	TEST_RUNNER_ACERVO_CDN_BASE_URL="$$ACERVO_CDN_BASE_URL" \
 	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG)
 
 # Run tests for CI (hosted macos-26 runner).

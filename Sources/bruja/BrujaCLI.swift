@@ -27,7 +27,7 @@ struct BrujaCLI: AsyncParsableCommand {
         bruja list                                 # Show downloaded models
         bruja info -m ~/Models/Phi-3              # Show model details
       """,
-    version: "1.9.0",
+    version: "1.10.0",
     subcommands: [
       DownloadCommand.self, QueryCommand.self, ChatCommand.self, AgentCommand.self,
       ListCommand.self, InfoCommand.self,
@@ -198,18 +198,28 @@ struct QueryCommand: AsyncParsableCommand {
   @Flag(name: .shortAndLong, help: "Suppress non-response output")
   var quiet = false
 
+  @Flag(
+    name: .long,
+    help: "Show the model's <think> reasoning trace in the response (hidden by default)")
+  var verbose = false
+
   func run() async throws {
     try await runCLI {
       let renderer = ProgressRenderer(quiet: quiet)
       await renderer.logStartup("[bruja] SharedModels: \(Acervo.sharedModelsDirectory.path)")
 
-      let result = try await SwiftBruja.Bruja.queryWithMetadata(
+      var result = try await SwiftBruja.Bruja.queryWithMetadata(
         prompt,
         model: model,
         temperature: temperature,
         maxTokens: maxTokens,
         system: system
       )
+
+      // Thinking models (e.g. Qwen3.5) prepend a <think>…</think> reasoning block; strip it from
+      // the user-facing response unless --verbose is set. Applies to both text and JSON output so
+      // the `response` field is consistent with what a human sees.
+      result.response = ReasoningTrace.render(result.response, verbose: verbose)
 
       if json {
         let encoder = JSONEncoder()
@@ -261,6 +271,11 @@ struct ChatCommand: AsyncParsableCommand {
 
   @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
   var quiet = false
+
+  @Flag(
+    name: .long,
+    help: "Stream live and show the model's <think> reasoning trace (hidden by default)")
+  var verbose = false
 
   func run() async throws {
     try await runCLI {
@@ -326,11 +341,21 @@ struct ChatCommand: AsyncParsableCommand {
 
         let stream = session.streamResponse(to: trimmed)
         do {
-          for try await chunk in stream {
-            print(chunk, terminator: "")
-            fflush(stdout)
+          if verbose {
+            // Verbose: stream token-by-token live, reasoning trace included.
+            for try await chunk in stream {
+              print(chunk, terminator: "")
+              fflush(stdout)
+            }
+            print("\n")
+          } else {
+            // Default: hiding the <think> reasoning means we can't know where it ends until the
+            // turn completes, so buffer the whole response, strip the trace, then print the answer.
+            var full = ""
+            for try await chunk in stream { full += chunk }
+            print(ReasoningTrace.stripped(full))
+            print("")
           }
-          print("\n")
         } catch {
           print("\n[Error: \(error.localizedDescription)]\n")
         }

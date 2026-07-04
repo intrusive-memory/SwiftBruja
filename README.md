@@ -35,7 +35,7 @@ let response = try await Bruja.query("What is the capital of France?")
 - **macOS 26.0+** — the agent stack runs on macOS 26 APIs (`FoundationModels.Tool` + `@Generable` + `MLXLMCommon` native tool-calling)
 - **Apple Silicon only** (M1/M2/M3/M4) — NO Intel support
 - **Swift 6.2+**
-- ~2-4 GB storage per model (agent default: `mlx-community/Qwen2.5-7B-Instruct-4bit`, ~4.3 GB)
+- ~2-6 GB storage per model (agent default: `mlx-community/Qwen3.5-9B-MLX-4bit`, ~5.9 GB)
 
 ## Installation
 
@@ -49,7 +49,7 @@ brew install intrusive-memory/tap/bruja
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.9.0")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.10.0")
 ]
 ```
 
@@ -200,7 +200,7 @@ bruja agent "Read ./README.md and summarize the first paragraph"
 bruja agent --backend foundation "List the Swift files in this project"
 
 # Use MLX with a specific model
-bruja agent --model mlx-community/Qwen2.5-7B-Instruct-4bit "Find all TODO comments in Sources/"
+bruja agent --model mlx-community/Qwen3.5-9B-MLX-4bit "Find all TODO comments in Sources/"
 ```
 
 **Options:**

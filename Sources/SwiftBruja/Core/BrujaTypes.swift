@@ -3,8 +3,11 @@ import SwiftAcervo
 
 /// Result of a query operation with metadata
 public struct BrujaQueryResult: Codable, Sendable {
-  /// The model's text response
-  public let response: String
+  /// The model's text response.
+  ///
+  /// Settable so callers can post-process it (e.g. the `bruja` CLI strips `<think>` reasoning
+  /// traces from thinking models unless `--verbose`) without rebuilding the whole struct.
+  public var response: String
 
   /// The model identifier used
   public let model: String

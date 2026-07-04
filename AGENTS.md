@@ -7,7 +7,7 @@ updated: 2026-07-04
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.9.0
+**Current Version**: 1.10.0
 
 ---
 
@@ -107,19 +107,19 @@ bruja agent "Read ./README.md and summarize the first paragraph"
 bruja agent --backend foundation "What files are in this directory?"
 
 # MLX with explicit model override
-bruja agent --backend mlx --model mlx-community/Qwen2.5-7B-Instruct-4bit "List all Swift files"
+bruja agent --backend mlx --model mlx-community/Qwen3.5-9B-MLX-4bit "List all Swift files"
 ```
 
 #### Backends
 
 | Backend | Flag | Model source | Notes |
 |---------|------|-------------|-------|
-| MLX (default) | `--backend mlx` (or omit) | Any SwiftAcervo model id | Default model: `mlx-community/Qwen2.5-7B-Instruct-4bit` (4.3 GB, CDN-verified) |
+| MLX (default) | `--backend mlx` (or omit) | Any SwiftAcervo model id | Default model: `mlx-community/Qwen3.5-9B-MLX-4bit` (~5.9 GB, CDN-verified) |
 | Foundation Models | `--backend foundation` | `SystemLanguageModel.default` (on-device) | Requires macOS 26+; selecting when unavailable is a full-stop typed error — no silent fallback |
 
 The two backends use the **same** `ToolRegistry.defaultTools()` array and the **same** `LanguageModelSession(model:tools:instructions:)` seam — there is no second tool adapter. This is the architectural proof of the `FoundationModels.LanguageModelExecutor` abstraction.
 
-The agentic default model (`mlx-community/Qwen2.5-7B-Instruct-4bit`) is deliberately distinct from the `query`/`chat` default (`mlx-community/Llama-3.2-1B-Instruct-4bit`). The agent path requires a larger, tool-capable instruct model; `Qwen2.5-7B-Instruct-4bit` is CDN-verified present (4.3 GB, 10 files). Do NOT substitute `Qwen2.5-Coder-7B-Instruct-4bit` — it returns HTTP 404 on the CDN.
+The agentic default model (`mlx-community/Qwen3.5-9B-MLX-4bit`) is deliberately distinct from the `query`/`chat` default (`mlx-community/Llama-3.2-1B-Instruct-4bit`). The agent path requires a larger, tool-capable instruct model; `Qwen3.5-9B-MLX-4bit` is CDN-verified present (~5.9 GB). It is a `Qwen3_5ForConditionalGeneration` (natively multimodal) build — Qwen3.5 has no text-only dense weights — but it loads and generates text through mlx-swift-lm's `qwen3_5` architecture registration in `LLMModelFactory`; the vision tower is inert on text-only input. Qwen3.5 is Apache-2.0 (cleaner license than the previous Qwen2.5-7B default). Do NOT substitute `Qwen2.5-Coder-7B-Instruct-4bit` — it returns HTTP 404 on the CDN.
 
 #### Built-in tool suite
 
