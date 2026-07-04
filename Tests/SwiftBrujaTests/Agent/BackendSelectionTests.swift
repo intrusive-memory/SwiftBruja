@@ -31,9 +31,9 @@ final class BackendSelectionTests: XCTestCase {
   /// An Acervo/mlx-community model id resolves to the MLX backend.
   func testAcervoModelIdResolvesToMLXBackend() {
     let (backend, modelId) = AgentBackendSelector.resolve(
-      selector: "mlx-community/Qwen2.5-7B-Instruct-4bit")
+      selector: "mlx-community/Qwen3.5-9B-MLX-4bit")
     XCTAssertEqual(backend, .mlx, "An Acervo model id must resolve to the MLX backend")
-    XCTAssertEqual(modelId, "mlx-community/Qwen2.5-7B-Instruct-4bit")
+    XCTAssertEqual(modelId, "mlx-community/Qwen3.5-9B-MLX-4bit")
   }
 
   /// The literal string "foundation" resolves to the Foundation Models backend.
@@ -43,13 +43,13 @@ final class BackendSelectionTests: XCTestCase {
     XCTAssertNil(modelId, "FM backend carries no model-file id")
   }
 
-  /// Nil selector (no --backend / --model flags) defaults to MLX + the 7B agentic default.
+  /// Nil selector (no --backend / --model flags) defaults to MLX + the Qwen3.5-9B agentic default.
   func testNilSelectorDefaultsToMLXWithAgentDefault() {
     let (backend, modelId) = AgentBackendSelector.resolve(selector: nil)
     XCTAssertEqual(backend, .mlx)
     XCTAssertEqual(
       modelId, AgentAllowlist.agentDefaultModel,
-      "Default model must be the 7B agentic default, not Bruja.defaultModel")
+      "Default model must be the Qwen3.5-9B agentic default, not Bruja.defaultModel")
   }
 
   /// The agentic default is distinct from `BrujaModelManager.defaultModel` (the query/chat default).
@@ -102,7 +102,7 @@ final class BackendSelectionTests: XCTestCase {
 
   // MARK: - (c) Agent-capable allowlist flagging
 
-  /// The agentic default model (`mlx-community/Qwen2.5-7B-Instruct-4bit`) is flagged agent-capable.
+  /// The agentic default model (`mlx-community/Qwen3.5-9B-MLX-4bit`) is flagged agent-capable.
   func testAgentDefaultIsFlaggedAgentCapable() {
     XCTAssertTrue(
       AgentAllowlist.isAgentCapable(AgentAllowlist.agentDefaultModel),

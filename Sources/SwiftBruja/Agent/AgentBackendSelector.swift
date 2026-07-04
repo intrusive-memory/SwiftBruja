@@ -27,18 +27,23 @@ public enum AgentAllowlist {
   ///
   /// Deliberately distinct from `BrujaModelManager.defaultModel` ("mlx-community/Llama-3.2-1B-Instruct-4bit"),
   /// which is the lighter weight default for `query`/`chat` paths. The agent path requires a
-  /// larger, tool-capable instruct model. The 0.5B fixture (`mlx-community/Qwen2.5-0.5B-Instruct-4bit`)
-  /// was used during Sortie 7 development; this 7B model is the real agentic default (CDN-verified
-  /// present, 4.3 GB, 10 files; OQ-3 resolved 2026-06-19).
-  public static let agentDefaultModel = "mlx-community/Qwen2.5-7B-Instruct-4bit"
+  /// larger, tool-capable instruct model. Upgraded from `Qwen2.5-7B-Instruct-4bit` to the
+  /// Qwen3.5 family (Apache-2.0, cleaner license posture); the 9B build is the real agentic
+  /// default (CDN-shipped 2026-07-04). Loads via the `qwen3_5` architecture registered in
+  /// mlx-swift-lm 3.31.3.
+  public static let agentDefaultModel = "mlx-community/Qwen3.5-9B-MLX-4bit"
 
   /// Curated allowlist of model ids that are known to support reliable tool-calling.
+  ///
+  /// Only `agentDefaultModel` (9B) and the 0.5B fixture are CDN-verified present; the larger
+  /// Qwen3.5 sizes are recommended agent-capable builds that must be `acervo ship`-ed before use
+  /// (selecting an unshipped id yields a clear preflight 404, not a silent failure).
   public static let agentCapableModels: Set<String> = [
     agentDefaultModel,
-    "mlx-community/Qwen2.5-0.5B-Instruct-4bit",  // small fixture (integration-test use)
-    "mlx-community/Qwen2.5-3B-Instruct-4bit",
-    "mlx-community/Qwen2.5-14B-Instruct-4bit",
-    "mlx-community/Qwen2.5-72B-Instruct-4bit",
+    "mlx-community/Qwen2.5-0.5B-Instruct-4bit",  // small fixture (integration-test use); Qwen2.5 retained until a Qwen3.5 fixture is shipped
+    "mlx-community/Qwen3.5-4B-MLX-4bit",  // lighter dense alternative
+    "mlx-community/Qwen3.5-27B-4bit",  // larger dense
+    "mlx-community/Qwen3.5-122B-A10B-4bit",  // xlarge MoE
   ]
 
   /// Returns `true` when `modelId` is on the curated agent-capable allowlist.

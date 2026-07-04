@@ -86,7 +86,7 @@ struct AgentCommand: AsyncParsableCommand {
   @Option(
     name: [.short, .long],
     help:
-      "MLX model id (e.g., mlx-community/Qwen2.5-7B-Instruct-4bit). Ignored with --backend foundation."
+      "MLX model id (e.g., mlx-community/Qwen3.5-9B-MLX-4bit). Ignored with --backend foundation."
   )
   var model: String?
 
@@ -401,7 +401,7 @@ final class AgentLoop {
         // (e.g. invalid JSON arguments) that the parser drops. Don't exit silently on an empty turn.
         await io.emitLine(
           "[bruja] (no answer produced — the model likely emitted an unparseable tool call; "
-            + "try the default model or a larger one, e.g. mlx-community/Qwen2.5-7B-Instruct-4bit)")
+            + "try the default model or a larger one, e.g. mlx-community/Qwen3.5-27B-4bit)")
       }
     }
   }
