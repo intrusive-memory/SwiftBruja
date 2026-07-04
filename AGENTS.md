@@ -1,13 +1,13 @@
 ---
 type: reference
-updated: 2026-06-23
+updated: 2026-07-04
 ---
 
 # AGENTS.md
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.8.1
+**Current Version**: 1.9.0
 
 ---
 
@@ -24,7 +24,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 ## Queryable Codemap
 
 A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
-codebase lives in [`graphify-out/`](graphify-out/) (762 nodes · 1296 edges). **Prefer
+codebase lives in [`graphify-out/`](graphify-out/) (765 nodes · 1307 edges). **Prefer
 querying it before grepping** for architecture or "what connects to what" questions:
 
 ```bash
@@ -52,7 +52,7 @@ Refresh after significant changes with `/codemap` (or
   - `Agent/FoundationModelBackend.swift` -- Foundation Models backend (uses `SystemLanguageModel.default` via `LanguageModelSession`)
   - `Agent/AgentBackendSelector.swift` -- Backend resolution from `--backend`/`--model` flags
   - `Agent/PathGuard.swift` -- Working-directory confinement guard (classify / escape-consent)
-  - `Agent/TokenizerBridge.swift` -- Bridges huggingface/swift-transformers to `MLXLMCommon.Tokenizer` seam
+  - Tokenizer loading -- `BrujaModelManager` supplies the concrete `MLXLMCommon.TokenizerLoader` via mlx-swift-lm's `#huggingFaceTokenizerLoader()` macro (`MLXHuggingFace` product), which loads a swift-transformers tokenizer offline from the local model folder
   - `Agent/Tools/` -- 7 built-in tools (ReadFileTool, WriteFileTool, EditFileTool, ListDirTool, GrepTool, GlobTool, RunShellTool)
   - `Agent/Tools/ToolRegistry.swift` -- Single `[any Tool]` array consumed by both backends
   - `Agent/Tools/ToolResult.swift` -- Compact result string convention + truncation policy
@@ -155,21 +155,29 @@ All filesystem tools (`read_file`, `write_file`, `edit_file`, `list_dir`, `grep`
 |---------|---------|---------|
 | mlx-swift | 0.31.3+ | Core MLX framework for Apple Silicon GPU |
 | mlx-swift-lm | 3.31.3+ | LLM inference (MLXLLM, MLXLMCommon); 3.x ships Tokenizer/TokenizerLoader as protocols only |
-| SwiftAcervo | 0.19.2+ | Shared model management (CDN download, cache, discovery, manifest-driven hydration) |
+| SwiftAcervo | 0.23.0+ | Shared model management (CDN download, cache, discovery, manifest-driven hydration) |
 | swift-argument-parser | 1.7.1+ | CLI argument parsing |
-| swift-transformers (huggingface) | 1.3.3+ | Concrete tokenizer implementation (AutoTokenizer, Jinja chat templates); bridged to MLXLMCommon via `TokenizerBridge.swift` |
+| swift-transformers (huggingface) | 1.3.3+ | Concrete tokenizer implementation (AutoTokenizer, Jinja chat templates); wired to MLXLMCommon via the `#huggingFaceTokenizerLoader()` macro |
+| MLXHuggingFace (mlx-swift-lm) | 3.31.3+ | Provides the `#huggingFaceTokenizerLoader()` / `#adaptHuggingFaceTokenizer` macros that adapt a swift-transformers tokenizer to the `MLXLMCommon` seam |
 | FoundationModels | system framework | Apple's on-device LLM seam (macOS 26+/27+); **no SPM entry required** — `import FoundationModels` suffices |
 
-### Tokenizer: huggingface/swift-transformers via in-repo bridge
+### Tokenizer: huggingface/swift-transformers via the MLXHuggingFace macro
 
 mlx-swift-lm 3.x ships `MLXLMCommon.Tokenizer` and `MLXLMCommon.TokenizerLoader` as **protocols only** — there is no concrete tokenizer in the MLX dependency tree. **There is no `MLXLMTokenizers` product** in mlx-swift-lm 3.31.3.
 
-The concrete tokenizer is provided by [huggingface/swift-transformers](https://github.com/huggingface/swift-transformers) (the `Tokenizers` product), bridged to the `MLXLMCommon` seam in `Sources/SwiftBruja/Agent/TokenizerBridge.swift`:
+The concrete tokenizer is provided by [huggingface/swift-transformers](https://github.com/huggingface/swift-transformers) (the `Tokenizers` product), wired to the `MLXLMCommon` seam by mlx-swift-lm's own `MLXHuggingFace` macros. `BrujaModelManager.loadModel` calls:
 
-- `SwiftTransformersTokenizer` — implements `MLXLMCommon.Tokenizer` backed by a `Tokenizers.Tokenizer` from swift-transformers.
-- `SwiftTransformersTokenizerLoader` — implements `MLXLMCommon.TokenizerLoader`; calls `AutoTokenizer.from(modelFolder:)` to load `tokenizer.json`/`tokenizer_config.json` from the SwiftAcervo-resolved model directory, fully offline.
+```swift
+LLMModelFactory.shared.loadContainer(from: modelDir, using: #huggingFaceTokenizerLoader())
+```
 
-**Do NOT re-add** `swift-tokenizers`, `swift-tokenizers-mlx`, or `MLXLMTokenizers` — they are removed and the bridge replaces them. The old `swift-tokenizers exact: 0.5.0` pin is permanently struck.
+- `#huggingFaceTokenizerLoader()` expands to a `MLXLMCommon.TokenizerLoader` whose `load(from:)` calls `AutoTokenizer.from(modelFolder:)` to read `tokenizer.json`/`tokenizer_config.json` from the SwiftAcervo-resolved model directory, fully offline.
+- It in turn uses `#adaptHuggingFaceTokenizer` to wrap the swift-transformers tokenizer as a `MLXLMCommon.Tokenizer`, forwarding `applyChatTemplate(messages:tools:)` with `addGenerationPrompt: true`.
+- The call site therefore requires both `import MLXHuggingFace` and `import Tokenizers` for the macro expansion to resolve.
+
+This replaced the earlier hand-written `TokenizerBridge.swift` (v1.9.0); the macro is byte-for-byte equivalent, so the ~100-line adapter was deleted.
+
+**Do NOT re-add** `swift-tokenizers`, `swift-tokenizers-mlx`, or `MLXLMTokenizers`, and do not re-introduce a hand-written bridge — the macro replaces them. The old `swift-tokenizers exact: 0.5.0` pin is permanently struck.
 
 ### swift-tokenizers and swift-tokenizers-mlx are REMOVED
 
