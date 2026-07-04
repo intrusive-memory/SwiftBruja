@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-06-23
+updated: 2026-07-04
 ---
 
 # Changelog
@@ -9,6 +9,18 @@ All notable changes to SwiftBruja will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.9.0] - 2026-07-04
+
+### Changed
+- **Tokenizer loading** — replaced the hand-written `TokenizerBridge` (~100 lines) with mlx-swift-lm's own `#huggingFaceTokenizerLoader()` macro from the `MLXHuggingFace` product. The macro expands to the identical offline `AutoTokenizer.from(modelFolder:)` load with `addGenerationPrompt: true`, verified behaviorally equivalent (plain generation + agentic tool-calling round-trips) before swapping. `swift-transformers` remains a required dependency — the macro generates the adapter, it does not vendor the tokenizer.
+- **SwiftAcervo** — bumped from 0.20.0 to 0.23.0.
+
+### Fixed
+- **Non-interactive builds** — `Package.swift` regained the `import Foundation` its sibling helper needs (was silently breaking CI manifest resolution). The Makefile now passes `-skipMacroValidation` (for the `MLXHuggingFaceMacros` plugin) and `-skipPackagePluginValidation` (for mlx-swift's `CudaBuild` build-tool plugin) on every build/test invocation, so `make build`/`test`/`dist` and CI run without an interactive trust prompt.
+- **`make test-ci`** — now forwards `ACERVO_CDN_BASE_URL` into the sandboxed xctest runner via xcodebuild's `TEST_RUNNER_` prefix, so the `--remote` manifest tests pass locally instead of trapping on an unset CDN URL.
 
 ---
 

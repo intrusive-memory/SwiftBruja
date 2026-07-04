@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-06-23
+updated: 2026-07-04
 ---
 
 <p align="center">
@@ -49,7 +49,7 @@ brew install intrusive-memory/tap/bruja
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.8.1")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.9.0")
 ]
 ```
 
