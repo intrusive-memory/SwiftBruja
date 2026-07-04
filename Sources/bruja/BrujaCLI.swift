@@ -27,7 +27,7 @@ struct BrujaCLI: AsyncParsableCommand {
         bruja list                                 # Show downloaded models
         bruja info -m ~/Models/Phi-3              # Show model details
       """,
-    version: "1.9.0-dev",
+    version: "1.10.0",
     subcommands: [
       DownloadCommand.self, QueryCommand.self, ChatCommand.self, AgentCommand.self,
       ListCommand.self, InfoCommand.self,
@@ -198,7 +198,9 @@ struct QueryCommand: AsyncParsableCommand {
   @Flag(name: .shortAndLong, help: "Suppress non-response output")
   var quiet = false
 
-  @Flag(name: .long, help: "Show the model's <think> reasoning trace in the response (hidden by default)")
+  @Flag(
+    name: .long,
+    help: "Show the model's <think> reasoning trace in the response (hidden by default)")
   var verbose = false
 
   func run() async throws {
@@ -270,7 +272,9 @@ struct ChatCommand: AsyncParsableCommand {
   @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
   var quiet = false
 
-  @Flag(name: .long, help: "Stream live and show the model's <think> reasoning trace (hidden by default)")
+  @Flag(
+    name: .long,
+    help: "Stream live and show the model's <think> reasoning trace (hidden by default)")
   var verbose = false
 
   func run() async throws {

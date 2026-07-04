@@ -66,7 +66,8 @@ struct AgentCommand: AsyncParsableCommand {
   @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
   var quiet = false
 
-  @Flag(name: .long, help: "Show the model's <think> reasoning trace in the answer (hidden by default)")
+  @Flag(
+    name: .long, help: "Show the model's <think> reasoning trace in the answer (hidden by default)")
   var verbose = false
 
   /// Select the inference backend: `mlx` (default) or `foundation`.
