@@ -24,7 +24,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 ## Queryable Codemap
 
 A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
-codebase lives in [`graphify-out/`](graphify-out/) (762 nodes · 1296 edges). **Prefer
+codebase lives in [`graphify-out/`](graphify-out/) (765 nodes · 1307 edges). **Prefer
 querying it before grepping** for architecture or "what connects to what" questions:
 
 ```bash
