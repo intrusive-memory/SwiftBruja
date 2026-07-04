@@ -8,11 +8,14 @@ DIST_DIR = ./dist
 DESTINATION = platform=macOS,arch=arm64
 DERIVED_DATA = $(HOME)/Library/Developer/Xcode/DerivedData
 
-# mlx-swift-lm's MLXHuggingFace product uses a Swift macro plugin (MLXHuggingFaceMacros),
-# which Xcode gates behind a per-package "enable macro" trust prompt. That prompt cannot be
-# answered non-interactively, so every build/test invocation must pass -skipMacroValidation.
-# Required by the `#huggingFaceTokenizerLoader()` call in BrujaModelManager.
-MACRO_FLAG = -skipMacroValidation
+# Package plugins in the dependency graph are gated behind Xcode's per-package trust prompts,
+# which cannot be answered non-interactively (CI, scripted builds). Two distinct gates apply:
+#   -skipMacroValidation         — mlx-swift-lm's MLXHuggingFace uses a Swift macro plugin
+#                                  (MLXHuggingFaceMacros), required by the `#huggingFaceTokenizerLoader()`
+#                                  call in BrujaModelManager.
+#   -skipPackagePluginValidation — mlx-swift ships a CudaBuild build-tool plugin.
+# Both must be passed on every build/test invocation.
+MACRO_FLAG = -skipMacroValidation -skipPackagePluginValidation
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
 
 # Canonical model IDs for reference-check
