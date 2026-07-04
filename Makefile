@@ -28,7 +28,7 @@ all: install
 
 # Resolve all SPM package dependencies via xcodebuild
 resolve:
-	xcodebuild -resolvePackageDependencies -scheme $(SCHEME) -destination '$(DESTINATION)'
+	xcodebuild -resolvePackageDependencies -scheme $(SCHEME) -destination '$(DESTINATION)' $(MACRO_FLAG)
 	@echo "Package dependencies resolved."
 
 # Debug build with xcodebuild (includes Metal shaders)

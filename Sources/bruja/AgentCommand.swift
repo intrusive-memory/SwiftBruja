@@ -66,6 +66,9 @@ struct AgentCommand: AsyncParsableCommand {
   @Flag(name: .shortAndLong, help: "Suppress startup and informational output")
   var quiet = false
 
+  @Flag(name: .long, help: "Show the model's <think> reasoning trace in the answer (hidden by default)")
+  var verbose = false
+
   /// Select the inference backend: `mlx` (default) or `foundation`.
   ///
   /// `mlx` routes through the hand-rolled ``MLXAgentLoop`` against any SwiftAcervo model id.
@@ -139,7 +142,8 @@ struct AgentCommand: AsyncParsableCommand {
         let loop = AgentLoop(
           backend: .foundation,
           io: io,
-          quiet: quiet
+          quiet: quiet,
+          verbose: verbose
         )
 
         if let task, !task.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -174,7 +178,8 @@ struct AgentCommand: AsyncParsableCommand {
           temperature: temperature,
           maxTokens: maxTokens,
           io: io,
-          quiet: quiet
+          quiet: quiet,
+          verbose: verbose
         )
 
         if let task, !task.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -202,6 +207,8 @@ struct AgentCommand: AsyncParsableCommand {
 final class AgentLoop {
   private let io: IOCoordinator
   private let quiet: Bool
+  /// When false (default), the model's `<think>` reasoning trace is stripped from the answer.
+  private let verbose: Bool
 
   /// Human-readable model label surfaced in the REPL startup banner.
   let modelLabel: String
@@ -240,10 +247,12 @@ final class AgentLoop {
     temperature: Float,
     maxTokens: Int,
     io: IOCoordinator,
-    quiet: Bool
+    quiet: Bool,
+    verbose: Bool = false
   ) {
     self.io = io
     self.quiet = quiet
+    self.verbose = verbose
     self.modelLabel = modelId
 
     let dispatcher = ConsentToolDispatcher(io: io)
@@ -278,11 +287,13 @@ final class AgentLoop {
   init(
     backend: AgentBackend,
     io: IOCoordinator,
-    quiet: Bool
+    quiet: Bool,
+    verbose: Bool = false
   ) {
     precondition(backend == .foundation, "This initializer is for the Foundation Models backend")
     self.io = io
     self.quiet = quiet
+    self.verbose = verbose
     self.modelLabel = "SystemLanguageModel.default (Foundation Models)"
 
     // SAME ConsentToolObserver wrapping of the SAME ToolRegistry array as the MLX path.
@@ -370,7 +381,7 @@ final class AgentLoop {
     case .foundation(let session):
       do {
         let response = try await session.respond(to: userInput)
-        await io.streamLine(response.content)
+        await io.streamLine(ReasoningTrace.render(response.content, verbose: verbose))
       } catch let bruja as BrujaError {
         throw bruja
       } catch {
@@ -393,7 +404,7 @@ final class AgentLoop {
           break
         }
       }
-      let finalAnswer = await answer.value
+      let finalAnswer = ReasoningTrace.render(await answer.value, verbose: verbose)
       if !finalAnswer.isEmpty {
         await io.streamLine(finalAnswer)
       } else {
