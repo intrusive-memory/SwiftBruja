@@ -7,6 +7,12 @@ BIN_DIR = ./bin
 DIST_DIR = ./dist
 DESTINATION = platform=macOS,arch=arm64
 DERIVED_DATA = $(HOME)/Library/Developer/Xcode/DerivedData
+
+# mlx-swift-lm's MLXHuggingFace product uses a Swift macro plugin (MLXHuggingFaceMacros),
+# which Xcode gates behind a per-package "enable macro" trust prompt. That prompt cannot be
+# answered non-interactively, so every build/test invocation must pass -skipMacroValidation.
+# Required by the `#huggingFaceTokenizerLoader()` call in BrujaModelManager.
+MACRO_FLAG = -skipMacroValidation
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
 
 # Canonical model IDs for reference-check
@@ -24,11 +30,11 @@ resolve:
 
 # Debug build with xcodebuild (includes Metal shaders)
 build: resolve
-	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' build
+	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' $(MACRO_FLAG) build
 
 # Release build with xcodebuild + copy to bin
 release: resolve
-	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' -configuration Release build
+	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' $(MACRO_FLAG) -configuration Release build
 	@mkdir -p $(BIN_DIR)
 	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/SwiftBruja-*/Build/Products/Release $(DERIVED_DATA)/agent-*/Build/Products/Release -maxdepth 1 -name $(BINARY) -type f 2>/dev/null | xargs ls -t 2>/dev/null | head -1 | xargs dirname 2>/dev/null); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
@@ -64,7 +70,7 @@ dist: release
 
 # Debug build with xcodebuild + copy to bin (default)
 install: resolve
-	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' build
+	xcodebuild -scheme $(SCHEME) -destination '$(DESTINATION)' $(MACRO_FLAG) build
 	@mkdir -p $(BIN_DIR)
 	@PRODUCT_DIR=$$(find $(DERIVED_DATA)/SwiftBruja-*/Build/Products/Debug $(DERIVED_DATA)/agent-*/Build/Products/Debug -maxdepth 1 -name $(BINARY) -type f 2>/dev/null | xargs ls -t 2>/dev/null | head -1 | xargs dirname 2>/dev/null); \
 	if [ -n "$$PRODUCT_DIR" ]; then \
@@ -84,7 +90,7 @@ install: resolve
 
 # Run tests (full local suite)
 test: resolve
-	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG)
 
 # Run tests for CI (hosted macos-26 runner).
 #
@@ -92,8 +98,15 @@ test: resolve
 # runner without the App Group container — the SAME set `reference-check` Step 1 carves out. These
 # are pre-existing environmental constraints (App Group container / live CDN), NOT code regressions;
 # they run locally via `make reference-check`. Everything else gates for real.
+#
+# `xcodebuild test` runs the bundle in a sandboxed runner that does NOT inherit the invoking
+# shell's environment. The `--remote` manifest tests (PreflightManifestTest, AcervoManifestFetchTests)
+# call `Acervo.cdnBaseURL`, which hard-`fatalError`s when `ACERVO_CDN_BASE_URL` is unset (SwiftAcervo
+# refuses a hardcoded default). Forward it into the runner via xcodebuild's `TEST_RUNNER_` prefix so
+# those tests reach the CDN instead of trapping. No-op if the var is unset in this shell.
 test-ci: resolve
-	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' \
+	TEST_RUNNER_ACERVO_CDN_BASE_URL="$$ACERVO_CDN_BASE_URL" \
+	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG) \
 		-skip-testing:BrujaIntegrationTests/InferenceIntegrationTest \
 		-skip-testing:BrujaIntegrationTests/ErrorReportingSmokeTest \
 		-skip-testing:SwiftBrujaTests/AcervoComponentReadyTests/testDownloadModelLevel2PathWorksForUnregisteredRepoId \
@@ -115,7 +128,7 @@ test-ci: resolve
 # Prereq: the fixture model must be downloaded:
 #   make install codesign-cli && ./bin/$(BINARY) download -m $(SMALL_FIXTURE_MODEL)
 test-agent-seam: resolve
-	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG)
 	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
 	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
 	echo "Running AgentSeamSpikeTest via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
@@ -131,7 +144,7 @@ test-agent-seam: resolve
 #
 # Prereq: make install codesign-cli && ./bin/$(BINARY) download -m $(SMALL_FIXTURE_MODEL)
 test-agent-repl: install codesign-cli
-	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG)
 	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
 	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
 	echo "Running AgentReplTest via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
@@ -147,7 +160,7 @@ test-agent-repl: install codesign-cli
 #
 # Prereq: make install codesign-cli  (no model download required — FM uses on-device assets)
 test-agent-fm: install codesign-cli
-	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)'
+	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG)
 	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
 	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
 	echo "Running FoundationBackendIntegrationTest via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
@@ -185,7 +198,7 @@ reference-check: install
 	@#   InferenceIntegrationTest — requires a full model download + inference; not a unit test.
 	@echo ""
 	@echo "--- Step 1: unit + integration tests ---"
-	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' \
+	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG) \
 		-skip-testing:BrujaIntegrationTests/InferenceIntegrationTest \
 		-skip-testing:BrujaIntegrationTests/ErrorReportingSmokeTest \
 		-skip-testing:SwiftBrujaTests/AcervoComponentReadyTests/testDownloadModelLevel2PathWorksForUnregisteredRepoId \

@@ -1,5 +1,6 @@
 // swift-tools-version: 6.2
 
+import Foundation
 import PackageDescription
 
 // In CI we always pin to released remotes. Locally, prefer a sibling checkout
@@ -88,8 +89,10 @@ let package = Package(
     // `TokenizerLoader` *protocols* — no concrete tokenizer. swift-transformers provides a
     // local-folder tokenizer loader (and bundles swift-jinja so `applyChatTemplate` works).
     // It is independent of mlx-swift-lm, so it does NOT collide with our ml-explore pin the way
-    // the DePasqualeOrg swift-tokenizers-mlx fork would. We bridge it to the MLXLMCommon seam in
-    // `Sources/SwiftBruja/Agent/TokenizerBridge.swift`.
+    // the DePasqualeOrg swift-tokenizers-mlx fork would. We wire it into the MLXLMCommon seam via
+    // mlx-swift-lm's own `#huggingFaceTokenizerLoader()` macro (from the `MLXHuggingFace` product),
+    // which expands to `AutoTokenizer.from(modelFolder:)` — so the `import Tokenizers` dependency
+    // is still required at the call site even though the adapter code is macro-generated.
     .package(
       url: "https://github.com/huggingface/swift-transformers", .upToNextMajor(from: "1.3.3")),
 
@@ -112,6 +115,7 @@ let package = Package(
         .product(name: "MLXFast", package: "mlx-swift"),
         .product(name: "MLXLLM", package: "mlx-swift-lm"),
         .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
+        .product(name: "MLXHuggingFace", package: "mlx-swift-lm"),
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
         .product(name: "Tokenizers", package: "swift-transformers"),
       ],
