@@ -80,7 +80,7 @@ let package = Package(
     sibling(
       "SwiftAcervo",
       remote: "https://github.com/intrusive-memory/SwiftAcervo.git",
-      from: "0.23.0"),
+      from: "0.25.0"),
 
     // CLI argument parsing (R5). Not named in REQUIREMENTS, but the agent CLI requires it.
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),

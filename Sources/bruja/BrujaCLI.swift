@@ -15,8 +15,10 @@ struct BrujaCLI: AsyncParsableCommand {
       Bruja provides fast, private, on-device language model inference using
       Apple's MLX framework. No cloud APIs, no API keys, no network latency.
 
-      Models must be pre-downloaded to ~/Library/SharedModels/ before use.
-      Use the 'download' command to fetch models from the CDN.
+      Models must be pre-downloaded before use. Use the 'download' command to
+      fetch them from the CDN. They are stored in the shared App Group
+      container — see MODEL STORAGE below for where that resolves and how to
+      point it somewhere else.
 
       Default model: \(SwiftBruja.Bruja.defaultModel)
 
@@ -26,6 +28,8 @@ struct BrujaCLI: AsyncParsableCommand {
         bruja download -m mlx-community/Llama-3-8B # Download specific model
         bruja list                                 # Show downloaded models
         bruja info -m ~/Models/Phi-3              # Show model details
+
+      \(Acervo.environmentHelp())
       """,
     version: "1.10.0-dev",
     subcommands: [
