@@ -1,0 +1,409 @@
+You are extracting a character profile from excerpts of a screenplay.
+The character to profile is named on the line after the marker below.
+Read the excerpts below and return one JSON object and nothing else. The
+object has exactly these fields, in this order:
+age, pronouns, occupation, languages, logline, sampleLine, appearance,
+wardrobe, personality, backstory, arc, relationships, voiceAndSpeech,
+canonFacts.
+relationships is a list of objects with the fields with and nature.
+canonFacts is a list of objects with the fields fact and quote.
+Every field can be null. A field the excerpts say nothing about must be
+null. Do not guess or invent. Use the JSON value null, never the text "null".
+sampleLine must be one of the character's own lines, word for word. A quote
+in canonFacts must appear word for word in the excerpts.
+Return the JSON object only, with no text before or after it.
+=== EXCERPTS ===
+CHARACTER: DUKE
+
+SCENE: EXT. LEROY'S PORCH — NIGHT
+
+[DUKE]
+You ever gonna turn that porch light off? You're feeding every moth in the county.
+
+[LEROY]
+Porch light's staying on. A man's porch light is his own business.
+
+[DUKE]
+Electricity ain't free, you know.
+
+[LEROY]
+(settling deeper into the rocker)
+Some things you leave on, Duke. That's just how it's done.
+
+[NARRATOR]
+And away down the county road, at the Rhodes place, somebody agrees with him.
+
+---
+
+SCENE: EXT. GRANVILLE GRADE SCHOOL - DAY
+
+[ACTION]
+DUKE LATTIMER and LEROY SMALLS walk and talk past GRANVILLE GRADE SCHOOL.
+
+[DUKE]
+They hired that Hunter Rhodes boy down at the city planning office.
+
+[LEROY]
+(completely disgusted)
+Never did like that boy. Ever since he got drunk, and threw up in my pool.
+
+[ACTION]
+They pass a large sign that reads "READING FAIR STARTS TODAY."
+
+[DUKE]
+Oh, for christ's sake. Dumbass. That was like thirty years ago! He was ten years old. He wasn't drunk. He was in the sun too long and then ate cantaloupe.
+
+[LEROY]
+There's never been a time, when I've had stuff comin' up, that I couldn't aim it in the direction, away from important stuff.
+
+[DUKE]
+You ever thrown-up sour cantaloupe?
+
+[LEROY]
+I don't eat cantaloupe. Gives me heartburn.
+
+[DUKE]
+Well, I haven't eaten it since. Can't stand the smell now.
+
+[LEROY]
+That Rhodes boy--What'd Tucker hire him to do?
+
+[DUKE]
+(matter of fact)
+They want to get some federal grants.
+
+[LEROY]
+(confused)
+I don't know what for. I already cleaned the pool years ago.
+
+[DUKE]
+Not for you, you old fool. Small Town Innovation grants... to spruce up the city.
+
+[NARRATOR]
+A truck door slams across the lot. The hulking bear-ish frame of Shane and, a dark-skinned latino muscle-bear, Cyrus walk around the back of the truck, each with a rolling rack of food and drinks.
+
+[LEROY]
+(suddenly interested)
+Wait, Is that food?
+
+[DUKE]
+That's Shane being Shane.
+
+[LEROY]
+That was not the question I asked.
+
+[SHANE]
+Yes, it's food Leroy.
+
+[LEROY]
+(friendly)
+Mister Shane. Howya doin?
+
+[SHANE]
+Hi, Leroy. Duke.
+
+[DUKE]
+Howdy.
+
+[SHANE]
+If you guys want a burger, you can have some after the kids get theirs.
+
+[NARRATOR]
+The smell of the burgers wafts past the two old men, who sniff to take it in. Once he's out of their earshot, Shane mumbles.
+
+[SHANE]
+(sotto)
+Or you could just quit being such a tight wad, and actually come in, and pay for a meal.
+
+---
+
+SCENE: EXT. GRANVILLE GRADE SCHOOL - DAY
+
+[TOBY]
+(sotto voce)
+...I noticed.
+
+[NARRATOR]
+So that's Granville on an ordinary Tuesday: a gym full of smiling people, a name on a piece of paper, like some sort of scholastic fortune cookie, and three people who now know something the fourth still doesn't.
+
+[NARRATOR]
+But as we watch Hunter take a deep breath, start the car, look around him and then ease into traffic, we can't help but remember that things aren't always as they appear to be.
+
+[DUKE]
+Looks like Iola's boy had a good turnout at his reading shindig.
+
+[LEROY]
+You know she got him a date with that Percy-whats-his-name.
+
+[DUKE]
+Is that kid still around? I thought he died years ago. From just bein' too damn awkward. How'd she get Clark to agree to that?
+
+[LEROY]
+I don't think he knows yet.
+
+[DUKE]
+Sure would like to be there when he finds out.
+
+[NARRATOR]
+They both cackle like witches stirring a pot. Across the parking lot from them, Clark is getting in his car, when he gets a phone call.
+
+[CLARK]
+(answering the phone)
+Hello, this is Clark...
+
+[NARRATOR]
+You may think the oldest sport in Granville is baseball.
+
+---
+
+SCENE: EXT. GLAZED HOLES — SUNRISE MINUS 45 MINUTES
+
+[DUKE]
+She opens at six. It is five-fifteen. You made us early to sit in the dark.
+
+[LEROY]
+First hot donut out of that fryer has been mine for eleven years. It ain't stopping today.
+
+[DUKE]
+Nobody is coming for your donut, Leroy.
+
+[LEROY]
+That's what a man thinks right up until somebody comes for his donut.
+
+---
+
+SCENE: EXT. GRANVILLE - GLAZED HOLES — DAWN
+
+[LEROY]
+Your Cyrus's brother, right?
+
+[ARCHER]
+Yeah. Morning.
+
+[DUKE]
+Morning.
+
+[LEROY]
+Morning.
+
+[LINC]
+They find the guy that took your money yet?
+
+[NARRATOR]
+Lincoln Rust, "LINC" to his friends, the local reporter for "Deeper Inside Granville", sits outside the GLAZED HOLES DONUT SHOP, with Duke Lattimer and Leroy Smalls.
+
+[ARCHER]
+Scuse me? What? How did--
+
+[NARRATOR]
+Archer doesn't yet understand this town's addiction to small talk and gossip. He rolls his eyes and goes into the shop.
+
+[DUKE]
+Guess they didn't find him.
+
+[LEROY]
+Boy kinda keeps to himself.
+
+[LINC]
+Nothin wrong with that.
+
+[LEROY]
+Little on the dramatic side.
+
+[DUKE]
+What the police gonna do?
+
+[LINC]
+Nothin the police can do. They were business partners. Archer got taken.
+
+[LEROY]
+He's a cute one, tho.
+
+[DUKE]
+Chase someone your own age, Pervy McPerv-en-stein.
+
+[LINC]
+That's the problem. There ain't that many of them left.
+
+[NARRATOR]
+All three of them erupt in cackling laughter.
+
+---
+
+SCENE: EXT. GLAZED HOLES — MORNING
+
+[DUKE]
+Drop-off line was backed up to the four-way this morning. Twenty minutes, bumper to bumper.
+
+[LEROY]
+In my day you walked to school, and you got there on time, and nobody's mama idled a truck about it.
+
+[DUKE]
+In your day the school was two rooms and you were late every morning of your life.
+
+[LEROY]
+I was never late. School started when I got there.
+
+---
+
+SCENE: EXT. GLAZED HOLES — MID-MORNING
+
+[LEROY]
+That is your fifth refill. Donna's gonna start charging you rent on that chair.
+
+[DUKE]
+The cup is bottomless. Says so right on the board. That's a contract.
+
+[LEROY]
+A contract's got two sides, Duke. Your side left a one-dollar tip at six a.m.
+
+[DUKE]
+And her side said "bottomless." I intend to find the bottom.
+
+[NARRATOR]
+We pick up where we left off in the last episode. The day is just getting its shoes on. Hunter just dropped Toby off to school.
+
+---
+
+SCENE: EXT. GLAZED HOLES — DUSK
+
+[NARRATOR]
+Closing time at Glazed Holes. Donna flips the sign and doesn't bother chasing off the window table — Duke, Leroy, and Linc, still parked over the cold last inch of the day's coffee, with the town's entire Thursday spread out in front of them like a hand of cards.
+
+[DUKE]
+Mickey finally gave Shane that key back.
+
+[LEROY]
+Five months. I once returned Earlene Faust's casserole dish the same afternoon she handed it to me. Washed.
+
+[DUKE]
+Nobody's ever accused you of being interesting.
+
+[LINC]
+(writing)
+So the apartment's opening up. That's page one.
+
+[DUKE]
+And Kieran was up there before noon, pacing off the floorboards like he's renting it by the yard.
+
+[LEROY]
+Meanwhile that Rodriguez boy sat in the park all day long. Talking to them otters.
+
+[DUKE]
+The otters are fine. It's those beavers that are a dirt-mound full of cunts.
+
+[LEROY]
+I know what I saw. Boy was interviewing them. Them otters are the only two in this town that don't run their mouths, and he found a way around that too.
+
+[LINC]
+And the Rhodes place. I drove past at four. Plumbing truck in the drive, water coming out the cellar window, and Hunter Rhodes standing in the yard wet as a baptism.
+
+[DUKE]
+That was after he drove Ray two towns over to the gut doctor.
+
+[LEROY]
+Whole town knows what that means.
+
+[DUKE]
+It means Ray farted in somebody else's county for a change. Buy that man a steak dinner.
+
+[LEROY]
+And then the schoolteacher kept the Rhodes kid company on the front steps for near an hour, and shook Hunter's hand goodbye like he was running for office.
+
+[LINC]
+People don't care about that stuff, Leroy.
+
+[LEROY]
+Dammit, that website you run ain't news, boy. They're just folks minding what ain't theirs to mind. Why'd the man come to town? 'Cause it beat wherever he was standing before. Some things ain't a story. They're nobody's business.
+
+[DUKE]
+That's never once stopped you.
+
+[LEROY]
+I never claimed to be a newspaper.
+
+[NARRATOR]
+And on that ruling, the court adjourns. Donna kills the neon, the three of them scatter into the dusk. Over at the Rhodes farm, Joann left the light on. Just in case.
+
+---
+
+SCENE: EXT. GRANVILLE CITY HALL — DAY
+
+[DUKE]
+They canceled the Fourth of July parade.
+
+[ACTION]
+They pass a lobby-style sign on the steps that reads "Planning Meeting Today. Conference Room 3."
+
+[LEROY]
+Why'd they do that?
+
+[DUKE]
+Well, the fire engine broke down, so they rented a white panel van, to get to fires, and they couldn't get the insurance for the firemen to hang out of the side of the white-panel van.
+
+[LEROY]
+That does sound kinda dangerous, now that I think about it.
+
+[NARRATOR]
+We follow Duke and Leroy into city hall. Where the city planning meeting, already in progress, has reached some sort of stalemate.
+
+---
+
+SCENE: EXT. BEAVER HOLE PARK - DAY
+
+[LEROY]
+The ducks have gotten aggressive. Someone is overfeeding them.
+
+[NARRATOR]
+Beaver Hole Park used to be a golf course, until the golf course went broke and the beavers flooded the ninth green. The town could have mowed it back into fairways; instead they let it be, and the whole thing grew into itself — pond, lodge, shade trees, and a name the city council certified without visibly smiling.
+
+[DUKE]
+The ducks are fine. Leave them be. It's them damn beavers--they keep stopping up the creek and flooding my backyard. Say, y'hear about that Rhodes boy?
+
+[LEROY]
+What'd he do now?
+
+[DUKE]
+He bought that old Victorian house on Ball and Sack.
+
+[LEROY]
+(to himself)
+"Ball-Sack house." That just doesn't stop bein' funny.
+
+[NARRATOR]
+And this park is the place Archer Rodriguez finally gets left alone to draw. Come sit in the park a minute. Nobody's going to manage you here. Archer holds his current drawing up, inspecting it. Frowning.
+
+[ARCHER]
+(sotto)
+That is not how paws work. Webbing goes to the second knuckle. I've been letting you get away with mittens for thirty pages, buddy. Not today.
+
+---
+
+SCENE: EXT. BONE-N-BREW — LONG SHOT — CONTINUOUS
+
+[NARRATOR]
+As we leave these boys for a little alone time, our last shot is of Archer's back. The tattoo the sleeves only hinted at. An archer, inked across his shoulder blades and back, bow bent to full draw--and the arrow doesn't stop at the bow. It leaves the string at his shoulder and runs the whole length of his right arm, down through the sleeve we've been looking at all this time, to the back of his hand. All this time, we were only ever seeing the arrow.
+
+[NARRATOR]
+For one heartbeat the archer flexes, takes aim, ready to let it fly.
+
+[NARRATOR]
+And crossing the empty square below, two old men amble home from feeding the ducks in the dark, because retirement makes its own schedule.
+
+[DUKE]
+Somebody's got a light on over the Bone-N-Brew.
+
+[LEROY]
+Mm. Been dark up there since spring.
+
+[DUKE]
+Wonder what that's about.
+
+[LEROY]
+Ain't nobody's business.
+
+[DUKE]
+Oh, of course not. I'm not one to gossip. You know me.
+
+[NARRATOR]
+The sun is setting over the Central Standard Timezone. Sleep well, Granville. And we'll leave that one light on. Just in case.

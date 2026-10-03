@@ -1,0 +1,876 @@
+You are extracting a character profile from excerpts of a screenplay.
+The character to profile is named on the line after the marker below.
+Read the excerpts below and return one JSON object and nothing else. The
+object has exactly these fields, in this order:
+age, pronouns, occupation, languages, logline, sampleLine, appearance,
+wardrobe, personality, backstory, arc, relationships, voiceAndSpeech,
+canonFacts.
+relationships is a list of objects with the fields with and nature.
+canonFacts is a list of objects with the fields fact and quote.
+Every field can be null. A field the excerpts say nothing about must be
+null. Do not guess or invent. Use the JSON value null, never the text "null".
+sampleLine must be one of the character's own lines, word for word. A quote
+in canonFacts must appear word for word in the excerpts.
+Return the JSON object only, with no text before or after it.
+=== EXCERPTS ===
+CHARACTER: KEVIN
+
+SCENE: EXT. RHODES HOUSE — GRAVEL DRIVE — MAGIC HOUR
+
+[NARRATOR]
+The Yard could use a good mow and the fence a fresh coat of paint, but it has the well-worn look and feel of a pair of old jeans.
+
+[NARRATOR]
+There's a house at the end of the gravel with the light already burning. They're expecting somebody tonight. Ray and Joann Rhodes have been expecting him a while.
+
+[NARRATOR]
+Their son Hunter and grandson Toby Rhodes are coming home to Granville.
+
+[NARRATOR]
+After hunter parks and shuts off the car, tick of cooling engine competes with the cicadas to be heard in the gathering dark.
+
+[RAY]
+(An accusation)
+You came in off the county road.
+
+[HUNTER]
+(smirking)
+Hi, Dad.
+
+[RAY]
+(simple statement of fact)
+The bypass is four minutes faster. Four. I timed it.
+
+[HUNTER]
+(said as an excuse)
+I wanted to show Toby downtown.
+
+[RAY]
+(simple statement of fact)
+The GPS does not know that they re-did the light at Fenmore. I do and that's why I warned you in advance. I'll draw it on a napkin.
+
+[HUNTER]
+(flatly)
+You don't have to draw it on a napkin.
+
+[RAY]
+I'll draw it on a napkin. You go past the grain co-op, you hang your left before the--where are you going? Don't walk off while I’m...
+
+[ACTION]
+Hunter stops Dad's argument, by enclosing his father in a bear hug. Dad submits, with a sigh.
+
+[RAY]
+(quietly)
+Good to have you home, son.
+
+[HUNTER]
+(simply, honestly)
+Good to be here, Dad.
+
+[JOANN]
+(cutting the whole yard in half)
+There he is! There's my grandson!
+
+[ACTION]
+HUNTER smiles watching his mom hug Toby.
+
+[HUNTER]
+Good to see you too, mom.
+
+[JOANN]
+(Grandma greeting her grandchild)
+Oh, look at you. Look at this face. I have a whole plate of cookies, just to make that face smile.
+
+[HUNTER]
+(a father's automatic reaction, spoken almost without thinking)
+Not before dinner.
+
+[JOANN]
+(Matronly)
+Nope. Sorry. First twenty-four hours living in Grandma's house doesn't count. Cookies anytime you want them.
+
+[TOBY]
+...Cookies before dinner?
+
+[JOANN]
+(matter of fact)
+Cookies before dinner. Staying up late. Whatever you want. That is the entire job of a grandmother and I intend to do it thoroughly.
+
+[RAY]
+(herding, already lobbying)
+All right, all right, in the house, before we end up on the evening news. Toby, come tell your grandma what a fella likes to do for fun, while your father and uncle catch up.
+
+[NARRATOR]
+Ray and Joann sweep Toby toward the kitchen light. The screen door claps behind them.
+
+[NARRATOR]
+Now, inside, JOANN is already breaking every rule she ever made Hunter and his brothers obey. Three men stay behind on the porch.
+
+[NARRATOR]
+The men don't so much hug, as lean against each other, and exchange slaps on the back. Gareth hands out the glasses of iced tea, and everyone sits.
+
+[NARRATOR]
+On the opposite end of the porch, the glowing blue mosquito zapper claims another victim with a buzz.
+
+[KEVIN]
+(droll)
+Okay, so. The house looks the same, Mom's cooking too much, Dad already drew you a map, and you've been home ninety seconds. I'd say we're right on schedule.
+
+[HUNTER]
+He offered a napkin.
+
+[KEVIN]
+(droll)
+He always offers the napkin. The napkin is love. You want to see a man cry, accept the napkin. How long has it been since you've been back?
+
+[HUNTER]
+Too long. When dad was sick.
+
+[KEVIN]
+And you left early.
+
+[HUNTER]
+Kevin, I know you were disappointed I couldn't--
+
+[KEVIN]
+Look, don't. Ok. That's water under the bridge. We've already--
+
+[HUNTER]
+No, it wasn't fair, that the responsibility of mom and dad, all fell on you. I'm here to help. I want to do what I can to help.
+
+[NARRATOR]
+Kevin stops talking and seems to draw into himself. When he speaks again, it’s with gritted teeth and almost a whisper.
+
+[KEVIN]
+I don’t fucking believe you.
+
+[NARRATOR]
+Hunter reacts like he’s been slapped.
+
+[HUNTER]
+What did I say?
+
+[NARRATOR]
+Gareth knows what's coming and can’t watch this. He's heard this before. Many times. Kevin stands and walks to the other side of the porch.
+
+[KEVIN]
+No, I can’t—
+
+[NARRATOR]
+Hunter starts to rise, but gets a “stay” hand motion from Gareth. He emphasizes it again watching Kevin pace.
+
+[KEVIN]
+I can’t believe you.
+
+[HUNTER]
+If you’d just tell me what—
+
+[KEVIN]
+(barely above a whisper)
+For two years I’ve dealt with one thing after another with them. Dad’s colon cancer, Mom’s arthritis. Both of their blood sugar.
+
+[KEVIN]
+I’ve taken them to appointment after appointment, and I’ve sat by their beds, and chemo chairs, whenever it was needed, and now you think you can waltz back in here, and be the favorite son—
+
+[HUNTER]
+I was never—
+
+[KEVIN]
+You. Have. ALWAYS. Been the favorite. You’re the favorite, and I’m the pain in the ass.
+
+[ACTION]
+From inside the house mom yells:
+
+[JOANN]
+Kevin, please. Language!
+
+[KEVIN]
+(whispering)
+See! You have always been their favorite.
+
+[HUNTER]
+Well, maybe if you weren't such a potty mouth--
+
+[KEVIN]
+I’m the one that's always wrong. I'm the one that needs to be "managed."
+
+[NARRATOR]
+Kevin leans in for emphasis.
+
+[KEVIN]
+I'm the one that was **HERE**.
+
+[KEVIN]
+You couldn’t have come down more than once?
+
+[HUNTER]
+You ever think to ask yourself why?
+
+[KEVIN]
+I just figured it was because you were a selfish entitled asshole.
+
+[HUNTER]
+The one time I did come down, I had to fly back before I even wanted to. Holly had a meltdown, and left our nine-year-old son at the elementary school until ten at night.
+
+[ACTION]
+This takes the wind out of Kevin’s sails. Gareth pulls a super-concerned face.
+
+[KEVIN]
+Whaaaat?
+
+[HUNTER]
+Toby called me and told me the janitor had to drive him home and Mom won’t come out of the bathroom. When I got there, Toby hadn’t eaten since the day before.
+
+[GARETH]
+Hunter, We had no idea.
+
+[HUNTER]
+She wouldn’t let me tell anyone. She was scared it would get back to her friends. The important part is that Toby is here. He’s happy, healthy and being spoiled rotten by his grandparents. I’m here now Kevin. Will you let me help where I can?
+
+[KEVIN]
+Be careful what you ask for.
+
+[HUNTER]
+I’m serious. I’m here. Use me. I want to help.
+
+[KEVIN]
+Ok, well, can you... help him fart?
+
+[HUNTER]
+I'm sorry, what?
+
+[KEVIN]
+After having part of his colon removed, he sometimes has stomach gas that he can't expel.
+
+[KEVIN]
+So I have to take him two towns over, to River City, to an appointment. Every two weeks, dad can fart.
+
+[NARRATOR]
+Hunter huffs a laugh. Then it stops being funny. This is what Kevin has been doing every day he was gone.
+
+[HUNTER]
+I'll take him to the doctor's appointment, Kevin. Whatever it's for. But why is it all the way over in River City?
+
+[KEVIN]
+Dad doesn't want to take the chance that it gets back to any of his old codger friends, that he's having trouble farting.
+
+[KEVIN]
+Because he'll never hear the end of it.
+
+[NARRATOR]
+Hunter rolls his eyes.
+
+[HUNTER]
+It's fine. Text me the where and when and I'll make sure he's there. Speaking of, how is Miss Roxy, Granville's most celebrated drag queen?
+
+[KEVIN]
+I book a few shows occasionally at the Bone-N-Brew. And most of the town likes having me host, whenever there's a party. But I only really book shows when my fan-club is in town.
+
+[NARRATOR]
+Kevin looks up at Gareth, who smiles sheepishly, drawing Hunter's attention.
+
+[HUNTER]
+You still doing "Inland Empire" to Jacksonville, right?
+
+[GARETH]
+Yup. A lot of nuthin till ya get to Louisiana.
+
+[HUNTER]
+When's your next run?
+
+[GARETH]
+(low, easy)
+Dawn. There and back. Couple weeks.
+
+[KEVIN]
+(too breezy)
+Couple weeks. Nothing. That's nothing. I'll repaint the bathroom, I'll finally deal with the... It's nothing. Really.
+
+[NARRATOR]
+Gareth folds himself back through the too-small door, always just a little too big for the space he inhabits, mostly because a heart that big can't fit in anything smaller.
+
+[GARETH]
+(sotto)
+I'll go see if Joann needs a hand.
+
+[NARRATOR]
+We follow two brothers back to the car. They grab suitcases and haul them back to the house, working through the running list of arguments they keep on file.
+
+---
+
+SCENE: INT. RHODES HOUSE — KITCHEN - CONTINUOUS
+
+[KEVIN]
+You're carrying that wrong.
+
+[NARRATOR]
+Indexed by subject matter, theirs is a steady rhythmic bicker. It is never, even once, about what it is really about.
+
+[HUNTER]
+I'm carrying it fine.
+
+[KEVIN]
+You're carrying it like it owes you money.
+
+[HUNTER]
+I don't know what that means. I don't speak drag queen, Roxy.
+
+[KEVIN]
+Your back's been shot since you were nineteen. Give me the dinosaur one, before I make you extinct.
+
+[HUNTER]
+I've got the dinosaur.
+
+[KEVIN]
+A dinosaur carrying a dinosaur. Never mind, keep it. It's completely on brand.
+
+[HUNTER]
+(yelling)
+MOM! Kevin's bothering me!
+
+[JOANN]
+(passing the door on her way downstairs, not even slowing)
+Stop bothering your brother, Kevin. Let him at least get in the door.
+
+[NARRATOR]
+Hunter shakes his head.
+
+[HUNTER]
+I can't believe that still works.
+
+[KEVIN]
+(whisper)
+I. Hate. You.
+
+[NARRATOR]
+They drop the bags in Hunter's childhood bedroom — where the boy will sleep, and where, for these first few nights at least, so will Hunter. The brothers turn to leave the room, but Kevin embraces him, suddenly.
+
+[KEVIN]
+(quietly)
+...It's good you're back. I mean it.
+
+[HUNTER]
+(quietly)
+Thanks.
+
+---
+
+SCENE: INT. Rhodes House - KITCHEN - CONTINUOUS
+
+[NARRATOR]
+Downstairs. Toby sets the table for six. He's remembering a Christmas when they had to drag in an extra chair. Tonight his mother isn't here.
+
+[NARRATOR]
+He's still standing there when Grandma sets down a steaming bowl of mashed potatoes with three pats of butter melting on top. Grandma's mashed potatoes can break any melancholy.
+
+[ACTION]
+Toby sits and the family joins him.
+
+[RAY]
+(over the noise, to Toby)
+Pass your old grandpa the potatoes before Uncle Kevin takes the whole bowl.
+
+[KEVIN]
+(joking)
+Settle down, old man. Nobody's takin' your potatoes.
+
+[JOANN]
+Honestly, Kevin. Leave some for everyone else.
+
+[NARRATOR]
+Everyone settles into eating silently. Then, because someone always does—
+
+[JOANN]
+(carefully)
+And how's Holly doing, honey?
+
+[HUNTER]
+(smooth, flat)
+She's dealing with some health issues. She's fine. Toby, you want more of the—
+
+[KEVIN]
+(a question)
+"Health issues"?
+
+[HUNTER]
+Yes, health issues.
+
+[KEVIN]
+Is it a vagina problem?
+
+[ACTION]
+Dad sets down his fork, forcefully, suddenly not as hungry.
+
+[KEVIN]
+It might be a vagina problem.
+
+[JOANN]
+Kevin, honestly. At the table?
+
+[TOBY]
+Dad, what's a vagina?
+
+[HUNTER]
+It's not a female reproductive problem.
+
+[KEVIN]
+I'm not... I'm just asking. It's me. It's us. We're your family. You can say the actual words at the actual table. I've spent the last two years, knee-deep in health problems, with people I love. I can take--
+
+[JOANN]
+(bright, steering)
+Let's not get into all that at supper. Toby, sweetheart, there is a pie with your name on—
+
+[HUNTER]
+(gently)
+Mom. It's okay. I want him to hear this. Because-
+
+[ACTION]
+Hunter has one hand covering Toby's and one covering his mother's.
+
+[JOANN]
+Hunter—
+
+[HUNTER]
+Mom, it's okay. Really.
+
+[ACTION]
+This part is for the family: the grown-ups. Toby already knows it and eats in silence.
+
+[HUNTER]
+There's nothing shameful here. Nobody's done anything to apologize for, and nobody should be thought of as weak. Holly is sick. That's the plain truth, she's sick. And she is doing the hard, brave work of getting better.
+
+[TOBY]
+She's doing...
+(to his dad)
+What's that word?
+
+[HUNTER]
+Introspection.
+
+[TOBY]
+"INSPECTION"
+
+[ACTION]
+The mispronunciation makes Kevin and Joann smile. Dad doesn't know what to think.
+
+[HUNTER]
+Which, given her history, is actually one of the strongest moves she could make. And this family is not going to whisper about that, or pretend it isn't happening.
+
+[RAY]
+(gruff)
+Nobody's whispering. Which might actually be the problem.
+
+[HUNTER]
+*I whispered*. For a long time I couldn't say any of this. But I'm not going to live that way and I'm not going to teach it to Toby.
+
+[HUNTER]
+So here's the rule now. The only way we get through the hard stuff is we say what we're feeling out loud. Even when it's scary. Especially when it's scary. Isn't that right, Tobes?
+
+[TOBY]
+(agreeing)
+We tell the truth. Even about the sad stuff.
+
+[HUNTER]
+Even about the sad stuff.
+
+[HUNTER]
+(to the table)
+So here it is, straight. Holly is battling depression. There were some days when she couldn't get off the couch. So we started seeing a counselor.
+
+[HUNTER]
+And when we sat in that room, what came up wasn't anybody being a villain. It was the way she and I had wired ourselves together — leaning so hard on each other there was no healthy way to stay married.
+
+[HUNTER]
+When it ended, she's the one who said, "Take Toby." Not because she doesn't love you. The opposite.
+
+[HUNTER]
+She knew she couldn't fight her way well and hold a job and raise you all at once, and something had to be set down so the rest could be carried.
+
+[TOBY]
+(quiet)
+So you carried me.
+
+[HUNTER]
+All the way home. To Granville. And I took the job at the planning office, and here we are. Your mom's back in Minneapolis doing the work.
+
+[HUNTER]
+And her doctors set some real markers — real signs she's getting stronger. And one of them, buddy, one of the big ones, is her making the trip down here. On her own. To see you. That's going to happen soon.
+
+[TOBY]
+(not asking — telling the table, because he already knows)
+She's coming to see me. Soon.
+
+[HUNTER]
+Soon. I promise.
+
+[KEVIN]
+(thin, letting it go)
+Well. Won't that be... nice.
+
+[JOANN]
+And you, Gareth? All those miles? Weeks alone in that cab, it's not right, a person shouldn't—
+
+[HUNTER]
+(quiet, to Kevin)
+What I want to know is what about you, Kev?
+
+[KEVIN]
+What about me?
+
+[HUNTER]
+Gareth’s trip seems like the perfect time for Roxy to go "On Tour".
+
+[ACTION]
+Everyone reacts--little surprise, but mom smiles and that gives Hunter the courage to go all-in.
+
+[HUNTER]
+Sure. Do it. Go on the road. Ride along. Weeks in a cab beats weeks painting a bathroom alone. Book some gay clubs in the square states. They still have those, right?
+
+[KEVIN]
+(too fast)
+No. No, I can't just— somebody's got to drive Dad to his—
+
+[RAY]
+(waving it off, head of the table)
+I'm fine. I'm fine.
+
+[KEVIN]
+—to his appointments, which there are more of lately, whatever Dad says, and the house, and— no. I can't just leave.
+
+[HUNTER]
+Kev, I'm right here now, I can—
+
+[KEVIN]
+(the valve opening on the wrong thing)
+Seriously, Hunter. You are not prepared for this.
+
+[KEVIN]
+I have seen things. Things I can never unsee.
+
+[HUNTER]
+Let me take a shift. Seriously. Tag me in. The appointments, the house, the heavy stuff — I'm here, all Dad has to do is ask.
+
+[RAY]
+Ah, your mother and I don't want to be a bother to you boys. We manage. We always have.
+
+[KEVIN]
+(not a word — then, flat)
+...Whenever they ask. Right.
+
+[KEVIN]
+Based on what you know about this man, do you think he's ever going to ask anyone for help? He's worse than you are.
+
+[HUNTER]
+(serious)
+Dad. When I was a kid, you never once waited to be asked. Every single time I needed something, help just showed up. No invoice. No bother. No score.
+
+[HUNTER]
+So this isn't me doing anybody a favor, and it's not charity. This is the part where I get to pay it back. It's my turn. And I'm not asking permission to take it.
+
+[KEVIN]
+...You mean that?
+
+[HUNTER]
+I mean it. Go.
+
+[KEVIN]
+(a breath, then)
+...Okay. Okay. Yeah. I'll go.
+
+[GARETH]
+(delighted)
+...I'll pack the big cooler.
+
+[HUNTER]
+(confidently)
+And I already did one better than looking. I closed on a place last week. Ours. Our own front door, right here in Granville.
+
+[JOANN]
+(lighting up)
+You bought a house? Hunter Rhodes, you bought a — where? Where is it?
+
+[HUNTER]
+(suddenly very interested in his plate)
+It's — nearby. It's close. It's a fixer-upper, needs some work, but it's got good bones and a real yard and—
+
+[KEVIN]
+(catching the dodge, delighted)
+He's not saying where.
+
+[RAY]
+(gruff, factual)
+What do you mean he's not saying where. It's a house. It has an address. Houses have addresses.
+
+[HUNTER]
+It has an address.
+
+[RAY]
+So?
+
+[KEVIN]
+(gleeful)
+Oh, this is good. Look at his face. He's blushing. Where's your house, Hunter?
+
+[HUNTER]
+(cracking, flat, to the potatoes)
+...It's on the corner of Ball and Sack.
+
+[KEVIN]
+(losing it completely)
+It's WHERE—
+
+[JOANN]
+Language—
+
+[KEVIN]
+I didn't say a — that's the STREETS, Ma, that's the literal — Ball and Sack! He bought a house on the corner of Ball and Sack!
+
+[RAY]
+(defending the corner on principle)
+...Ezra Ball's people and the old Sack farm. Those roads've been named a hundred years. It is a perfectly good corner.
+
+[KEVIN]
+It is the best house in the United States of America, and I have never been prouder of my big brother's ball-sack house.
+
+[NARRATOR]
+Hunter's palm instinctively goes to his face, with a heavy sigh.
+
+[JOANN]
+We tell the truth. Even about the hard stuff.
+
+[KEVIN]
+If the ball-sack is the hard part, Mom, I think you might be doing it wrong.
+
+[NARRATOR]
+This makes Gareth spit iced tea out of his nose.
+
+[RAY]
+KEVIN!
+
+[JOANN]
+KEVIN!
+
+[HUNTER]
+(smiling at Gareth)
+Great! Kevin's got a built-in audience now. You know, Kev, they don't give out Oscars for being overly-dramatic in real life.
+
+[KEVIN]
+You audition for the role you want. Not the one you have.
+
+[HUNTER]
+(resignation)
+I guess, if you live in the Ball-Sack house, you just gotta own it.
+
+[NARRATOR]
+The truth, said out loud at a supper table. In this family that's about twice as hard to swallow as the pie. They'll fold it up with the leftovers and carry it out to the porch.
+
+---
+
+SCENE: EXT. RHODES HOUSE — PORCH — LATER
+
+[RAY]
+(lobbying to the last)
+Now you take the bypass out to the interstate, don't let him take the county road—
+
+[JOANN]
+(pressing foil)
+There's the rest of the chicken, and the pie, and do not argue with me—
+
+[KEVIN]
+(over his shoulder)
+Love you too, Ma.
+
+[NARRATOR]
+The guests go, and the house goes quiet.
+
+[NARRATOR]
+Upstairs, Toby is going to sleep in the room his father grew up in.
+
+---
+
+SCENE: OVER BLACK
+
+[NARRATOR]
+Somewhere west of Granville — call it Wichita — there is a cabaret with a baby grand, a rented spotlight, and a marquee with exactly one name on it: Roxy Rhodes. The piano starts, low and unhurried, like it has all night. A single key light as Roxy plays the opening chords of "1000 ways".
+
+[KEVIN]
+(singing)
+~ Tell me, are you trying?
+~ Feels just like you're running
+~ Baby, yes, I need your love
+~ Tell me if you need my love
+
+[ACTION]
+And somewhere, a sketchbook opens to an introduction page.
+
+[NARRATOR]
+Once upon a river, there was an otter named Arnie. And Arnie could draw.
+
+[NARRATOR]
+He drew on birch bark with a charred stick. He drew on flat rocks with a crushed berry. He drew the river, and the fish in the river, and the moon on the river — and when the other otters were busy floating on their backs cracking mussels, Arnie was on the bank, hunched over, drawing the other otters floating on their backs cracking mussels.
+
+[NARRATOR]
+The other otters chittered at Arnie. Arnie did not always know what the chittering meant. So mostly, he drew.
+
+[NARRATOR]
+Now — every autumn, the young otters of the river are sent to Otter Art School, which is a hollow log with very good light. And it was there, on the first day, that Arnie looked up from his bark and saw an otter he had never seen before, drawing the exact same heron he was drawing. From the other side.
+
+[KEVIN]
+(singing)
+~ 1000 ways
+~ To get to know you
+~ 1000 ways
+~ To fall in love
+
+[NARRATOR]
+The new otter's name was Donnie. Donnie drew fast and loose and fearless, all splash and swagger. Arnie drew slow and true, every feather in its place. Donnie padded over, looked at Arnie's heron for a long, long time. And let out one low, astonished trill.
+
+[NARRATOR]
+And Arnie — who never knew what the chittering meant — understood that one perfectly.
+
+[NARRATOR]
+The two otters put their drawings side by side. The same heron, twice — once wild, once true. They chittered at each other until the moon came up over the water. And from that day on, wherever one otter was drawing, the other one was drawing right beside him.
+
+---
+
+SCENE: OVER BLACK
+
+[NARRATOR]
+Two hundred miles up the road — call it Tulsa — there is a supper club with a stage the size of a card table and a spotlight that only mostly works. The marquee still says Roxy Rhodes.
+
+[KEVIN]
+(on-mic — Roxy's honeyed stage drawl)
+Good evening, Tulsa. This one goes out to everybody who ever built something out of nothing with somebody they couldn't take their eyes off. A little "No Diggity."
+
+[NARRATOR]
+The piano starts — slow and smoky, nothing like the radio version. And the sketchbook opens again.
+
+[NARRATOR]
+When school was done, Donnie and Arnie made a plan. Well — Donnie made the plan, out loud, in a torrent of chittering, up on his hind legs with his little paws going everywhere. Arnie mostly nodded. Arnie was already drawing the sign.
+
+[NARRATOR]
+They found an empty hollow stump on the best bend of the river, and they emptied both their mussel-shell banks into one pile between them — every shell either otter had — and they opened a tattoo shop.
+
+[NARRATOR]
+Yes. A tattoo shop. For animals. Don't ask how the needles work. It's a cartoon.
+
+[NARRATOR]
+And here is the thing nobody expected: they were good. A beaver came in flat-tailed and shy, and left with wings inked across his back. A heron got her lost sister's silhouette, tucked under one wing where only she would know. A snapping turtle — meanest creature on the river — asked for a rose on his shell, and cried, and told them it was allergies.
+
+[NARRATOR]
+Donnie worked the front of the stump — greeting, charming, chittering with everybody, counting the mussel shells into neat little stacks. Arnie worked the back, bent low over the art, getting every feather in its place. Donnie told anyone who'd listen — in chitters, you understand — that Arnie was the finest artist on any river anywhere.
+
+[NARRATOR]
+And at closing time, the two otters would lock up the stump, float out into the current on their backs, holding paws so the river couldn't drift them apart. Which is a real thing otters do, by the way. Look it up.
+
+---
+
+SCENE: OVER BLACK
+
+[NARRATOR]
+Another week, another town — call it Topeka — and a piano bar where the regulars stop talking the moment the spotlight finds the stage. The marquee out front is small. It still says Roxy Rhodes.
+
+[KEVIN]
+(on-mic — Roxy's honeyed stage drawl, softer now)
+Good evening, Topeka. This one's for everybody out there carrying a love they never said out loud. A little "Love and Feeling." Come close.
+
+[NARRATOR]
+The piano starts, soft as breath on the back of a neck. And the sketchbook opens again.
+
+[NARRATOR]
+Those were the golden seasons on the river. The line outside the stump went around the bend. Muskrats. Mallards. An entire family of raccoons who wanted matching lightning bolts. Word had gone up and down the water: if you wanted it wild, Donnie would rough it out — and if you wanted it true, Arnie would make it sing.
+
+[NARRATOR]
+The mussel shells piled up faster than Donnie could stack them. So Donnie — who was, after all, the business otter — dug a hidey-hole under the roots of the stump, and packed the shells down into it, and patted the dirt, and chittered something breezy over his shoulder. Arnie didn't look up. Arnie was inking a dragonfly onto a bullfrog. Arnie trusted Donnie with the shells the way he trusted the river to run downhill.
+
+[NARRATOR]
+At night they'd lie on the roof of the stump, wet fur drying in the warm dark, and Donnie would chitter out his big plans — a second stump downriver, a third by the lake — paws sketching empires in the air. And Arnie would watch him the way Arnie watched a heron: carefully, completely, memorizing every feather.
+
+[NARRATOR]
+Arnie drew Donnie more than he drew anything on that river. Hundreds of drawings. Donnie laughing. Donnie mid-chitter. Donnie asleep with his paw over his eyes. If you want to know what an otter loves, you don't listen to his chittering. You look at what he draws.
+
+---
+
+SCENE: EXT. THE BALL-SACK HOUSE — MORNING
+
+[NARRATOR]
+Meanwhile, on the corner of Ball Avenue and Sack Street stands the grand old Victorian that this town will never, ever stop calling the "Ball-Sack house." Hunter Rhodes — first-time owner of a hundred-and-forty-year-old fixer-upper — carries a toolbox down the basement stairs, into a stone-walled cellar lit by one bare bulb, where a water heater old enough to collect a pension has been holding the household hostage.
+
+[HUNTER]
+(to the inanimate object)
+Okay, old man. One of us is leaving this basement on a dolly.
+
+[NARRATOR]
+He gets a wrench on the first fitting, braces his other hand on the wooden shelf beside the tank — a shelf that has been waiting forty years for an excuse. It tips. And four decades of dirt, dust, seed catalogs, and one jar of something brown rain down on Hunter Rhodes in a single biblical gesture. Which is, of course, the exact moment his phone vibrates.
+
+[HUNTER]
+(spitting dust)
+Kevin. Hey.
+
+[KEVIN]
+(on facetime)
+Don't "hey" me. Tell me you remembered.
+
+[HUNTER]
+(remembering nothing)
+Of course I remembered.
+
+[KEVIN]
+Say it back to me.
+
+[HUNTER]
+It's a thing. Today. Which I **ONE-HUNDRED PERCENT** remembered.
+
+[KEVIN]
+Dad. The gut doctor. Two towns over. One o'clock. Today is the day you take our father two towns over to fart.
+
+[HUNTER]
+Right i'm on my way there. Right now.
+
+[KEVIN]
+The motility study. He swallowed the little camera pill on Tuesday, and today they, quote, "assess transit," unquote — which, as far as anyone in this family can determine, means a medical professional charges four hundred dollars to watch Dad fart in a paper gown. Mom has her church thing. I'm in Wichita. Tag. You're it.
+
+[HUNTER]
+I know all of this. I knew all of this.
+
+[KEVIN]
+Uh-huh. And where are you right now?
+
+[HUNTER]
+Sorry, it's not good reception where I am right now.
+
+[NARRATOR]
+Hunter uses the wrench in his hand, scraping it against the hot water heater.
+
+[HUNTER]
+(speaking up)
+SORRY, GOTTA GO.
+
+---
+
+SCENE: OVER BLACK
+
+[NARRATOR]
+Last town on the leg — call it Amarillo — and a club near closing time, half the chairs already up on the tables. One spotlight. One piano. The marquee still says Roxy Rhodes.
+
+[KEVIN]
+(on-mic, quiet — the drawl worn down to something true)
+Last one tonight, Amarillo. This is for anybody who ever woke up and the other side of the bed was cold. "Alone Again." Naturally.
+
+[NARRATOR]
+The piano starts, barely, more space than song. And the sketchbook opens one last time.
+
+[NARRATOR]
+One grey morning, Arnie woke up on the roof of the stump, and the other side of the roof was cold.
+
+[NARRATOR]
+No Donnie at the front of the stump. No Donnie on the bank. No Donnie anywhere on the best bend of the river. Arnie went down to the hidey-hole under the roots, where the mussel shells were packed — every shell either otter had, and every shell they'd earned since. The dirt was dug out. The hole was empty. There was one small paw print at the edge of it, pointed downriver.
+
+[NARRATOR]
+And that's it. That's the whole explanation Arnie ever got. No note — otters can't write, only draw — and Donnie, it turns out, never once drew Arnie.
+
+[NARRATOR]
+Arnie sat in front of the empty hole for a long time. He chittered, once, very quietly — the low, astonished trill, the one that started everything — but there was nobody on the other side of the heron to hear it.
+
+[NARRATOR]
+The snapping turtle offered to bite somebody. The beaver with the wings offered his couch. Which was a log. And Arnie lay on the log, an otter with no shells and no stump and no Donnie, holding his own paw so the river couldn't drift him apart. It doesn't work when it's just you. But he held on anyway.

@@ -1,0 +1,96 @@
+You are extracting a character profile from excerpts of a screenplay.
+The character to profile is named on the line after the marker below.
+Read the excerpts below and return one JSON object and nothing else. The
+object has exactly these fields, in this order:
+age, pronouns, occupation, languages, logline, sampleLine, appearance,
+wardrobe, personality, backstory, arc, relationships, voiceAndSpeech,
+canonFacts.
+relationships is a list of objects with the fields with and nature.
+canonFacts is a list of objects with the fields fact and quote.
+Every field can be null. A field the excerpts say nothing about must be
+null. Do not guess or invent. Use the JSON value null, never the text "null".
+sampleLine must be one of the character's own lines, word for word. A quote
+in canonFacts must appear word for word in the excerpts.
+Return the JSON object only, with no text before or after it.
+=== EXCERPTS ===
+CHARACTER: IOLA
+
+SCENE: EXT. GRANVILLE GRADE SCHOOL - DAY
+
+[CLARK]
+Oh, pfft... nah. No. I mean, he's a parent so I can't. I wouldn't. I mean, we went to high school--He was in high school and I was in--
+
+[PRINCIPAL]
+In a small town like this, there's no way to enforce a policy of not dating parents. Date whoever you want. If you think there might be a conflict of interest, bring it to me.
+(sing-song)
+Good luuuck!
+
+[NARRATOR]
+While across the gymnasium, Hunter Rhodes stubbornly refuses to acknowledge that he is, in actuality, the hunted.
+
+[IOLA]
+Hunter Rhodes. Look at you, all grown and back home. Your mother is beside herself, you know that.
+
+[HUNTER]
+Hi, Miss Iola. How are you this afternoon.
+
+[IOLA]
+(no runway wasted)
+I have a son. Clark. You may not remember him. He was a few grades younger than you, quiet, wonderful boy. Sweet. Patient. Just... so good with kids. Wonderful with kids.
+
+[HUNTER]
+That's nice. Yeah, I kinda--
+
+[IOLA]
+(looking him dead in the eye)
+Single, too. Which, I only mention because it's a fact. I'm a very factual person.
+
+[NARRATOR]
+While the mothers bid and counter-bid, across the room, Clark has his world changed, with a series of letters on a page, in twelve point times roman.
+
+[CLARK]
+(sotto)
+New Family just moved to town--wait.
+
+[CLARK]
+(quietly, to himself)
+...Toby Rhodes.
+
+---
+
+SCENE: EXT. GRANVILLE GRADE SCHOOL - DAY
+
+[CLARK]
+Its a rule.
+
+[BECKETT]
+Yeah, but, Is it?
+
+[HUNTER]
+Miss Iola. I'm flattered that you would want me to date Clark. I mean that. But I've got my hands full. New school, new town, getting Toby settled, the whole everything.
+
+[IOLA]
+Of course. Of course not. I'm only saying, when you are ready--
+
+[HUNTER]
+Anyone. I don't want to date anyone right now. I'm concentrating on Toby.
+
+[IOLA]
+(smiling, entirely undeterred)
+Mm. We'll see.
+
+[HUNTER]
+It's not a "we'll see," it's a—
+
+[IOLA]
+We'll see.
+
+[NARRATOR]
+Toby returns with an arm-full of books.
+
+[HUNTER]
+One book, buddy. We agreed. You picked the dinosaur one, that's the one, put the other ones back.
+
+[TOBY]
+(negotiating)
+What if the dinosaur one is lonely.

@@ -1,0 +1,785 @@
+You are extracting a character profile from excerpts of a screenplay.
+The character to profile is named on the line after the marker below.
+Read the excerpts below and return one JSON object and nothing else. The
+object has exactly these fields, in this order:
+age, pronouns, occupation, languages, logline, sampleLine, appearance,
+wardrobe, personality, backstory, arc, relationships, voiceAndSpeech,
+canonFacts.
+relationships is a list of objects with the fields with and nature.
+canonFacts is a list of objects with the fields fact and quote.
+Every field can be null. A field the excerpts say nothing about must be
+null. Do not guess or invent. Use the JSON value null, never the text "null".
+sampleLine must be one of the character's own lines, word for word. A quote
+in canonFacts must appear word for word in the excerpts.
+Return the JSON object only, with no text before or after it.
+=== EXCERPTS ===
+CHARACTER: ARCHER
+
+SCENE: INT. CYRUS & MARSHALL'S HOUSE — DAWN
+
+[ARCHER]
+(startled)
+Oh, wow. MARSHALL. Sorry, you startled me.
+
+[MARSHALL]
+Before you disappear, I have a favor to ask. Go have lunch with your brother today. At the Bone-n-Brew. On me.
+
+[ARCHER]
+A twenty dollar bill? Am I having lunch in nineteen eighty-seven?
+
+[MARSHALL]
+I can almost guarantee Shane won't let you pay.
+
+[ARCHER]
+(giving it back)
+Marshall, no — come on, I don't want the — I don't want to bother Cyrus. And who's Shane?
+
+[MARSHALL]
+You're not a bother. Shane is Cyrus' boss. He's a nice guy. And he basically lets Cyrus run the kitchen how he sees fit.
+
+[ARCHER]
+Cyrus runs any kitchen he's in, "as he sees fit." Regardless of his permission to do so.
+
+[MARSHALL]
+You're not wrong. But if you're going to stay here long term, you gotta start getting to know the people here.
+
+[ARCHER]
+Cyrus says they're "busy bodies."
+
+[NARRATOR]
+Marshall places his hand on Archer's arm and for the first time we notice Archer's tattoos. Extending out of his shirt sleeve, his entire arm is covered in a sleeve tattoo, as is the other arm. Reversed out of the tattoo is an arrow traveling up his sleeve and underneath his shirt.
+
+[MARSHALL]
+He's not wrong either. But I've met some friends here that I deeply love, and you will too. People are nice here. Give it time.
+
+[MARSHALL]
+Why don't you look around downtown today for some place to put a new shop, and Cyrus and I--
+
+[ARCHER]
+I'm not taking any more money from you guys. I don't even know if I want to run a tattoo shop anymore.
+
+[MARSHALL]
+Okay.
+
+[ARCHER]
+I don't know what I'm doing. I have no idea what's next for me. And  its the only thing Cyrus wants to talk about.
+
+[MARSHALL]
+Granville is as good as any place to figure it out.
+
+[ARCHER]
+Well, whatever the case, I can't keep sleeping on your couch.
+
+[MARSHALL]
+Technically, it's an air mattress. Look.
+
+[ARCHER]
+The word "mattress" is doing a lot of heavy lifting in that sentence.
+
+[MARSHALL]
+You're family. You're my husband's brother. Listen to me and I want you to hear this in your soul. It is a privilege to host a family member, when they got kicked in the balls by life.
+
+[ARCHER]
+You suck at pep talks. You should take a class or something.
+
+[MARSHALL]
+And however hard you two go at each other, underneath every last argument is the same stupid fact. You love him. He loves you. And there will never be a time, when you're not each other's **FAMILY.** You're part of each other's furniture.
+
+[ARCHER]
+Like a bean bag chair that you can't get out of, and nobody can sit in.
+
+[MARSHALL]
+Go to lunch. Talk to your brother. Try to see the love in his actions.
+
+[ARCHER]
+(sotto)
+Fine. Fuck. Whatever.
+
+[MARSHALL]
+Hugs and kisses.
+
+[ARCHER]
+Rainbows and fucking sunshine.
+
+[NARRATOR]
+Archer slips out of the house, and to the sidewalk.
+
+[NARRATOR]
+A town this size doesn't wake up all at once. Waking up is a relay race where one lit window hands the morning to the next. Watch how it gets passed.
+
+[NARRATOR]
+We follow Archer down the block, noticing house after house in various stages of waking up. First light, empty street. At the end of the block, a neon sign pierces the morning fog: GLAZED HOLES and the smell of fried food permeates the air. The donuts have just come out of the fryer. And for Archer this morning, his feelings taste like donuts and coffee.
+
+---
+
+SCENE: EXT. GRANVILLE - GLAZED HOLES — DAWN
+
+[LEROY]
+Your Cyrus's brother, right?
+
+[ARCHER]
+Yeah. Morning.
+
+[DUKE]
+Morning.
+
+[LEROY]
+Morning.
+
+[LINC]
+They find the guy that took your money yet?
+
+[NARRATOR]
+Lincoln Rust, "LINC" to his friends, the local reporter for "Deeper Inside Granville", sits outside the GLAZED HOLES DONUT SHOP, with Duke Lattimer and Leroy Smalls.
+
+[ARCHER]
+Scuse me? What? How did--
+
+[NARRATOR]
+Archer doesn't yet understand this town's addiction to small talk and gossip. He rolls his eyes and goes into the shop.
+
+[DUKE]
+Guess they didn't find him.
+
+[LEROY]
+Boy kinda keeps to himself.
+
+[LINC]
+Nothin wrong with that.
+
+[LEROY]
+Little on the dramatic side.
+
+[DUKE]
+What the police gonna do?
+
+[LINC]
+Nothin the police can do. They were business partners. Archer got taken.
+
+[LEROY]
+He's a cute one, tho.
+
+[DUKE]
+Chase someone your own age, Pervy McPerv-en-stein.
+
+[LINC]
+That's the problem. There ain't that many of them left.
+
+[NARRATOR]
+All three of them erupt in cackling laughter.
+
+---
+
+SCENE: INT. GLAZED HOLES - CONTINUOUS
+
+[NARRATOR]
+Inside the donut shop, Archer breathes in the smell of brewed coffee. Despite the early hour, several people are already waiting in line to order, the last of which are Shane and his brother, Kieran. Shane turns in line, then reaches out to shake Archer's hand.
+
+[SHANE]
+You must be Archer. You look a lot like your mom. Cyrus showed me pictures.
+
+[NARRATOR]
+Archer's reaction to Shane is immediate. He gives him the gay three-scan: Chest, dick, face. A smile crosses Archer's mouth.
+
+[ARCHER]
+Uh, yeah. And you are?
+
+[SHANE]
+I'm your brother's, well I'm Shane. I own the Bone-N-Brew. And this is my brother Kieran.
+
+[NARRATOR]
+Archer shakes Kieran's hand, but can't look away from Shane. And the feeling seems mutual. Behind the counter, Donna shakes them out of their mutual attraction.
+
+[DONNA]
+(Shouting out)
+Next!
+
+[SHANE]
+Two lattes, two croissants, and send the bill to my accountant.
+
+[DONNA]
+Comin up!
+
+[ARCHER]
+You have a tab at a donut shop?
+
+[NARRATOR]
+Kieran takes a credit card out of his wallet.
+
+[KIERAN]
+He means me. I'm my brother's accountant.
+
+[ARCHER]
+That sounds... complicated.
+
+[SHANE]
+Not really. I tell him to spend money and he figures out how to make more.
+
+[KIERAN]
+Speaking of, I emailed you the wording, on that classified ad for the apartment above the bar. I'd like to get it over to Linc today.
+
+[SHANE]
+I don't think I want to rent it out just yet.
+
+[KIERAN]
+Yes, you do. It's been sitting empty for months since Mickey moved out.
+
+[ARCHER]
+(to the counter)
+Just a large coffee. Black. Thanks.
+
+[SHANE]
+(sotto)
+...Huh.
+
+[KIERAN]
+Don't.
+
+[SHANE]
+I didn't say anything.
+
+[KIERAN]
+You did the face. Anyway — the apartment.
+
+[KIERAN]
+That apartment over the Bone-n-Brew's been dark since spring. That's money, Shane. Just sitting up there being nothing. Rent it, gut it, do something.
+
+[SHANE]
+The wiring's a nightmare. And those stairs. And you want a stranger sleeping thirty feet over the taps?
+
+[KIERAN]
+I want the mortgage to stop being a hobby.
+
+[SHANE]
+(hedging, comfortable)
+We'll figure it out.
+
+[KIERAN]
+You've said "we'll figure it out" since March.
+
+[SHANE]
+And look how figured-out we are at least five percent more figured out every single day.
+
+[KIERAN]
+(giving up on that front, opening another)
+What are you even doing up this early, anyway? You close the bar. You don't do mornings. You're basically a bat with a liquor license.
+
+[SHANE]
+Mickey's finally bringing the key back. I'm meeting him at the Brew at eleven.
+
+[KIERAN]
+(everything stops)
+The key. He's had that key since April, Shane. I have sent that man nine texts.
+
+[SHANE]
+Deb's got him on a system now.
+
+[KIERAN]
+(leaning in — this is the whole war)
+Okay. No. Here is what happens today. The second that key touches your hand, that apartment stops being a shrine and starts being income. You let me run the ad. You let Linc print it. And you rent that apartment to the first human being with a pulse and a pay stub, so help me—
+
+[NARRATOR]
+Three feet away, Archer has gone very still over his coffee. He doesn't turn around. But there is a particular quality to the stillness of a man who sleeps on an air mattress, and has just heard the words "empty apartment" said out loud.
+
+[SHANE]
+(clocking it; too casual)
+Hey — Archer. You're camped out at your brother's, right? Don't you need an apartment?
+
+[ARCHER]
+(too fast)
+No. I mean — I'm not looking for anything just yet.
+
+[NARRATOR]
+And then Archer demonstrates the fastest exit in the recorded history of donut shops. He caps his coffee and points through the glass of the case, more or less at random.
+
+[ARCHER]
+And that one. To go. Thanks.
+
+[DONNA]
+(bagging it, delighted)
+On Shane's tab, honey?
+
+[SHANE]
+Absolutely it is.
+
+[ARCHER]
+(already at the door)
+I— fine. Thank you. Bye.
+
+[NARRATOR]
+The bell over the door is still ringing when Kieran turns and looks at his brother.
+
+[KIERAN]
+(flat)
+"Don't you need an apartment"?
+
+[SHANE]
+It was a real question.
+
+[KIERAN]
+A pulse and a pay stub, Shane. That boy's only got the one of those.
+
+[NARRATOR]
+Three feet down the same counter, the baton changes hands again to Hunter Rhodes. There's no food in the new house yet, and a bag of donuts is technically breakfast if nobody asks a follow-up question.
+
+[DONNA]
+Well, good morning. Fresh meat. What can I get in you, honey?
+
+[HUNTER]
+(not seeing the cliff)
+Uh — a dozen. Assorted. For me and my son.
+
+[DONNA]
+A dozen. Big appetite. I respect that. You want 'em glazed? 'Cause the glazed holes are the specialty. It's right there on the sign. People drive in from the county line for my holes.
+
+[HUNTER]
+(oblivious)
+Sure. Glazed is — yeah, glazed is fine.
+
+[DONNA]
+(ringing slow, delighted)
+Course they are. And to drink. Coffee?
+
+[HUNTER]
+Coffee, please.
+
+[DONNA]
+(the trap springing shut)
+Black?
+
+[HUNTER]
+No, I... I need...
+
+[DONNA]
+(not helping, radiant)
+...You need?
+
+[HUNTER]
+(cracking)
+Cream. I need cream. In the coffee. Please.
+
+[DONNA]
+(landing it)
+Oh, I had a feeling about you, honey. You strike me as a cream man. There's no shame in it. Some fellas just gotta have their cream.
+
+[SHANE]
+(sotto)
+She's a master at fifth-grade humor.
+
+[KIERAN]
+Forty years. Never lost a round.
+
+[NARRATOR]
+And with that, we follow Hunter out of the donut shop to where his son waits eagerly in the car for a sugar fix.
+
+[TOBY]
+...Did you get the sprinkle ones.
+
+[HUNTER]
+(still red)
+I got a dozen. Don't push it, kiddo.
+
+[ACTION]
+As Hunter pulls out of the parking space, he waves at Leroy and Duke.
+
+---
+
+SCENE: EXT. BEAVER HOLE PARK — DAY
+
+[NARRATOR]
+Midday at Beaver Hole Park. The fog burned off hours ago, and the pond belongs to the beavers — and, lately, to their tenants: a pair of river otters who moved in the way in-laws move into a guest room. Uninvited, unbothered, and running the place within a week. On the bench, Archer's coffee has gone cold and the maple bar is long gone. He's watching the water.
+
+[NARRATOR]
+One otter works. He hauls mussels up onto the bank, stacks them, pats them down into a hidey-hole under the roots like a furry little banker. The other floats on his back, cracking one shell on his chest, taking his sweet time about it. Then the banker glides over and — smooth as anything — lifts the floater's mussel right off his chest and dives.
+
+[ARCHER]
+(to the pond)
+Hey. I saw that. He was still using that.
+
+[NARRATOR]
+The thief surfaces ten feet away, entirely unrepentant, and chitters something breezy over his shoulder.
+
+[ARCHER]
+(a long look)
+...Yeah. Okay. I know exactly who you are, buddy. You're a Donnie.
+
+[ARCHER]
+(sotto)
+And you didn't even notice. You just kept working on your shell.
+(beat)
+Arnie.
+
+[NARRATOR]
+Archer's continues to draw, flipping over a new page for a fresh sketch of the otters.
+
+---
+
+SCENE: EXT. BEAVER HOLE PARK — AFTERNOON
+
+[NARRATOR]
+Back at the pond, the otters have made up. Or never fought. Who can say. They're stretched out on the roof of the beaver lodge now, wet fur drying in the sun, chittering at each other in long, elaborate paragraphs. It goes on for minutes. It has structure. It has, apparently, jokes.
+
+[ARCHER]
+(distracted, drawing)
+I have no idea what you two are saying to each other.
+(only just realizing)
+...And neither... does he.
+
+[NARRATOR]
+Here's a thing about Archer Rodriguez that nobody in this town gets yet. He doesn't draw what he feels. He draws to **UNDERSTAND** what he feels. And all afternoon, without once meaning to, he's been in therapy.
+
+---
+
+SCENE: INT. BONE-N-BREW — DAY
+
+[NARRATOR]
+The Bone-N-Brew has held down this corner since eighteen ninety-seven.  The same long bar polished by a century of elbows. Prohibition turned the back room into a card game the law never quite found, and the poker table in the far corner still rents for five dollars a round. Cheapest seat in town — if you don't count what you lose in it.
+
+[NARRATOR]
+For fifty years the sign out front said T-BONE AND BREW: supper club, Friday fish fry, prime rib carved at the table. Then the T fell off, sometime in the seventies, and nobody ever paid to put it back — partly because the town had been calling it the Bone-N-Brew for years anyway, and partly because Granville has never once turned down a name like that.
+
+[NARRATOR]
+Picture booths worn to the shape of the people who sit in them, a bar long enough to hold every secret in the county. Two of those secrets are about to be sitting thirty feet apart under the same roof, and neither one knows it.
+
+[NARRATOR]
+Here's the first — early, all elbows, waiting on a brother, when a friendly face sets down a beer in front of him.
+
+[SHANE]
+Cyrus is in the back. He'll be out in a minute. On the house. Help yourself.
+
+[NARRATOR]
+Archer nods in acquiescence, the edges of his mouth curling up into a half-smile at the sight of Shane.
+
+[CYRUS]
+Perdón, perdón. ¿Ya ordenaste? Te ves flaco. ¿Estás comiendo? Siéntate derecho, andas todo jorobado.
+
+[NARRATOR]
+Cyrus doesn't notice Archer watching with interest as Shane walks away.
+
+[ARCHER]
+(flat)
+Hola, Cyrus.
+
+[CYRUS]
+Ya vienen unos aros de cebolla. ¿Qué más quieres?
+
+[ARCHER]
+¿Qué tal una hamburguesa con queso, por favor?
+
+[NARRATOR]
+Hold that table at a low boil. Three booths down, the town's other closed door just sat down.
+
+[HUNTER]
+(mid-rant)
+—and then there's a casserole. On my mother's porch. With a note. Addressed to me. Not "the Rhodes family." Me. By name. There was a heart. On the note. Who — who does that?
+
+[TUCKER]
+(delighted)
+This is the single funniest thing that has ever happened. A man drowning in casserole. Casseroles? What's the plural of casserole?
+
+[SPENCER]
+Casserollas.
+
+[TUCKER]
+That's it? The man is being courted by an entire county?
+
+[SPENCER]
+It's just funny. "Methinks the lady doth protest too much." Eat your fries.
+
+[NARRATOR]
+Our brothers in the booth by the window, have reached a simmer and are bubbling nicely.
+
+[CYRUS]
+(kind)
+...necesitas un plan, Arquero. Uno de verdad, en papel.
+
+[ARCHER]
+I don't need a plan, Cyrus. And if I did, I wouldn't need to write it on paper.
+
+[CYRUS]
+Necesitas Un trabajo estable, algo con horario, con prestaciones
+
+[ARCHER]
+I don't need a job. I have a job. I'm a tattoo artist. I just don't have a shop right now.
+
+[CYRUS]
+Tatuajes está bien, Como respaldo.
+
+[ARCHER]
+Its not a backup, its my passion, Cyrus.
+
+[CYRUS]
+Y yo te dije lo que era. El socio. Te lo dije en tu cara, y de todos modos confiaste en él, y ya ves, estás en mi sofá, y no lo digo por—
+
+[ARCHER]
+(quietly)
+Cyrus stop.
+
+[CYRUS]
+—lo digo porque me importas.
+
+[ARCHER]
+I know you care about me Cyrus.
+
+[CYRUS]
+Solo lo digo porque me importas.
+
+[CYRUS]
+(oblivious, pressing)
+Si me dejaras hacer un par de llamadas, conozco a un señor en la—
+
+[ARCHER]
+(standing, hard)
+I had a job, Cyrus. Yo tengo un trabajo. The tattoo shop was doing--
+
+[CYRUS]
+Arquero, no es—
+
+[ARCHER]
+(flat)
+La comida está pagada. Dale las gracias a Marshall.
+
+[SHANE]
+(patter continuing, eyes on the door)
+—yeah, the special's the pot roast, Tucker, I'll put it in... ...'scuse me one sec.
+
+[HUNTER]
+(checking phone, standing fast)
+Ah — no. The program thing. I gotta grab Toby, it's clear across town. Tucker, I'm sorry, I gotta—
+
+[TUCKER]
+Go, go, drowning man, go meet your next admirer—
+
+[HUNTER]
+(already gone)
+It's a teacher, Tucker.
+
+---
+
+SCENE: EXT. BEAVER HOLE PARK - DAY
+
+[LEROY]
+The ducks have gotten aggressive. Someone is overfeeding them.
+
+[NARRATOR]
+Beaver Hole Park used to be a golf course, until the golf course went broke and the beavers flooded the ninth green. The town could have mowed it back into fairways; instead they let it be, and the whole thing grew into itself — pond, lodge, shade trees, and a name the city council certified without visibly smiling.
+
+[DUKE]
+The ducks are fine. Leave them be. It's them damn beavers--they keep stopping up the creek and flooding my backyard. Say, y'hear about that Rhodes boy?
+
+[LEROY]
+What'd he do now?
+
+[DUKE]
+He bought that old Victorian house on Ball and Sack.
+
+[LEROY]
+(to himself)
+"Ball-Sack house." That just doesn't stop bein' funny.
+
+[NARRATOR]
+And this park is the place Archer Rodriguez finally gets left alone to draw. Come sit in the park a minute. Nobody's going to manage you here. Archer holds his current drawing up, inspecting it. Frowning.
+
+[ARCHER]
+(sotto)
+That is not how paws work. Webbing goes to the second knuckle. I've been letting you get away with mittens for thirty pages, buddy. Not today.
+
+[NARRATOR]
+From across Beaver Hole Park, Shane watches Archer draw in his sketchbook. Until he's pulled, like a magnet, across the open green to where Archer sits on a bench.
+
+[SHANE]
+(inquisitive)
+This seat taken?
+
+[ARCHER]
+(not looking up)
+It's a public bench. You don't need my permission.
+
+[SHANE]
+Wasn't asking permission. I was giving you a warning.
+
+[NARRATOR]
+That gets the corner of a smile out of Archer. Shane sits — far end of the bench, leaving the whole middle open between them. He doesn't lean over. He doesn't ask what Archer's drawing. He looks at the pond. Which is, of course, the only reason the pencil keeps moving.
+
+[ARCHER]
+(flatly)
+You're not going to ask to see it?
+
+[SHANE]
+Nope. Figure it's yours. You'll turn it around if you want it looked at.
+
+[ARCHER]
+(the pencil stops)
+Everybody asks. My whole life, everybody asks, and then I have to do the thing where I say "it's not finished," which is a lie, because it's never going to be finished, because it's not for people.
+
+[SHANE]
+(easy)
+I can ask if it'd help.
+
+[ARCHER]
+(a warning)
+Don't ruin it, daddy bear.
+
+[NARRATOR]
+At the words "Daddy Bear", a smile behind Shane's eyes. His heart skips a beat. And then, because nobody asked, Archer turns the sketchbook around. And, well. You've seen these pages, friend. You've been seeing them all evening. Two otters drawing the same heron from opposite banks. A tattoo shop in a hollow stump on the best bend of the river. A snapping turtle with a rose on his shell, crying about his allergies. The Adventures of Donnie and Arnie. Written and drawn by Archer Rodriguez. Shane is the first living soul ever shown this book. You and I got a preview, and I'd keep that to ourselves.
+
+[NARRATOR]
+Shane reads. He takes his time. He laughs at the turtle — and Archer watches him laugh with the strange, careful stillness of a man watching a stranger hold his newborn. And then Shane stops turning pages. He's found the empty hidey-hole.
+
+[SHANE]
+(frowning)
+Okay. Hang on. I don't buy it.
+
+[ARCHER]
+(instantly wary)
+Which part.
+
+[SHANE]
+The shells. Donnie cleaning out the shells. Look at him — he's in every panel. He tells the whole river this otter's the best artist anywhere. He holds his paw all night so they don't drift. You don't get a hundred pages of that and then he empties the bank and swims off. It's out of character. Why'd he do it?
+
+[ARCHER]
+(a long beat; then)
+You're not asking about otters. It's okay. The metaphor is not subtle.
+
+[NARRATOR]
+He closes the book, and slides it gently back across the bench. Archer squares it on his knees, both hands flat on the cover, like it might float off.
+
+[ARCHER]
+(flat, precise, eyes on the pond)
+His name was Clayton. The shop was real. The shells were real. The name was changed to protect the guilty. It is not a subtle cartoon. And the honest answer to your question is: I don't know why he did it. I've had almost a year now. I still don't know. But I can tell you why I didn't see it coming. I'm— well. The word I've been trying on lately is "neurodivergent."
+
+[SHANE]
+Neuro--You mean like autistic?
+
+[ARCHER]
+Autism has always seemed like a diagnosis to me. Very final. Like something they'll try but never really quite cure. Neurodivergent is how I identify. My brain doesn't work the way yours does, and that means it's going to be more difficult sometimes to communicate.
+
+[SHANE]
+I'll keep that in mind, going forward.
+
+[ARCHER]
+"Going Forward"? Pretty confident about the future. Aren't you?
+
+[SHANE]
+Call it hopeful. What form does the divergence take?
+
+[ARCHER]
+For one thing, I can't read what people actually want. Everybody else gets subtitles--the tone, the face, what the pause before a sentence means. I get the sentence. Somebody says a thing. And I believe the thing. Because the thing is all I can see. Page one: Arnie can't tell what the chittering means.
+
+[SHANE]
+(gently)
+And have you... talked to somebody about it? A professional, I mean.
+
+[ARCHER]
+(not angry)
+It's not an injury, Shane. There's no exercise that makes it go away.
+
+[SHANE]
+No, no, that's not what I meant. I meant like support groups where Neurodivergent people help each other and talk about common problems.
+
+[ARCHER]
+I don't know why it's surprising to me that they have those, but yeah, that's not a bad idea.
+
+[SHANE]
+Yeah, like a book club. But for weirdos like you.
+
+[ACTION]
+Archer punches his arm and he pretends to put up a fight only to end up holding Archer's hand. He covers archer's hand with both of his.
+
+[SHANE]
+(careful)
+So when Donnie... Clayton...
+
+[NARRATOR]
+At the word "Clayton," Archer's body starts talking — heel bouncing off the gravel, thumb working the corner of the sketchbook, fast. Shane sees it, and files away a mental note that that name is a trigger.
+
+[SHANE]
+When he left--
+
+[ARCHER]
+Everybody saw it. That's the part that--My brother saw it in one dinner. One. I had six years of dinners. I didn't get robbed by a criminal mastermind. I just misjudged him. He said he loved me, and I believed the sentence, and whatever was actually underneath it, my wiring never let me see.
+
+[ARCHER]
+The tell was in my own book the whole time. I drew him hundreds of times. He never once drew me. Anyone else would have seen that in real time. I found it reading backwards.
+
+[ARCHER]
+That's what the book actually is, by the way. People think the drawing is how I talk. It's the other way around. Half the time I don't know what I'm feeling until it comes out the end of the pencil — and then I know. I drew that empty hide-y-hole before I could say the word "robbed" out loud.
+
+[NARRATOR]
+The sleeve tattoos on both their arms seems to speak to an affinity that goes deeper than skin.
+
+[ARCHER]
+(tighter, building)
+You want to know what I actually wish? I wish people would just say what they mean. Even if it's embarrassing. Even if it hurts. Because I cannot tell what anybody is really feeling--ever--and somehow everyone's decided the kind thing is to make me guess.
+
+[SHANE]
+(a long beat, then)
+Okay. If you could say what you really wanted — right now, out loud, no filter — what would it be?
+
+[ARCHER]
+(still)
+No.
+
+[SHANE]
+Why not?
+
+[ARCHER]
+Because it's the kind of truth that hurts people. Were you listening?
+
+[SHANE]
+(directly)
+Then say it. Look at me and—
+(stopping himself)
+No. Scratch the looking. Look at the pond. Look at your shoes. Shut your eyes if that's better. Say it. I'm asking you to. That's me, saying exactly what I mean asking you to do me that same favor.
+
+[ARCHER]
+(all one exhale)
+I want to fuck someone as hard as I possibly can. Not "connect." Not "process." Fuck. Hard enough that my head finally goes quiet. That's not poetry, it's mechanics. Pressure is the one input that turns the static down. It always has been. With somebody who wants to be on the other end of it. Who sees me like I am and doesn't want anything from me.
+(apologetic)
+Told you. That's the kind of thing that clears a room.
+
+[SHANE]
+(easily)
+Well. If that's a real ask -- if what you're actually looking for is a willing bottom -- I think I know where you can find one.
+
+[ARCHER]
+(thrown)
+Are you saying you?
+
+[SHANE]
+(plainly)
+I'm saying me, Archer. I think I would like that very much. I think it's the only thing I've been thinking about since the first time I shook your hand in the donut shop.
+
+[SHANE]
+I see you, Archer Rodriguez. I see the way your brother dotes on you, scared to let you go, for fear of losing you. Like you both lost your mother.
+
+[SHANE]
+I'm going to get this wrong, this thing between you and me. I'm going to fail. Hell, I got it wrong a couple times already. I'm going to keep getting it wrong. Not just once. Or on a schedule.
+
+[SHANE]
+The only thing I can do--The only way forward is for you to tell me plain. In whatever words you have in the moment. And then, I adjust.
+
+[NARRATOR]
+Shane releases Archer's hand, stands, and walks away. Turning back, he says.
+
+[SHANE]
+You coming? Or what?
+
+[ARCHER]
+(caught off guard)
+Yeah. I'm coming.
+
+[NARRATOR]
+The two of them walk past Duke and Leroy who give them a "hi, neighbor" wave without looking up from feeding the ducks. After Archer and Shane pass, the edges of their mouths curl into a slight smile, as they exchange a knowing glance. The elder gays know a hookup when they see one.
+
+[NARRATOR]
+Now, I'm going to narrate them as far as the metal staircase outside Shane's bar. A man's entitled to one evening the whole town doesn't get to narrate. But watch the stairs. Watch which way he takes them. At the top, Shane slips the key into the lock.
+
+[SHANE]
+You can still change your mind.
+
+[ARCHER]
+If you don't let me inside, I may fuck you out here on the stairs in front of the whole town.
+
+[NARRATOR]
+Shane unlocks the door, and they go inside.

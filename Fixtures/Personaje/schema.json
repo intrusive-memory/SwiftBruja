@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "properties": {
+    "age": {"type": ["string", "null"]},
+    "pronouns": {"type": ["string", "null"]},
+    "occupation": {"type": ["string", "null"]},
+    "languages": {"type": ["string", "null"]},
+    "logline": {"type": ["string", "null"]},
+    "sampleLine": {"type": ["string", "null"]},
+    "appearance": {"type": ["string", "null"]},
+    "wardrobe": {"type": ["string", "null"]},
+    "personality": {"type": ["string", "null"]},
+    "backstory": {"type": ["string", "null"]},
+    "arc": {"type": ["string", "null"]},
+    "relationships": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "with": {"type": ["string", "null"]},
+          "nature": {"type": ["string", "null"]}
+        },
+        "propertyOrder": ["with", "nature"]
+      }
+    },
+    "voiceAndSpeech": {"type": ["string", "null"]},
+    "canonFacts": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "fact": {"type": ["string", "null"]},
+          "quote": {"type": ["string", "null"]}
+        },
+        "propertyOrder": ["fact", "quote"]
+      }
+    }
+  },
+  "propertyOrder": ["age", "pronouns", "occupation", "languages", "logline", "sampleLine", "appearance", "wardrobe", "personality", "backstory", "arc", "relationships", "voiceAndSpeech", "canonFacts"]
+}
