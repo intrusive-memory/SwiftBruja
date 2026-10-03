@@ -292,4 +292,143 @@ final class PersonajeAcceptanceTests: XCTestCase {
           + "sentenceTokens=%d partialUTF8Entries=%d emptyEntries=%d",
         table.count, table.keys.max() ?? -1, buildSeconds, ids.count, partial, empty))
   }
+
+  // MARK: - Fixture loader and the nine Personaje prompts
+
+  /// `Fixtures/Personaje/`, found relative to this source file (three directories up).
+  private static func fixtureDirectory(file: StaticString = #filePath) -> URL {
+    URL(fileURLWithPath: "\(file)")
+      .deletingLastPathComponent()  // BrujaIntegrationTests
+      .deletingLastPathComponent()  // Tests
+      .deletingLastPathComponent()  // package root
+      .appendingPathComponent("Fixtures/Personaje", isDirectory: true)
+  }
+
+  /// The nine prompt files, sorted by name. A missing directory is a failure, not a skip.
+  private func loadPrompts() throws -> [(name: String, text: String)] {
+    let dir = Self.fixtureDirectory()
+    var isDirectory: ObjCBool = false
+    guard FileManager.default.fileExists(atPath: dir.path, isDirectory: &isDirectory),
+      isDirectory.boolValue
+    else {
+      XCTFail("Fixture directory is missing: \(dir.path)")
+      throw CocoaError(.fileNoSuchFile)
+    }
+    let names = try FileManager.default.contentsOfDirectory(atPath: dir.path)
+      .filter { $0.hasSuffix(".txt") }
+      .sorted()
+    return try names.map {
+      ($0, try String(contentsOf: dir.appendingPathComponent($0), encoding: .utf8))
+    }
+  }
+
+  /// Builds a schema from `schema.json`, taking key order from each `propertyOrder` array.
+  private func loadSchema() throws -> BrujaJSONSchema {
+    let url = Self.fixtureDirectory().appendingPathComponent("schema.json")
+    let data = try Data(contentsOf: url)
+    let root = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+    return try Self.objectSchema(root)
+  }
+
+  private static func objectSchema(_ node: [String: Any]) throws -> BrujaJSONSchema {
+    let properties = try XCTUnwrap(node["properties"] as? [String: [String: Any]])
+    let order = try XCTUnwrap(node["propertyOrder"] as? [String])
+    XCTAssertEqual(Set(order), Set(properties.keys), "propertyOrder must name every property")
+    return BrujaJSONSchema(
+      try order.map { name in
+        let spec = try XCTUnwrap(properties[name])
+        let (kind, nullable) = try kind(of: spec)
+        return BrujaJSONSchema.Property(name, kind, nullable: nullable)
+      })
+  }
+
+  private static func kind(of spec: [String: Any]) throws -> (BrujaJSONSchema.Kind, Bool) {
+    var types: [String]
+    if let list = spec["type"] as? [String] {
+      types = list
+    } else {
+      types = [try XCTUnwrap(spec["type"] as? String)]
+    }
+    let nullable = types.contains("null")
+    types.removeAll { $0 == "null" }
+    let type = try XCTUnwrap(types.first)
+    switch type {
+    case "string": return (.string, nullable)
+    case "integer": return (.integer, nullable)
+    case "number": return (.number, nullable)
+    case "boolean": return (.boolean, nullable)
+    case "array":
+      let items = try XCTUnwrap(spec["items"] as? [String: Any])
+      return (.array(of: try kind(of: items).0), nullable)
+    case "object": return (.object(try objectSchema(spec)), nullable)
+    default:
+      XCTFail("Unsupported schema type \(type)")
+      throw CocoaError(.coderInvalidValue)
+    }
+  }
+
+  /// Runs one prompt, asserts the invariants, prints a stats line, returns the null count.
+  @discardableResult
+  private func runPrompt(_ name: String, _ prompt: String, schema: BrujaJSONSchema) async throws
+    -> Int
+  {
+    let start = Date()
+    let output = try await BrujaQuery.generateConstrained(
+      prompt, schema: schema, model: Self.defaultModelId, temperature: 0.3, maxTokens: 2048,
+      system: nil)
+    let wall = Date().timeIntervalSince(start)
+
+    XCTAssertEqual(output.text.last, "}", "\(name): raw output must end on the closing brace")
+    let profile = try BrujaQuery.decodeConstrained(output.text, as: PersonajeProfile.self)
+
+    let strings: [(String, String?)] = [
+      ("age", profile.age), ("pronouns", profile.pronouns), ("occupation", profile.occupation),
+      ("languages", profile.languages), ("logline", profile.logline),
+      ("sampleLine", profile.sampleLine), ("appearance", profile.appearance),
+      ("wardrobe", profile.wardrobe), ("personality", profile.personality),
+      ("backstory", profile.backstory), ("arc", profile.arc),
+      ("voiceAndSpeech", profile.voiceAndSpeech),
+    ]
+    for (field, value) in strings {
+      XCTAssertNotEqual(value, "null", "\(name): \(field) is the string \"null\"")
+    }
+    for r in profile.relationships ?? [] {
+      XCTAssertNotEqual(r.with, "null", "\(name): relationships.with is the string \"null\"")
+      XCTAssertNotEqual(r.nature, "null", "\(name): relationships.nature is the string \"null\"")
+    }
+    for f in profile.canonFacts ?? [] {
+      XCTAssertNotEqual(f.fact, "null", "\(name): canonFacts.fact is the string \"null\"")
+      XCTAssertNotEqual(f.quote, "null", "\(name): canonFacts.quote is the string \"null\"")
+    }
+
+    let nulls =
+      strings.filter { $0.1 == nil }.count + (profile.relationships == nil ? 1 : 0)
+      + (profile.canonFacts == nil ? 1 : 0)
+    print(
+      String(
+        format:
+          "PersonajeAcceptanceTests prompt: file=%@ promptTokens=%d generatedTokens=%d "
+          + "wallSeconds=%.1f nullFields=%d/14",
+        name, output.promptTokens, output.generatedTokens, wall, nulls))
+    print("PersonajeAcceptanceTests raw \(name): \(output.text)")
+    return nulls
+  }
+
+  func testNinePromptsDecode() async throws {
+    try skipUnlessModelPresent()
+    let prompts = try loadPrompts()
+    XCTAssertEqual(prompts.count, 9, "Expected nine prompt files")
+    let schema = try loadSchema()
+    XCTAssertEqual(schema.properties.count, 14)
+    for (name, text) in prompts {
+      try await runPrompt(name, text, schema: schema)
+    }
+  }
+
+  func testHunterQuery() async throws {
+    try skipUnlessModelPresent()
+    let prompts = try loadPrompts()
+    let hunter = try XCTUnwrap(prompts.first { $0.name == "01-HUNTER-major.txt" })
+    try await runPrompt(hunter.name, hunter.text, schema: try loadSchema())
+  }
 }
