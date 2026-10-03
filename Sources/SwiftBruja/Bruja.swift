@@ -174,6 +174,64 @@ public enum Bruja {
     )
   }
 
+  /// Query a model with the output constrained to a JSON schema, and decode it
+  ///
+  /// Every token that would take the output outside `schema` is masked before sampling, so the
+  /// model can only write one compact JSON object: every key of the schema, in schema order,
+  /// with no text around it. A property with no value is written as `null` (the property must
+  /// be nullable). The output is decoded with `JSONDecoder` as it is; nothing is stripped or
+  /// repaired.
+  ///
+  /// The schema is a run-time value, so one `Decodable` type can serve calls that ask for
+  /// different subsets of its fields:
+  ///
+  /// ```swift
+  /// struct Profile: Decodable { let age: String?; let occupation: String? }
+  /// let schema = BrujaJSONSchema([.string("age"), .string("occupation")])
+  /// let profile = try await Bruja.query(
+  ///   excerpt, schema: schema, as: Profile.self, model: "mlx-community/Qwen2.5-7B-Instruct-4bit")
+  /// ```
+  ///
+  /// Model must be pre-downloaded via SwiftAcervo to the shared models directory.
+  ///
+  /// - Note: The mask fixes the shape, not the content. Name the fields and say what each one
+  ///   should hold in `prompt` or `system`.
+  /// - Note: A character the model's tokenizer can only spell as split-byte tokens cannot be
+  ///   generated on this path.
+  ///
+  /// - Parameters:
+  ///   - prompt: The prompt to send to the model
+  ///   - schema: The shape of the JSON object to generate
+  ///   - type: The Decodable type to decode the object into
+  ///   - model: Model ID (e.g., "mlx-community/Qwen2.5-7B-Instruct-4bit")
+  ///   - temperature: Sampling temperature (0 picks the most likely legal token)
+  ///   - maxTokens: Maximum tokens to generate; when `nil`, chosen from available memory
+  ///   - system: Optional system prompt. When `nil`, a short instruction to answer with one JSON
+  ///     object and to use `null` for unknown values is used.
+  /// - Returns: The decoded object
+  /// - Throws: `BrujaError.modelNotFound` if model is not available locally;
+  ///   `BrujaError.structuredOutputTruncated` if `maxTokens` is reached before the object
+  ///   closes; `BrujaError.jsonParsingFailed` if the object does not decode as `T`
+  public static func query<T: Decodable>(
+    _ prompt: String,
+    schema: BrujaJSONSchema,
+    as type: T.Type,
+    model: String,
+    temperature: Float = 0.3,
+    maxTokens: Int? = nil,
+    system: String? = nil
+  ) async throws -> T {
+    try await BrujaQuery.query(
+      prompt,
+      schema: schema,
+      as: type,
+      model: model,
+      temperature: temperature,
+      maxTokens: maxTokens,
+      system: system
+    )
+  }
+
   // MARK: - Private Helpers
 
   private static func resolvePath(_ path: String) -> URL {

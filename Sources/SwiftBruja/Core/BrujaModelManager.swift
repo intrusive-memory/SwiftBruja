@@ -30,6 +30,10 @@ public actor BrujaModelManager {
   /// Loaded model containers (cached for reuse)
   private var loadedModels: [String: ModelContainer] = [:]
 
+  /// Vocabulary tables of the loaded models (token id to the text of that token decoded on its
+  /// own). Built on first use by ``vocabularyTable(for:)`` and dropped with the container.
+  private var vocabularyTables: [String: [Int: String]] = [:]
+
   private init() {}
 
   // MARK: - Model Availability
@@ -100,10 +104,66 @@ public actor BrujaModelManager {
   /// Unload a model to free memory
   public func unloadModel(_ modelId: String) {
     loadedModels.removeValue(forKey: modelId)
+    vocabularyTables.removeValue(forKey: modelId)
   }
 
   /// Unload all models
   public func unloadAllModels() {
     loadedModels.removeAll()
+    vocabularyTables.removeAll()
+  }
+
+  // MARK: - Vocabulary Table
+
+  /// The vocabulary table of a model: token id to the text of that token decoded on its own.
+  ///
+  /// Loads the model if it is not loaded yet. The table is built once per loaded model and
+  /// cached next to its container; schema-constrained generation reads it on every call.
+  func vocabularyTable(for modelId: String) async throws -> [Int: String] {
+    if let cached = vocabularyTables[modelId] {
+      return cached
+    }
+    let container = try await loadModel(modelId)
+    let tokenizer = await container.tokenizer
+    let table = Self.makeVocabularyTable(tokenizer: tokenizer)
+    // The model can have been unloaded while the table was being built.
+    if loadedModels[modelId] != nil {
+      vocabularyTables[modelId] = table
+    }
+    return table
+  }
+
+  /// How many consecutive ids with no token end the scan in ``makeVocabularyTable(tokenizer:)``.
+  private static let vocabularyGapLimit = 4096
+
+  /// Upper bound on the ids scanned, in case a tokenizer never reports a missing id.
+  private static let vocabularyScanLimit = 2_000_000
+
+  /// Builds the vocabulary table by asking the tokenizer for every id in turn.
+  ///
+  /// `MLXLMCommon.Tokenizer` has no vocabulary-size property, so the ids are found by probing
+  /// `convertIdToToken(_:)` upward from 0. An id counts as present when it has a token and that
+  /// token maps back to the same id (a tokenizer that answers an unknown id with its unknown
+  /// token fails the second test). The scan ends after ``vocabularyGapLimit`` misses in a row.
+  ///
+  /// The text of an id is `decode(tokenIds: [id])` with special tokens kept, which is the text
+  /// the token contributes to a decoded sequence. The exceptions are a token that holds part of
+  /// a multi-byte character (it decodes alone to U+FFFD) and a tokenizer that cleans up spaces
+  /// across token boundaries.
+  nonisolated static func makeVocabularyTable(tokenizer: any MLXLMCommon.Tokenizer) -> [Int: String]
+  {
+    var table: [Int: String] = [:]
+    var misses = 0
+    var id = 0
+    while misses < vocabularyGapLimit, id < vocabularyScanLimit {
+      if let token = tokenizer.convertIdToToken(id), tokenizer.convertTokenToId(token) == id {
+        table[id] = tokenizer.decode(tokenIds: [id], skipSpecialTokens: false)
+        misses = 0
+      } else {
+        misses += 1
+      }
+      id += 1
+    }
+    return table
   }
 }
