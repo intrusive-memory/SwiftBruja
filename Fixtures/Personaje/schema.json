@@ -1,36 +1,38 @@
 {
   "type": "object",
   "properties": {
-    "age": {"type": ["string", "null"]},
-    "pronouns": {"type": ["string", "null"]},
-    "occupation": {"type": ["string", "null"]},
-    "languages": {"type": ["string", "null"]},
-    "logline": {"type": ["string", "null"]},
-    "sampleLine": {"type": ["string", "null"]},
-    "appearance": {"type": ["string", "null"]},
-    "wardrobe": {"type": ["string", "null"]},
-    "personality": {"type": ["string", "null"]},
-    "backstory": {"type": ["string", "null"]},
-    "arc": {"type": ["string", "null"]},
+    "age": {"type": ["string", "null"], "maxLength": 500},
+    "pronouns": {"type": ["string", "null"], "maxLength": 500},
+    "occupation": {"type": ["string", "null"], "maxLength": 500},
+    "languages": {"type": ["string", "null"], "maxLength": 500},
+    "logline": {"type": ["string", "null"], "maxLength": 500},
+    "sampleLine": {"type": ["string", "null"], "maxLength": 500},
+    "appearance": {"type": ["string", "null"], "maxLength": 500},
+    "wardrobe": {"type": ["string", "null"], "maxLength": 500},
+    "personality": {"type": ["string", "null"], "maxLength": 500},
+    "backstory": {"type": ["string", "null"], "maxLength": 500},
+    "arc": {"type": ["string", "null"], "maxLength": 500},
     "relationships": {
       "type": ["array", "null"],
+      "maxItems": 8,
       "items": {
         "type": "object",
         "properties": {
-          "with": {"type": ["string", "null"]},
-          "nature": {"type": ["string", "null"]}
+          "with": {"type": ["string", "null"], "maxLength": 200},
+          "nature": {"type": ["string", "null"], "maxLength": 200}
         },
         "propertyOrder": ["with", "nature"]
       }
     },
-    "voiceAndSpeech": {"type": ["string", "null"]},
+    "voiceAndSpeech": {"type": ["string", "null"], "maxLength": 500},
     "canonFacts": {
       "type": ["array", "null"],
+      "maxItems": 8,
       "items": {
         "type": "object",
         "properties": {
-          "fact": {"type": ["string", "null"]},
-          "quote": {"type": ["string", "null"]}
+          "fact": {"type": ["string", "null"], "maxLength": 200},
+          "quote": {"type": ["string", "null"], "maxLength": 200}
         },
         "propertyOrder": ["fact", "quote"]
       }

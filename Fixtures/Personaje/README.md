@@ -14,6 +14,15 @@ reconstruction. Do not edit the `.txt` files by hand.
   `propertyOrder` arrays are the order of record (key order does not survive
   JSON parsing in Swift). `relationships` and `canonFacts` items carry their own.
 
+## Bounds
+
+`schema.json` bounds every free-text value: `"maxLength": 500` on each top-level
+string, `"maxLength": 200` on the strings inside `relationships` and `canonFacts`
+items (`with`, `nature`, `fact`, `quote`), and `"maxItems": 8` on both arrays.
+The acceptance tests generate with `maxTokens: 4096`. These bounds are Personaje's
+choice, kept in this fixture. They are not a SwiftBruja library default; the
+library applies a bound only when the schema carries one.
+
 ## Context rules (Personaje REQUIREMENTS-APP-UI.md 11.3)
 
 - Major: every scene the character speaks in, complete (all dialogue, narrator and action lines).

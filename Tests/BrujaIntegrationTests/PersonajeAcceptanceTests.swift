@@ -360,13 +360,19 @@ final class PersonajeAcceptanceTests: XCTestCase {
     types.removeAll { $0 == "null" }
     let type = try XCTUnwrap(types.first)
     switch type {
-    case "string": return (.string, nullable)
+    case "string":
+      if let maxLength = spec["maxLength"] as? Int {
+        return (.string(maxLength: maxLength), nullable)
+      }
+      return (.string, nullable)
     case "integer": return (.integer, nullable)
     case "number": return (.number, nullable)
     case "boolean": return (.boolean, nullable)
     case "array":
       let items = try XCTUnwrap(spec["items"] as? [String: Any])
-      return (.array(of: try kind(of: items).0), nullable)
+      return (
+        .array(of: try kind(of: items).0, maxItems: spec["maxItems"] as? Int), nullable
+      )
     case "object": return (.object(try objectSchema(spec)), nullable)
     default:
       XCTFail("Unsupported schema type \(type)")
@@ -381,7 +387,7 @@ final class PersonajeAcceptanceTests: XCTestCase {
   {
     let start = Date()
     let output = try await BrujaQuery.generateConstrained(
-      prompt, schema: schema, model: Self.defaultModelId, temperature: 0.3, maxTokens: 2048,
+      prompt, schema: schema, model: Self.defaultModelId, temperature: 0.3, maxTokens: 4096,
       system: nil)
     let wall = Date().timeIntervalSince(start)
 
@@ -406,6 +412,23 @@ final class PersonajeAcceptanceTests: XCTestCase {
     for f in profile.canonFacts ?? [] {
       XCTAssertNotEqual(f.fact, "null", "\(name): canonFacts.fact is the string \"null\"")
       XCTAssertNotEqual(f.quote, "null", "\(name): canonFacts.quote is the string \"null\"")
+    }
+
+    for (field, value) in strings {
+      XCTAssertLessThanOrEqual(
+        value?.count ?? 0, 500, "\(name): \(field) exceeds 500 characters")
+    }
+    let relationships = profile.relationships ?? []
+    let canonFacts = profile.canonFacts ?? []
+    XCTAssertLessThanOrEqual(relationships.count, 8, "\(name): relationships exceeds 8 items")
+    XCTAssertLessThanOrEqual(canonFacts.count, 8, "\(name): canonFacts exceeds 8 items")
+    for r in relationships {
+      XCTAssertLessThanOrEqual(r.with?.count ?? 0, 200, "\(name): relationships.with > 200")
+      XCTAssertLessThanOrEqual(r.nature?.count ?? 0, 200, "\(name): relationships.nature > 200")
+    }
+    for f in canonFacts {
+      XCTAssertLessThanOrEqual(f.fact?.count ?? 0, 200, "\(name): canonFacts.fact > 200")
+      XCTAssertLessThanOrEqual(f.quote?.count ?? 0, 200, "\(name): canonFacts.quote > 200")
     }
 
     let nulls =
