@@ -225,12 +225,123 @@ final class BrujaJSONAcceptorTests: XCTestCase {
     assertRejected(character, after: "{\"age\":\"a")
   }
 
-  func testOptionalWhitespaceRejected() {
+  func testWhitespaceOtherThanTheOptionalSpaceRejected() {
     assertRejected(" ", after: "{")
     assertRejected(" ", after: "{\"age\"")
-    assertRejected(" ", after: "{\"age\":")
     assertRejected(" ", after: "{\"age\":null")
     assertRejected("\n", after: "{\"age\":null,")
+    // Only U+0020 is the optional space.
+    for character in ["\n", "\t", "\r\n", "\u{A0}"] as [Character] {
+      assertRejected(character, after: "{\"age\":")
+      assertRejected(character, after: "{\"age\":null,")
+    }
+    // No space after `[`, before `]`, or before the `}` of an item or of the object.
+    let prefix =
+      "{"
+      + Self.stringKeysBeforeRelationships.map { "\"\($0)\":null" }.joined(separator: ",")
+      + ",\"relationships\":"
+    assertRejected(" ", after: prefix + "[")
+    assertRejected(" ", after: prefix + "[{\"with\":null,\"nature\":null")
+    assertRejected(" ", after: prefix + "[{\"with\":null,\"nature\":null}")
+    assertRejected(" ", after: String(Self.personajeObject().dropLast()))
+  }
+
+  // MARK: - One optional space after `:` and `,`
+
+  /// `text` with one space after every `:` and `,` that is outside a string.
+  private static func spaced(_ text: String) -> String {
+    var result = ""
+    var inString = false
+    var escaped = false
+    for character in text {
+      result.append(character)
+      if inString {
+        if escaped {
+          escaped = false
+        } else if character == "\\" {
+          escaped = true
+        } else if character == "\"" {
+          inString = false
+        }
+      } else if character == "\"" {
+        inString = true
+      } else if character == ":" || character == "," {
+        result.append(" ")
+      }
+    }
+    return result
+  }
+
+  func testOneSpaceAfterColonAndCommaAccepted() {
+    XCTAssertEqual(Self.spaced(#"{"a":"x:y,z","b":[1,2]}"#), #"{"a": "x:y,z", "b": [1, 2]}"#)
+    assertAccepted(Self.spaced(Self.fullObject))
+    assertAccepted(Self.spaced(Self.personajeObject()))
+    // Each space is optional on its own: the two forms mix freely.
+    assertAccepted(Self.personajeObject(["age": " \"52\"", "pronouns": " null"]))
+    for text in [
+      #"{"count": 0, "score": -1.5, "alive": true, "tags": ["a", "b"], "levels": [1, 20, -3], "home": {"city": "", "lat": 0.25}}"#,
+      #"{"count": 7,"score":null, "alive": null,"tags":["a","b", "c"],"levels":[],"home": null}"#,
+    ] {
+      assertAccepted(text, schema: Self.mixedSchema)
+    }
+  }
+
+  func testSecondSpaceAfterColonOrCommaRejected() {
+    assertRejected(" ", after: "{\"age\": ")
+    assertRejected(" ", after: "{\"age\": null, ")
+    let schema = Self.mixedSchema
+    // After a number that the comma ended, and between array items.
+    assertRejected(" ", after: #"{"count": 1, "#, schema: schema)
+    assertRejected(" ", after: #"{"count":1,"score":1,"alive":true,"tags":["a", "#, schema: schema)
+    assertRejected(
+      " ", after: #"{"count":1,"score":1,"alive":true,"tags":[],"levels":[1, "#, schema: schema)
+    // The space is not a value: something must still follow it.
+    assertRejected(",", after: "{\"age\": ")
+    assertRejected("}", after: "{\"age\": null, ")
+    assertRejected("]", after: #"{"count":1,"score":1,"alive":true,"tags":["a", "#, schema: schema)
+  }
+
+  func testNothingAcceptedAfterClosingBraceOfSpacedObject() {
+    let complete = Self.spaced(Self.personajeObject())
+    XCTAssertTrue(feed(complete).acceptor.isComplete)
+    for character in [" ", "\n", ",", "}", "\"", "n"] as [Character] {
+      assertRejected(character, after: complete)
+    }
+  }
+
+  func testOptionalSpaceDoesNotChangeTheStateItLeadsTo() {
+    // With or without the space, the same position: the state holds no trace of it.
+    XCTAssertEqual(
+      feed("{\"age\": \"abc").acceptor.state, feed("{\"age\":\"abc").acceptor.state)
+    XCTAssertEqual(
+      feed("{\"age\":null, \"pronouns\"").acceptor.state,
+      feed("{\"age\":null,\"pronouns\"").acceptor.state)
+    XCTAssertEqual(
+      feed("{\"age\": null, \"pronouns\": ").acceptor.state,
+      feed("{\"age\":null,\"pronouns\": ").acceptor.state)
+    // Before the space and after it are different positions: only one takes a space.
+    XCTAssertNotEqual(feed("{\"age\":").acceptor.state, feed("{\"age\": ").acceptor.state)
+  }
+
+  func testOptionalSpaceCountsTowardNoBound() {
+    let schema = Self.boundedSchema
+    // A string of exactly `maxLength` and arrays of exactly `maxItems`, spaced.
+    assertAccepted(
+      #"{"name": "abcde", "tags": ["a", "b", "c"], "pairs": [{"with": "abcd", "nature": "abcdef"}, {"with": "wxyz", "nature": null}]}"#,
+      schema: schema)
+    assertRejected("f", after: #"{"name": "abcde"#, schema: schema)
+    assertRejected(",", after: #"{"name": null, "tags": ["a", "b", "c""#, schema: schema)
+    // The counters read the same with the spaces as without.
+    XCTAssertEqual(
+      feed(#"{"name": "a"#, schema: schema).acceptor.counters,
+      feed(#"{"name":"a"#, schema: schema).acceptor.counters)
+    XCTAssertEqual(feed(#"{"name": "a"#, schema: schema).acceptor.counters.remainingLength, 4)
+    XCTAssertEqual(
+      feed(#"{"name": null, "tags": ["a", "b""#, schema: schema).acceptor.counters,
+      feed(#"{"name":null,"tags":["a","b""#, schema: schema).acceptor.counters)
+    XCTAssertEqual(
+      feed(#"{"name": null, "tags": ["a", "#, schema: schema).acceptor.counters
+        .fewestRemainingItems, 1)
   }
 
   // MARK: - State
@@ -290,7 +401,8 @@ final class BrujaJSONAcceptorTests: XCTestCase {
     // A token that spans structural boundaries.
     let afterKey = acceptor.state(after: "{\"age\":", from: start)
     XCTAssertNotNil(afterKey)
-    XCTAssertNil(acceptor.state(after: "{\"age\": ", from: start))
+    XCTAssertNotNil(acceptor.state(after: "{\"age\": ", from: start))
+    XCTAssertNil(acceptor.state(after: "{\"age\":  ", from: start))
     XCTAssertNil(acceptor.state(after: "{\"pronouns\":", from: start))
     XCTAssertEqual(acceptor.state, start, "the non-mutating query moved the acceptor")
 

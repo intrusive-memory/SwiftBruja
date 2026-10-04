@@ -221,6 +221,9 @@ final class PersonajeAcceptanceTests: XCTestCase {
 
     let profile = try BrujaQuery.decodeConstrained(output.text, as: PersonajeProfile.self)
     XCTAssertNotNil(profile.occupation, "The excerpt states her occupation")
+    XCTAssertTrue(
+      profile.age?.contains("52") ?? false,
+      "The excerpt reads \"INES VALCARCE, 52\"; decoded age was \(profile.age ?? "null")")
   }
 
   func testConstrainedQueryThroughPublicAPI() async throws {

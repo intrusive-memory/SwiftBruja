@@ -120,7 +120,8 @@ public enum BrujaQuery {
   ///
   /// Unlike ``query(_:as:model:temperature:maxTokens:system:)`` this does not ask the model for
   /// JSON and then repair the answer: every token that would leave the schema is masked before
-  /// sampling, so the output is always one compact JSON object with the schema's keys in order.
+  /// sampling, so the output is always one JSON object with the schema's keys in order. The model
+  /// may write one space after a `:` or a `,`; no other whitespace appears outside strings.
   /// The output is decoded with `JSONDecoder` as it is.
   ///
   /// - Throws: `BrujaError.structuredOutputTruncated` if `maxTokens` is reached before the object

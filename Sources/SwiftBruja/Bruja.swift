@@ -177,10 +177,10 @@ public enum Bruja {
   /// Query a model with the output constrained to a JSON schema, and decode it
   ///
   /// Every token that would take the output outside `schema` is masked before sampling, so the
-  /// model can only write one compact JSON object: every key of the schema, in schema order,
-  /// with no text around it. A property with no value is written as `null` (the property must
-  /// be nullable). The output is decoded with `JSONDecoder` as it is; nothing is stripped or
-  /// repaired.
+  /// model can only write one JSON object: every key of the schema, in schema order, with no
+  /// text around it. Outside strings the only whitespace it may write is one space after a `:`
+  /// or a `,`. A property with no value is written as `null` (the property must be nullable).
+  /// The output is decoded with `JSONDecoder` as it is; nothing is stripped or repaired.
   ///
   /// The schema is a run-time value, so one `Decodable` type can serve calls that ask for
   /// different subsets of its fields:

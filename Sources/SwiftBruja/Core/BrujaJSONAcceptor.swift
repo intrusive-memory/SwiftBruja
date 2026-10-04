@@ -3,9 +3,16 @@ import Foundation
 /// Accepts, one character at a time, exactly the JSON texts that match a
 /// ``BrujaJSONSchema``.
 ///
-/// The accepted form is compact: no whitespace outside strings, every key
-/// present, keys in schema order. Once the top-level object closes,
-/// ``isComplete`` is true and every further character is rejected.
+/// Every key is present, in schema order. Outside strings the only whitespace
+/// accepted is one optional space (U+0020) after a `:` and one after a `,`,
+/// so both `{"a":1,"b":2}` and `{"a": 1, "b": 2}` are accepted. Two spaces in
+/// a row, a tab, a newline, and a space in any other place (after `{` or `[`,
+/// before `:`, `,`, `}` or `]`) are rejected. Once the top-level object
+/// closes, ``isComplete`` is true and every further character is rejected,
+/// a space included.
+///
+/// The optional space is outside the quotes and is not an item, so it counts
+/// toward no bound: it does not use up `maxLength` or `maxItems`.
 ///
 /// The schema has no recursion, so the accepted language is regular and the
 /// acceptor is a finite automaton. Its ``State`` is a position in that
@@ -230,6 +237,9 @@ public struct BrujaJSONAcceptor: Sendable {
     case arrayOpen(item: Int, next: Int, slot: Int, maxItems: Int)
     /// Just after an element: either `,` and another element, or `]`.
     case arrayAfterItem(item: Int, next: Int, slot: Int)
+    /// One space, or nothing, then `next`. Sits after every `:` and every `,`
+    /// outside a string.
+    case optionalSpace(next: Int)
     /// The top-level object has closed.
     case done
   }
@@ -277,6 +287,37 @@ public struct BrujaJSONAcceptor: Sendable {
         return State(next)
       }
       return nil
+
+    case .optionalSpace(let next):
+      // Why one space is accepted here. Cause of the always-null first value
+      // (Sortie 6C): Qwen2.5-7B-Instruct-4bit writes `: ` after an object's
+      // first key, and when the acceptor took the compact form only, the mask
+      // removed both tokens the model wanted and left `null` as the best of
+      // what remained. Measured at temperature 0 on an excerpt that reads
+      // "INES VALCARCE, 52", at the step straight after the first key's colon
+      // (the ten highest logits before the mask, then after it):
+      //
+      //   step=3 pre=[" \"":33.91 " ":33.31 " null":24.14 " {\"":22.86
+      //     "5":17.83 " [\"":16.34 " \"\'":16.09 "null":15.70 " \"\",":14.51
+      //     " \"-":14.49] post=["null":15.70 "\"path":11.10 "\"d":9.58
+      //     "\"use":9.33 "\"A":8.64 "\"L":8.38 "\"And":8.38 "\"in":8.32
+      //     "\"a":8.30 "\"log":8.23]
+      //
+      // Space-then-quote led at 33.91; after the mask `null` won at 15.70 over
+      // a quote glued to an unrelated word at 11.10. With the space accepted,
+      // the same step keeps post=[" \"":33.91 " ":33.31 " null":24.14 ...] and
+      // the value comes out as "52". The cause is the position, not the
+      // field: with another field first, that field was the null one and the
+      // age, second, was "52"; from the second value on the model copies the
+      // compact form it has already written. Dropping the "Use null ..."
+      // sentence from the default system prompt changed nothing (`null`
+      // 15.09 against 11.51).
+      //
+      // The space leads to `next`, which is not this node, so a second space
+      // is tested there and rejected: whitespace cannot repeat. Without the
+      // space the character belongs to `next`. The counters are not touched.
+      if character == " " { return State(next) }
+      return step(State(next), character, &counters)
 
     case .done:
       return nil
@@ -471,8 +512,9 @@ public struct BrujaJSONAcceptor: Sendable {
       var after = append(.literal("}", next: next))
       for (index, property) in schema.properties.enumerated().reversed() {
         let value = compileValue(property.kind, nullable: property.isNullable, next: after)
-        let key = chain(Self.quoted(property.name) + ":", next: value)
-        after = index > 0 ? append(.literal(",", next: key)) : key
+        let key = chain(
+          Self.quoted(property.name) + ":", next: append(.optionalSpace(next: value)))
+        after = index > 0 ? append(.literal(",", next: append(.optionalSpace(next: key)))) : key
       }
       return after
     }
@@ -514,7 +556,10 @@ public struct BrujaJSONAcceptor: Sendable {
         // second is reserved first and filled in after.
         let afterItem = append(.done)
         let item = compileValue(itemKind, nullable: false, next: afterItem)
-        nodes[afterItem] = .arrayAfterItem(item: item, next: next, slot: slot)
+        // After a comma the next item may have one space before it; the
+        // first item, straight after `[`, may not.
+        let spacedItem = append(.optionalSpace(next: item))
+        nodes[afterItem] = .arrayAfterItem(item: spacedItem, next: next, slot: slot)
         branches["["] = State(
           append(.arrayOpen(item: item, next: next, slot: slot, maxItems: maxItems ?? .max)))
 
