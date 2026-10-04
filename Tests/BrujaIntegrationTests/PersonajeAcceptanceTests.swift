@@ -503,6 +503,20 @@ final class PersonajeAcceptanceTests: XCTestCase {
     try skipUnlessModelPresent()
     let prompts = try loadPrompts()
     let hunter = try XCTUnwrap(prompts.first { $0.name == "01-HUNTER-major.txt" })
-    try await runPrompt(hunter.name, hunter.text, schema: try loadSchema())
+    let start = Date()
+    let profile = try await Bruja.query(
+      hunter.text,
+      schema: try loadSchema(),
+      as: PersonajeProfile.self,
+      model: Self.defaultModelId,
+      temperature: 0.3,
+      maxTokens: 4096
+    )
+    let wall = Date().timeIntervalSince(start)
+    print(
+      String(
+        format: "PersonajeAcceptanceTests public query: file=%@ wallSeconds=%.1f age=%@",
+        hunter.name, wall, profile.age ?? "null"))
+    XCTAssertNotNil(profile.age, "\(hunter.name): age must not be null")
   }
 }
