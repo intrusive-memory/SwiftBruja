@@ -33,8 +33,12 @@ wardrobe, personality, backstory, arc, relationships, voiceAndSpeech,
 canonFacts.
 relationships is a list of objects with the fields with and nature.
 canonFacts is a list of objects with the fields fact and quote.
-Every field can be null. A field the excerpts say nothing about must be
-null. Do not guess or invent. Use the JSON value null, never the text "null".
+Every field except age can be null. A field other than age that the excerpts
+say nothing about must be null. Do not guess or invent for any field other than
+age. Use the JSON value null, never the text "null".
+age is never null. If the excerpts state the character's age, give it as
+stated. If they state none, give your best guess from context as exactly one
+of: child, adult, older adult.
 sampleLine must be one of the character's own lines, word for word. A quote
 in canonFacts must appear word for word in the excerpts.
 Return the JSON object only, with no text before or after it.

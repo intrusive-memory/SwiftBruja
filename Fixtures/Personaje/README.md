@@ -23,6 +23,15 @@ The acceptance tests generate with `maxTokens: 4096`. These bounds are Personaje
 choice, kept in this fixture. They are not a SwiftBruja library default; the
 library applies a bound only when the schema carries one.
 
+## The `age` rule
+
+`age` is never null. A stated age is given as stated (for example `52`); otherwise
+the model gives its best guess from context as exactly one of `child`, `adult`,
+`older adult`. Every other field stays nullable and the prompt still says "do not
+guess" for it. This rule is Personaje's choice, carried by the instruction block in
+`build-fixtures.py` and by `"type": "string"` (not nullable) for `age` in
+`schema.json`. It is not in the library, which names no field.
+
 ## Context rules (Personaje REQUIREMENTS-APP-UI.md 11.3)
 
 - Major: every scene the character speaks in, complete (all dialogue, narrator and action lines).

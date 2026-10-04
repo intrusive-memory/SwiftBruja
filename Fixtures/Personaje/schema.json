@@ -1,7 +1,7 @@
 {
   "type": "object",
   "properties": {
-    "age": {"type": ["string", "null"], "maxLength": 500},
+    "age": {"type": "string", "maxLength": 500},
     "pronouns": {"type": ["string", "null"], "maxLength": 500},
     "occupation": {"type": ["string", "null"], "maxLength": 500},
     "languages": {"type": ["string", "null"], "maxLength": 500},

@@ -60,10 +60,10 @@ final class PersonajeAcceptanceTests: XCTestCase {
 
   // MARK: - BR-P1: schema-constrained output
 
-  /// The schema Personaje sends: fourteen fields, all nullable, with Personaje's bounds: 500
+  /// The schema Personaje sends: fourteen fields, all nullable except `age`, with Personaje's bounds: 500
   /// characters for a top-level string, 200 for a string inside an array item, 8 items per array.
   private static let personajeSchema = BrujaJSONSchema([
-    .string("age", maxLength: 500),
+    .string("age", maxLength: 500, nullable: false),
     .string("pronouns", maxLength: 500),
     .string("occupation", maxLength: 500),
     .string("languages", maxLength: 500),
@@ -383,10 +383,11 @@ final class PersonajeAcceptanceTests: XCTestCase {
     }
   }
 
-  /// Runs one prompt, asserts the invariants, prints a stats line, returns the null count.
+  /// Runs one prompt, asserts the invariants, prints a stats line, returns the null count
+  /// and the decoded `age`.
   @discardableResult
   private func runPrompt(_ name: String, _ prompt: String, schema: BrujaJSONSchema) async throws
-    -> Int
+    -> (nulls: Int, age: String?)
   {
     let start = Date()
     let output = try await BrujaQuery.generateConstrained(
@@ -441,10 +442,11 @@ final class PersonajeAcceptanceTests: XCTestCase {
       String(
         format:
           "PersonajeAcceptanceTests prompt: file=%@ promptTokens=%d generatedTokens=%d "
-          + "wallSeconds=%.1f nullFields=%d/14",
-        name, output.promptTokens, output.generatedTokens, wall, nulls))
+          + "wallSeconds=%.1f nullFields=%d/14 age=%@",
+        name, output.promptTokens, output.generatedTokens, wall, nulls,
+        profile.age ?? "null"))
     print("PersonajeAcceptanceTests raw \(name): \(output.text)")
-    return nulls
+    return (nulls, profile.age)
   }
 
   func testNinePromptsDecode() async throws {
@@ -454,7 +456,14 @@ final class PersonajeAcceptanceTests: XCTestCase {
     let schema = try loadSchema()
     XCTAssertEqual(schema.properties.count, 14)
     for (name, text) in prompts {
-      try await runPrompt(name, text, schema: schema)
+      let result = try await runPrompt(name, text, schema: schema)
+      let age = result.age
+      XCTAssertNotNil(age, "\(name): age must not be null")
+      let trimmed = (age ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+      let hasDigit = trimmed.contains { $0.isNumber }
+      XCTAssertTrue(
+        hasDigit || ["child", "adult", "older adult"].contains(trimmed),
+        "\(name): age \"\(age ?? "null")\" is neither a stated age nor child/adult/older adult")
     }
   }
 
