@@ -124,6 +124,12 @@ public enum BrujaQuery {
   /// may write one space after a `:` or a `,`; no other whitespace appears outside strings.
   /// The output is decoded with `JSONDecoder` as it is.
   ///
+  /// `repetitionPenalty` is applied to the logits before the mask, over the last
+  /// ``constrainedRepetitionContextSize`` tokens, to keep a string from repeating one word and an
+  /// array from repeating one item. `nil`, the default, applies no penalty. A penalty can push
+  /// fields to `null` (measured: 19 to 33 null fields over nine prompts at 1.1), which is why it
+  /// is off by default.
+  ///
   /// - Throws: `BrujaError.structuredOutputTruncated` if `maxTokens` is reached before the object
   ///   closes; `BrujaError.jsonParsingFailed` if the object does not decode as `T`.
   public static func query<T: Decodable>(
@@ -133,7 +139,8 @@ public enum BrujaQuery {
     model: String,
     temperature: Float = 0.3,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    repetitionPenalty: Float? = nil
   ) async throws -> T {
     let output = try await generateConstrained(
       prompt,
@@ -141,7 +148,8 @@ public enum BrujaQuery {
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      repetitionPenalty: repetitionPenalty
     )
     return try decodeConstrained(output.text, as: type)
   }
@@ -165,6 +173,10 @@ public enum BrujaQuery {
     "You are a careful assistant. Answer with one JSON object and nothing else. "
     + "Use null for any value the prompt does not give."
 
+  /// How many of the most recent tokens the repetition penalty of a schema-constrained query
+  /// looks at.
+  internal static let constrainedRepetitionContextSize = 64
+
   /// Runs schema-constrained generation and returns the raw JSON text with its counters.
   internal static func generateConstrained(
     _ prompt: String,
@@ -172,7 +184,8 @@ public enum BrujaQuery {
     model: String,
     temperature: Float,
     maxTokens: Int?,
-    system: String?
+    system: String?,
+    repetitionPenalty: Float? = nil
   ) async throws -> ConstrainedOutput {
     let (container, _, _) = try await resolveModel(model)
 
@@ -212,7 +225,11 @@ public enum BrujaQuery {
           let processor = BrujaJSONLogitProcessor(
             acceptor: BrujaJSONAcceptor(schema: schema),
             vocabulary: vocabulary,
-            eosTokenIds: eosTokenIds
+            eosTokenIds: eosTokenIds,
+            repetitionContext: repetitionPenalty.map {
+              RepetitionContext(
+                repetitionPenalty: $0, repetitionContextSize: constrainedRepetitionContextSize)
+            }
           )
           var iterator = try TokenIterator(
             input: input,

@@ -208,6 +208,11 @@ public enum Bruja {
   ///   - maxTokens: Maximum tokens to generate; when `nil`, chosen from available memory
   ///   - system: Optional system prompt. When `nil`, a short instruction to answer with one JSON
   ///     object and to use `null` for unknown values is used.
+  ///   - repetitionPenalty: Penalty on the tokens of the last 64 tokens of context, applied
+  ///     before the mask, to keep a string from repeating one word and an array from repeating
+  ///     one item. Values above 1 discourage repetition. `nil`, the default, applies no penalty.
+  ///     A penalty can push fields to `null`: over nine prompts, 1.1 took the null fields from
+  ///     19 to 33. That is why it is off by default.
   /// - Returns: The decoded object
   /// - Throws: `BrujaError.modelNotFound` if model is not available locally;
   ///   `BrujaError.structuredOutputTruncated` if `maxTokens` is reached before the object
@@ -219,7 +224,8 @@ public enum Bruja {
     model: String,
     temperature: Float = 0.3,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    repetitionPenalty: Float? = nil
   ) async throws -> T {
     try await BrujaQuery.query(
       prompt,
@@ -228,7 +234,8 @@ public enum Bruja {
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      repetitionPenalty: repetitionPenalty
     )
   }
 

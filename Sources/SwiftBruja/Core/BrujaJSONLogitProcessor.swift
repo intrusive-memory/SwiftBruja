@@ -42,6 +42,12 @@ import MLXLMCommon
 /// vocabulary. Most of its tokens are cleared by their length and comma count
 /// alone, and only the rest are run through the acceptor.
 ///
+/// A ``RepetitionContext`` can be given to discourage loops (one word over and
+/// over in a string, the same item again in an array). Its penalty is applied
+/// to the logits first and the mask second, so the penalty only moves the
+/// order of the legal tokens: a masked token is `-inf` whatever the penalty
+/// did to it.
+///
 /// One processor serves one generation with a batch size of one. If no token
 /// in the vocabulary is legal in some state, every logit comes back `-inf`.
 struct BrujaJSONLogitProcessor: LogitProcessor {
@@ -74,6 +80,10 @@ struct BrujaJSONLogitProcessor: LogitProcessor {
 
   private let cache = MaskCache()
 
+  /// Penalises the tokens of the recent context before the mask is applied.
+  /// `nil` when the penalty is off.
+  private var repetitionContext: RepetitionContext?
+
   /// The acceptor looks this many characters past the one it is given before
   /// it lets an escape start: `\u` needs room for four hex digits. A token
   /// that leaves at least this much of the bound unused needs no second look.
@@ -85,8 +95,14 @@ struct BrujaJSONLogitProcessor: LogitProcessor {
   ///   - vocabulary: the text of each token id, each token decoded on its own.
   ///   - eosTokenIds: the ids that end generation. They are masked until the
   ///     object closes, whatever text the vocabulary gives them.
-  init(acceptor: BrujaJSONAcceptor, vocabulary: [Int: String], eosTokenIds: Set<Int>) {
+  ///   - repetitionContext: the repetition penalty to apply before the mask,
+  ///     or `nil` for none.
+  init(
+    acceptor: BrujaJSONAcceptor, vocabulary: [Int: String], eosTokenIds: Set<Int>,
+    repetitionContext: RepetitionContext? = nil
+  ) {
     self.acceptor = acceptor
+    self.repetitionContext = repetitionContext
     self.eosTokenIds = eosTokenIds.filter { $0 >= 0 }.sorted()
 
     var candidates: [(id: Int, characters: [Character])] = []
@@ -110,13 +126,19 @@ struct BrujaJSONLogitProcessor: LogitProcessor {
 
   // MARK: - LogitProcessor
 
-  /// Nothing to do: the mask depends on the generated text only, not on the prompt.
-  mutating func prompt(_ prompt: MLXArray) {}
+  /// The mask depends on the generated text only, not on the prompt. The
+  /// prompt goes to the repetition context, which counts its last tokens as
+  /// recent context.
+  mutating func prompt(_ prompt: MLXArray) {
+    repetitionContext?.prompt(prompt)
+  }
 
-  /// Returns `logits` with every token that is not legal in the current state
-  /// set to `-inf`. The last axis is the vocabulary.
+  /// Returns `logits` with the repetition penalty applied, if there is one,
+  /// and then every token that is not legal in the current state set to
+  /// `-inf`. The last axis is the vocabulary.
   func process(logits: MLXArray) -> MLXArray {
-    logits + mask(width: logits.dim(-1), dtype: logits.dtype)
+    let penalised = repetitionContext?.process(logits: logits) ?? logits
+    return penalised + mask(width: logits.dim(-1), dtype: logits.dtype)
   }
 
   /// Moves the acceptor past the text of `token`.
@@ -124,6 +146,7 @@ struct BrujaJSONLogitProcessor: LogitProcessor {
   /// A token the mask would not have allowed (or an EOS id) leaves the state
   /// unchanged.
   mutating func didSample(token: MLXArray) {
+    repetitionContext?.didSample(token: token)
     guard token.size == 1 else { return }
     didSample(tokenId: token.item(Int.self))
   }

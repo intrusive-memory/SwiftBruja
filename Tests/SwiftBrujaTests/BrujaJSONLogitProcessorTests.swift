@@ -553,6 +553,89 @@ final class BrujaJSONLogitProcessorTests: XCTestCase {
     XCTAssertEqual(processor.vocabularyScanCount, 1)
   }
 
+  // MARK: - Repetition penalty
+
+  /// A processor with a repetition penalty whose acceptor has consumed `prefix`.
+  private func makePenalisedProcessor(
+    after prefix: String, penalty: Float = 1.5, file: StaticString = #filePath, line: UInt = #line
+  ) -> BrujaJSONLogitProcessor {
+    var acceptor = BrujaJSONAcceptor(schema: Self.schema)
+    if let state = acceptor.state(after: prefix, from: acceptor.initialState) {
+      acceptor.state = state
+    } else {
+      XCTFail("the acceptor rejected the prefix \(prefix)", file: file, line: line)
+    }
+    return BrujaJSONLogitProcessor(
+      acceptor: acceptor, vocabulary: Self.vocabulary, eosTokenIds: Self.eosTokenIds,
+      repetitionContext: RepetitionContext(repetitionPenalty: penalty, repetitionContextSize: 64))
+  }
+
+  func testMaskedTokenStaysMaskedWithTheRepetitionPenaltyOn() {
+    // `",` is legal at the end of the value, is sampled, and is then both in the
+    // penalty's context and illegal at the start of the next key.
+    var processor = makePenalisedProcessor(after: #"{"name":"Hunter"#)
+    let sampled = Self.id("\",")
+    processor.didSample(token: MLXArray([Int32(sampled)]))
+
+    for value: Float in [3, -3] {
+      let logits = MLXArray([Float](repeating: value, count: Self.tokens.count))
+        .reshaped([1, Self.tokens.count])
+      let row = processedRow(processor, logits: logits)
+      XCTAssertEqual(row[sampled], -.infinity, "the sampled token is not masked at \(value)")
+      // Every token the mask alone rejects is still rejected.
+      XCTAssertEqual(
+        row.indices.filter { row[$0].isFinite },
+        finiteIds(makeProcessor(after: #"{"name":"Hunter","#)),
+        "the penalty changed the mask at \(value)")
+    }
+
+    // The prompt reaches the penalty too, and a masked prompt token stays masked.
+    var prompted = makePenalisedProcessor(after: #"{"name":"Hunter"#)
+    prompted.prompt(MLXArray([Int32(Self.id("\"}")), Int32(Self.id(" scout"))]))
+    let row = processedRow(
+      prompted,
+      logits: MLXArray([Float](repeating: 3, count: Self.tokens.count))
+        .reshaped([1, Self.tokens.count]))
+    XCTAssertEqual(row[Self.id("\"}")], -.infinity)
+    XCTAssertEqual(row[Self.id(" scout")], 2, accuracy: 1e-5)
+    XCTAssertEqual(row[Self.id("able")], 3)
+  }
+
+  func testJustSampledTokenEndsLowerThanAnEqualAllowedToken() {
+    // Inside a string, ` scout` and `able` are both legal before and after ` scout`.
+    var processor = makePenalisedProcessor(after: #"{"name":"Hunter"#)
+    let sampled = Self.id(" scout")
+    let other = Self.id("able")
+
+    for value: Float in [3, -3] {
+      let logits = MLXArray([Float](repeating: value, count: Self.tokens.count))
+        .reshaped([1, Self.tokens.count])
+      let before = processedRow(processor, logits: logits)
+      XCTAssertEqual(before[sampled], value)
+      XCTAssertEqual(before[other], value)
+    }
+
+    processor.didSample(token: MLXArray([Int32(sampled)]))
+
+    for value: Float in [3, -3] {
+      let logits = MLXArray([Float](repeating: value, count: Self.tokens.count))
+        .reshaped([1, Self.tokens.count])
+      let after = processedRow(processor, logits: logits)
+      XCTAssertTrue(after[sampled].isFinite)
+      XCTAssertEqual(after[other], value, "the token that was not sampled moved at \(value)")
+      XCTAssertLessThan(after[sampled], after[other], "no penalty at \(value)")
+    }
+
+    // With no repetition context the two stay equal.
+    var plain = makeProcessor(after: #"{"name":"Hunter"#)
+    plain.didSample(token: MLXArray([Int32(sampled)]))
+    let row = processedRow(
+      plain,
+      logits: MLXArray([Float](repeating: 3, count: Self.tokens.count))
+        .reshaped([1, Self.tokens.count]))
+    XCTAssertEqual(row[sampled], row[other])
+  }
+
   func testDidSampleOfATokenPastTheBoundLeavesThePositionUnchanged() {
     let schema = BrujaJSONSchema([.string("name", maxLength: 8)])
     var processor = makeBoundedProcessor(schema: schema, after: #"{"name":"Hunter"#)

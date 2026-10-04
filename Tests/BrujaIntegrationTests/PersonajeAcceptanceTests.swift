@@ -88,11 +88,11 @@ final class PersonajeAcceptanceTests: XCTestCase {
   /// The type the constrained output decodes into. Every key is required to be present
   /// (`decode`, not `decodeIfPresent`), so a missing key fails the decode.
   private struct PersonajeProfile: Decodable {
-    struct Relationship: Decodable {
+    struct Relationship: Decodable, Equatable {
       let with: String?
       let nature: String?
     }
-    struct CanonFact: Decodable {
+    struct CanonFact: Decodable, Equatable {
       let fact: String?
       let quote: String?
     }
@@ -383,11 +383,33 @@ final class PersonajeAcceptanceTests: XCTestCase {
     }
   }
 
-  /// Runs one prompt, asserts the invariants, prints a stats line, returns the null count
-  /// and the decoded `age`.
+  /// The longest run of the same word in `text`. Words are split on whitespace, lowercased,
+  /// and stripped of punctuation; a word that is all punctuation is dropped.
+  private static func maxWordRun(in text: String) -> Int {
+    var longest = 0
+    var run = 0
+    var previous: String?
+    for piece in text.split(whereSeparator: \.isWhitespace) {
+      let word = String(piece.lowercased().filter { $0.isLetter || $0.isNumber })
+      if word.isEmpty { continue }
+      run = word == previous ? run + 1 : 1
+      previous = word
+      longest = max(longest, run)
+    }
+    return longest
+  }
+
+  /// How many items of `items` are equal to an earlier item.
+  private static func duplicateItems<Item: Equatable>(in items: [Item]) -> Int {
+    items.indices.filter { index in items[..<index].contains(items[index]) }.count
+  }
+
+  /// Runs one prompt, asserts the invariants, prints a stats line, returns the null count,
+  /// the decoded `age`, the longest run of one word in any string and the number of array
+  /// items that repeat an earlier item of the same array.
   @discardableResult
   private func runPrompt(_ name: String, _ prompt: String, schema: BrujaJSONSchema) async throws
-    -> (nulls: Int, age: String?)
+    -> (nulls: Int, age: String?, maxWordRun: Int, duplicateItems: Int)
   {
     let start = Date()
     let output = try await BrujaQuery.generateConstrained(
@@ -438,15 +460,22 @@ final class PersonajeAcceptanceTests: XCTestCase {
     let nulls =
       strings.filter { $0.1 == nil }.count + (profile.relationships == nil ? 1 : 0)
       + (profile.canonFacts == nil ? 1 : 0)
+    let allStrings: [String] =
+      strings.compactMap { $0.1 }
+      + relationships.flatMap { [$0.with, $0.nature].compactMap { $0 } }
+      + canonFacts.flatMap { [$0.fact, $0.quote].compactMap { $0 } }
+    let maxWordRun = allStrings.map(Self.maxWordRun(in:)).max() ?? 0
+    let duplicateItems =
+      Self.duplicateItems(in: relationships) + Self.duplicateItems(in: canonFacts)
     print(
       String(
         format:
           "PersonajeAcceptanceTests prompt: file=%@ promptTokens=%d generatedTokens=%d "
-          + "wallSeconds=%.1f nullFields=%d/14 age=%@",
+          + "wallSeconds=%.1f nullFields=%d/14 age=%@ maxWordRun=%d duplicateItems=%d",
         name, output.promptTokens, output.generatedTokens, wall, nulls,
-        profile.age ?? "null"))
+        profile.age ?? "null", maxWordRun, duplicateItems))
     print("PersonajeAcceptanceTests raw \(name): \(output.text)")
-    return (nulls, profile.age)
+    return (nulls, profile.age, maxWordRun, duplicateItems)
   }
 
   func testNinePromptsDecode() async throws {
@@ -464,6 +493,9 @@ final class PersonajeAcceptanceTests: XCTestCase {
       XCTAssertTrue(
         hasDigit || ["child", "adult", "older adult"].contains(trimmed),
         "\(name): age \"\(age ?? "null")\" is neither a stated age nor child/adult/older adult")
+      XCTAssertLessThan(
+        result.maxWordRun, 5, "\(name): a string repeats one word \(result.maxWordRun) times")
+      XCTAssertEqual(result.duplicateItems, 0, "\(name): an array repeats an item")
     }
   }
 
