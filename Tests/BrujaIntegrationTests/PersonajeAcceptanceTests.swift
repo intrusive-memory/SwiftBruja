@@ -60,22 +60,29 @@ final class PersonajeAcceptanceTests: XCTestCase {
 
   // MARK: - BR-P1: schema-constrained output
 
-  /// The schema Personaje sends: fourteen fields, all nullable.
+  /// The schema Personaje sends: fourteen fields, all nullable, with Personaje's bounds: 500
+  /// characters for a top-level string, 200 for a string inside an array item, 8 items per array.
   private static let personajeSchema = BrujaJSONSchema([
-    .string("age"),
-    .string("pronouns"),
-    .string("occupation"),
-    .string("languages"),
-    .string("logline"),
-    .string("sampleLine"),
-    .string("appearance"),
-    .string("wardrobe"),
-    .string("personality"),
-    .string("backstory"),
-    .string("arc"),
-    .array("relationships", of: .object([.string("with"), .string("nature")])),
-    .string("voiceAndSpeech"),
-    .array("canonFacts", of: .object([.string("fact"), .string("quote")])),
+    .string("age", maxLength: 500),
+    .string("pronouns", maxLength: 500),
+    .string("occupation", maxLength: 500),
+    .string("languages", maxLength: 500),
+    .string("logline", maxLength: 500),
+    .string("sampleLine", maxLength: 500),
+    .string("appearance", maxLength: 500),
+    .string("wardrobe", maxLength: 500),
+    .string("personality", maxLength: 500),
+    .string("backstory", maxLength: 500),
+    .string("arc", maxLength: 500),
+    .array(
+      "relationships",
+      of: .object([.string("with", maxLength: 200), .string("nature", maxLength: 200)]),
+      maxItems: 8),
+    .string("voiceAndSpeech", maxLength: 500),
+    .array(
+      "canonFacts",
+      of: .object([.string("fact", maxLength: 200), .string("quote", maxLength: 200)]),
+      maxItems: 8),
   ])
 
   /// The type the constrained output decodes into. Every key is required to be present

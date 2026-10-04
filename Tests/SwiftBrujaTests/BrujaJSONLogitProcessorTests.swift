@@ -344,4 +344,226 @@ final class BrujaJSONLogitProcessorTests: XCTestCase {
     _ = finiteIds(processor, width: Self.tokens.count + 4)
     XCTAssertEqual(processor.vocabularyScanCount, 2)
   }
+
+  // MARK: - Length bounds
+
+  /// Every string and every array is bounded. No key starts with the filler letter.
+  private static let boundedSchema = BrujaJSONSchema([
+    .string("name", maxLength: 5),
+    .array("tags", of: .string(maxLength: 3), maxItems: 4),
+    .array(
+      "note", of: .object([.string("name", maxLength: 2), .string("tags", maxLength: 7)]),
+      maxItems: 3),
+  ])
+
+  /// The fake vocabulary plus a one-letter filler token.
+  private static let fillerId = tokens.count
+  private static let fillerVocabulary: [Int: String] = vocabulary.merging([fillerId: "z"]) { $1 }
+
+  /// A processor for `schema` whose acceptor has consumed `prefix`, counters included.
+  private func makeBoundedProcessor(
+    schema: BrujaJSONSchema = BrujaJSONLogitProcessorTests.boundedSchema,
+    vocabulary: [Int: String] = BrujaJSONLogitProcessorTests.fillerVocabulary,
+    after prefix: String = "", file: StaticString = #filePath, line: UInt = #line
+  ) -> BrujaJSONLogitProcessor {
+    var acceptor = BrujaJSONAcceptor(schema: schema)
+    for character in prefix {
+      XCTAssertTrue(
+        acceptor.advance(character), "the acceptor rejected \(character) of the prefix \(prefix)",
+        file: file, line: line)
+    }
+    return BrujaJSONLogitProcessor(
+      acceptor: acceptor, vocabulary: vocabulary, eosTokenIds: Self.eosTokenIds)
+  }
+
+  /// Every string in a parsed JSON value, with the key path that leads to it.
+  private func strings(in value: Any, at path: String = "") -> [(path: String, value: String)] {
+    if let string = value as? String { return [(path, string)] }
+    if let array = value as? [Any] {
+      return array.flatMap { strings(in: $0, at: path + "[]") }
+    }
+    if let object = value as? [String: Any] {
+      return object.flatMap { strings(in: $0.value, at: path + "." + $0.key) }
+    }
+    return []
+  }
+
+  func testFillerPreferringSelectionCompletesWithinBounds() throws {
+    var processor = makeBoundedProcessor()
+    let width = Self.tokens.count + 1
+
+    // The filler first, always. After it, whatever keeps a value going: open
+    // an array, an object or a string, or add another item. Closing an array,
+    // `null` and EOS are only taken when nothing else is left.
+    let preference =
+      [Self.fillerId] + ["[", "{\"", "{", "\"", ",\"", ",", ":"].map(Self.id)
+
+    var decoded = ""
+    var reachedEOS = false
+    var fillerCount = 0
+    for _ in 0..<400 {
+      let row = processedRow(processor, logits: uniformLogits(width: width))
+      let finite = row.indices.filter { row[$0].isFinite }
+      XCTAssertFalse(finite.isEmpty, "every token is masked after \(decoded)")
+      let token = try XCTUnwrap(preference.first { finite.contains($0) } ?? finite.first)
+
+      processor.didSample(token: MLXArray([Int32(token)]))
+      if Self.eosTokenIds.contains(token) {
+        reachedEOS = true
+        break
+      }
+      if token == Self.fillerId { fillerCount += 1 }
+      decoded += try XCTUnwrap(Self.fillerVocabulary[token])
+    }
+
+    XCTAssertTrue(reachedEOS, "generation did not end in 400 steps: \(decoded)")
+    XCTAssertTrue(processor.isComplete)
+    XCTAssertEqual(
+      decoded,
+      #"{"name":"zzzzz","tags":["zzz","zzz","zzz","zzz"],"note":["#
+        + #"{"name":"zz","tags":"zzzzzzz"},{"name":"zz","tags":"zzzzzzz"},"#
+        + #"{"name":"zz","tags":"zzzzzzz"}]}"#)
+    // The filler was taken every time it was on offer: every string is full.
+    XCTAssertEqual(fillerCount, 5 + 4 * 3 + 3 * (2 + 7))
+
+    let object = try XCTUnwrap(
+      try JSONSerialization.jsonObject(with: Data(decoded.utf8)) as? [String: Any])
+
+    // No string is longer than its bound.
+    let bounds = [".name": 5, ".tags[]": 3, ".note[].name": 2, ".note[].tags": 7]
+    let found = strings(in: object)
+    XCTAssertEqual(found.count, 1 + 4 + 3 * 2)
+    for (path, value) in found {
+      let bound = try XCTUnwrap(bounds[path], "no bound listed for \(path)")
+      XCTAssertLessThanOrEqual(value.count, bound, "\(path) is longer than its bound: \(value)")
+    }
+
+    // No array is longer than its item count.
+    let tags = try XCTUnwrap(object["tags"] as? [Any])
+    XCTAssertLessThanOrEqual(tags.count, 4)
+    let note = try XCTUnwrap(object["note"] as? [Any])
+    XCTAssertLessThanOrEqual(note.count, 3)
+
+    // The text also satisfies a fresh acceptor, character by character.
+    var acceptor = BrujaJSONAcceptor(schema: Self.boundedSchema)
+    for character in decoded {
+      XCTAssertTrue(acceptor.advance(character))
+    }
+    XCTAssertTrue(acceptor.isComplete)
+  }
+
+  func testTokenThatWouldCarryAStringPastItsBoundIsMasked() {
+    let schema = BrujaJSONSchema([.string("name", maxLength: 8), .string("note", maxLength: 8)])
+
+    // Six characters written, two left.
+    let nearBound = makeBoundedProcessor(schema: schema, after: #"{"name":"Hunter"#)
+    assertMasked(" scout", in: nearBound)
+    assertMasked("able", in: nearBound)
+    assertMasked("Hunter", in: nearBound)
+    assertAllowed("42", in: nearBound)
+    assertAllowed("7", in: nearBound)
+    assertAllowed("\",", in: nearBound)
+    assertAllowed("\"", in: nearBound)
+
+    // At the bound only the tokens that close the string are left.
+    let atBound = makeBoundedProcessor(schema: schema, after: #"{"name":"Hunter42"#)
+    XCTAssertEqual(finiteIds(atBound), [Self.id("\","), Self.id("\"")])
+
+    // Far from the bound the same tokens are allowed.
+    let early = makeBoundedProcessor(schema: schema, after: #"{"name":"7"#)
+    assertAllowed(" scout", in: early)
+    assertAllowed("able", in: early)
+  }
+
+  func testTokenThatSpansIntoABoundedStringIsMaskedWhenItOverflowsIt() {
+    // `"null"` aside, the vocabulary has no token that opens a string and
+    // fills it, so add one.
+    let opener = Self.tokens.count
+    let vocabulary = Self.vocabulary.merging([opener: "\"Hunter"]) { $1 }
+
+    let tight = makeBoundedProcessor(
+      schema: BrujaJSONSchema([.string("name", maxLength: 5)]), vocabulary: vocabulary,
+      after: #"{"name":"#)
+    XCTAssertFalse(finiteIds(tight, width: opener + 1).contains(opener))
+
+    let roomy = makeBoundedProcessor(
+      schema: BrujaJSONSchema([.string("name", maxLength: 6)]), vocabulary: vocabulary,
+      after: #"{"name":"#)
+    XCTAssertTrue(finiteIds(roomy, width: opener + 1).contains(opener))
+  }
+
+  func testTokenThatWouldCarryAnArrayPastItsItemCountIsMasked() {
+    let schema = BrujaJSONSchema([.array("tags", of: .string, maxItems: 2)])
+
+    // Inside the first item: `",` closes it and starts the second.
+    let inFirst = makeBoundedProcessor(schema: schema, after: #"{"tags":["a"#)
+    assertAllowed("\",", in: inFirst)
+    assertAllowed("\"]", in: inFirst)
+    // A comma that is string content is not an item.
+    assertAllowed(",", in: inFirst)
+
+    // Inside the last item: `",` would start a third.
+    let inLast = makeBoundedProcessor(schema: schema, after: #"{"tags":["a","b"#)
+    assertMasked("\",", in: inLast)
+    assertAllowed("\"]", in: inLast)
+    assertAllowed("\"", in: inLast)
+    assertAllowed(",", in: inLast)
+    assertAllowed(",\"", in: inLast)
+
+    // After the last item only `]` is left.
+    let afterLast = makeBoundedProcessor(schema: schema, after: #"{"tags":["a","b""#)
+    XCTAssertEqual(finiteIds(afterLast), [Self.id("]")])
+
+    // After the first item the comma tokens are still there.
+    let afterFirst = makeBoundedProcessor(schema: schema, after: #"{"tags":["a""#)
+    XCTAssertEqual(finiteIds(afterFirst), [Self.id(","), Self.id(",\""), Self.id("]")])
+  }
+
+  func testBoundFilterDoesNotRescanTheVocabulary() {
+    // Every item of the array is written in the same acceptor state.
+    let schema = BrujaJSONSchema([.array("tags", of: .string(maxLength: 8))])
+    var processor = makeBoundedProcessor(schema: schema, after: #"{"tags":["7"#)
+
+    let early = processedRow(processor)
+    XCTAssertEqual(processor.vocabularyScanCount, 1)
+    XCTAssertEqual(early[Self.id("able")], 0)
+    XCTAssertEqual(early[Self.id(" scout")], 0)
+
+    // Same state, nearer the bound: the mask narrows, the vocabulary is not scanned again.
+    processor.didSample(token: MLXArray([Int32(Self.id("able"))]))
+    processor.didSample(token: MLXArray([Int32(Self.id("7"))]))
+    let near = processedRow(processor)
+    XCTAssertNotEqual(near, early)
+    XCTAssertEqual(near[Self.id("able")], -.infinity)
+    XCTAssertEqual(near[Self.id("42")], 0)
+    XCTAssertEqual(processor.vocabularyScanCount, 1)
+
+    processor.didSample(token: MLXArray([Int32(Self.id("42"))]))
+    XCTAssertEqual(finiteIds(processor), [Self.id("\"]"), Self.id("\","), Self.id("\"")])
+    XCTAssertEqual(processor.vocabularyScanCount, 1)
+
+    // The narrowed mask did not replace the cached one: the same state in the
+    // next item, with its bound hardly used, gets the wide mask back.
+    let state = processor.acceptor.state
+    processor.didSample(token: MLXArray([Int32(Self.id("\","))]))
+    processor.didSample(token: MLXArray([Int32(Self.id("\""))]))
+    processor.didSample(token: MLXArray([Int32(Self.id("7"))]))
+    XCTAssertEqual(processor.acceptor.state, state)
+    XCTAssertEqual(processedRow(processor), early)
+    XCTAssertEqual(processor.vocabularyScanCount, 1)
+  }
+
+  func testDidSampleOfATokenPastTheBoundLeavesThePositionUnchanged() {
+    let schema = BrujaJSONSchema([.string("name", maxLength: 8)])
+    var processor = makeBoundedProcessor(schema: schema, after: #"{"name":"Hunter"#)
+    let state = processor.acceptor.state
+    let counters = processor.acceptor.counters
+
+    processor.didSample(token: MLXArray([Int32(Self.id(" scout"))]))
+    XCTAssertEqual(processor.acceptor.state, state)
+    XCTAssertEqual(processor.acceptor.counters, counters)
+
+    processor.didSample(token: MLXArray([Int32(Self.id("42"))]))
+    XCTAssertEqual(processor.acceptor.counters.remainingLength, 0)
+  }
 }

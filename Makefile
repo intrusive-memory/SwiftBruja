@@ -185,14 +185,19 @@ test-agent-fm: install codesign-cli
 # cannot reach the App Group container, so the tests would XCTSkip there). A skipped test still
 # exits 0 — look for "Test Case '-[BrujaIntegrationTests.PersonajeAcceptanceTests <name>]' passed".
 #
+# One test only: make test-personaje ONLY=<testName>
+#   e.g. make test-personaje ONLY=testConstrainedQueryOnDefaultModel
+#
 # Prereq: mlx-community/Qwen2.5-7B-Instruct-4bit present in the shared-models container.
+PERSONAJE_TESTS = PersonajeAcceptanceTests$(if $(strip $(ONLY)),/$(strip $(ONLY)))
+
 test-personaje: resolve
 	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG)
 	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
 	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
-	echo "Running PersonajeAcceptanceTests via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
+	echo "Running $(PERSONAJE_TESTS) via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
 	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
-		-XCTest PersonajeAcceptanceTests "$$XCTEST_BUNDLE"
+		-XCTest $(PERSONAJE_TESTS) "$$XCTEST_BUNDLE"
 
 # Format Swift source files
 lint:
@@ -374,6 +379,7 @@ help:
 	@echo "  test-agent-repl  - Run the S7 'bruja agent' end-to-end REPL test against ./bin/bruja"
 	@echo "  test-agent-fm    - Run the S9 Foundation Models backend integration test against ./bin/bruja"
 	@echo "  test-personaje   - Run the Personaje acceptance tests via an unsandboxed xctest host"
+	@echo "                     (one test: make test-personaje ONLY=<testName>)"
 	@echo "  lint             - Format Swift source files"
 	@echo "  clean            - Clean build artifacts"
 	@echo "  reference-check  - R1–R5 end-to-end verification (build, offline, TTY, error-map, preflight)"

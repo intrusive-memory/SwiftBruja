@@ -365,4 +365,188 @@ final class BrujaJSONAcceptorTests: XCTestCase {
       BrujaJSONSchema(properties: [BrujaJSONSchema.Property("x", .boolean, nullable: false)]),
       BrujaJSONSchema([.boolean("x", nullable: false)]))
   }
+
+  // MARK: - Length bounds
+
+  /// One bounded string, one bounded array of bounded strings, one bounded
+  /// array of objects whose strings are bounded.
+  private static let boundedSchema = BrujaJSONSchema([
+    .string("name", maxLength: 5),
+    .array("tags", of: .string(maxLength: 3), maxItems: 3),
+    .array(
+      "pairs", of: .object([.string("with", maxLength: 4), .string("nature", maxLength: 6)]),
+      maxItems: 2),
+  ])
+
+  func testStringOfExactlyMaxLengthAccepted() {
+    assertAccepted(#"{"name":"abcde","tags":null,"pairs":null}"#, schema: Self.boundedSchema)
+    // Shorter is fine too.
+    assertAccepted(#"{"name":"a","tags":null,"pairs":null}"#, schema: Self.boundedSchema)
+  }
+
+  func testStringOneCharacterOverMaxLengthRejected() {
+    assertRejected("f", after: #"{"name":"abcde"#, schema: Self.boundedSchema)
+    // At the bound nothing but the closing quote is accepted.
+    for character in [" ", "\\", "é", ",", "}", "👍🏽"] as [Character] {
+      assertRejected(character, after: #"{"name":"abcde"#, schema: Self.boundedSchema)
+    }
+    XCTAssertNil(feed(#"{"name":"abcde""#, schema: Self.boundedSchema).rejectedAt)
+  }
+
+  func testArrayOfExactlyMaxItemsAccepted() {
+    assertAccepted(#"{"name":null,"tags":["a","b","c"],"pairs":null}"#, schema: Self.boundedSchema)
+    assertAccepted(#"{"name":null,"tags":[],"pairs":null}"#, schema: Self.boundedSchema)
+    assertAccepted(#"{"name":null,"tags":["a"],"pairs":null}"#, schema: Self.boundedSchema)
+  }
+
+  func testArrayOneItemOverMaxItemsRejected() {
+    let full = #"{"name":null,"tags":["a","b","c""#
+    assertRejected(",", after: full, schema: Self.boundedSchema)
+    // After the last item nothing but `]` is accepted.
+    for character in ["\"", "}", "[", "a"] as [Character] {
+      assertRejected(character, after: full, schema: Self.boundedSchema)
+    }
+    XCTAssertNil(feed(full + "]", schema: Self.boundedSchema).rejectedAt)
+    // Below the bound the comma is still legal.
+    XCTAssertNil(feed(#"{"name":null,"tags":["a","b","#, schema: Self.boundedSchema).rejectedAt)
+  }
+
+  func testBoundedStringInsideArrayItemEnforced() {
+    let open = #"{"name":null,"tags":null,"pairs":[{"with":""#
+    assertRejected("e", after: open + "abcd", schema: Self.boundedSchema)
+    // Each string of the item has its own bound.
+    let second = open + #"abcd","nature":""#
+    XCTAssertNil(feed(second + "abcdef", schema: Self.boundedSchema).rejectedAt)
+    assertRejected("g", after: second + "abcdef", schema: Self.boundedSchema)
+    // The bound starts again in the next item.
+    let nextItem = second + #"abcdef"},{"with":""#
+    XCTAssertNil(feed(nextItem + "wxyz", schema: Self.boundedSchema).rejectedAt)
+    assertRejected("!", after: nextItem + "wxyz", schema: Self.boundedSchema)
+    assertAccepted(
+      #"{"name":null,"tags":null,"pairs":[{"with":"abcd","nature":"abcdef"},{"with":"wxyz","nature":null}]}"#,
+      schema: Self.boundedSchema)
+    // A string that is itself the array item.
+    assertRejected("d", after: #"{"name":null,"tags":["abc"#, schema: Self.boundedSchema)
+    assertRejected("d", after: #"{"name":null,"tags":["a","abc"#, schema: Self.boundedSchema)
+  }
+
+  func testSchemaWithNoBoundsAcceptsTenThousandCharacterString() {
+    let long = String(repeating: "a", count: 10_000)
+    XCTAssertEqual(long.count, 10_000)
+    assertAccepted(Self.personajeObject(["backstory": "\"\(long)\""]))
+    // And inside an array item.
+    assertAccepted(
+      Self.personajeObject(["relationships": "[{\"with\":\"\(long)\",\"nature\":null}]"]))
+  }
+
+  func testArrayItemsOverMaxItemsRejectedForObjectItems() {
+    let item = #"{"with":"a","nature":null}"#
+    let full = #"{"name":null,"tags":null,"pairs":["# + item + "," + item
+    assertRejected(",", after: full, schema: Self.boundedSchema)
+    assertAccepted(full + "]}", schema: Self.boundedSchema)
+  }
+
+  func testMaxLengthCountsEscapesAsWritten() {
+    let schema = BrujaJSONSchema([.string("s", maxLength: 6)])
+    // `\n` is two characters of JSON text: three of them fill the bound.
+    assertAccepted(#"{"s":"\n\n\n"}"#, schema: schema)
+    assertRejected("a", after: #"{"s":"\n\n\n"#, schema: schema)
+    // `\u00e9` is six characters of JSON text and one decoded character.
+    assertAccepted(#"{"s":"\u00e9"}"#, schema: schema)
+    assertRejected("a", after: #"{"s":"\u00e9"#, schema: schema)
+    // Written literally, the same letter counts one.
+    assertAccepted("{\"s\":\"éééééé\"}", schema: schema)
+    assertRejected("é", after: "{\"s\":\"éééééé", schema: schema)
+  }
+
+  func testEscapeThatDoesNotFitIsRejectedAtTheBackslash() {
+    let schema = BrujaJSONSchema([.string("s", maxLength: 6)])
+    // One character left: no escape fits.
+    assertRejected("\\", after: #"{"s":"abcde"#, schema: schema)
+    // Two left: a short escape fits, `\u` and its four digits do not.
+    assertAccepted(#"{"s":"abcd\n"}"#, schema: schema)
+    assertRejected("u", after: #"{"s":"abcd\"#, schema: schema)
+    assertRejected("u", after: #"{"s":"a\"#, schema: schema)
+    // After a rejected `u` the string can still finish.
+    assertAccepted(#"{"s":"a\\bcd"}"#, schema: schema)
+  }
+
+  func testNullableStringCannotSpellNullWithItsLastCharacter() {
+    // `"null"` cannot close, so at a bound of four the last `l` is refused.
+    let four = BrujaJSONSchema([.string("s", maxLength: 4)])
+    assertRejected("l", after: #"{"s":"nul"#, schema: four)
+    assertAccepted(#"{"s":"nul"}"#, schema: four)
+    assertAccepted(#"{"s":"nulx"}"#, schema: four)
+    // With room for one more character, `null` is content like any other.
+    let five = BrujaJSONSchema([.string("s", maxLength: 5)])
+    assertAccepted(#"{"s":"nulls"}"#, schema: five)
+    // A string that is not nullable may be exactly `null`.
+    assertAccepted(
+      #"{"s":"null"}"#, schema: BrujaJSONSchema([.string("s", maxLength: 4, nullable: false)]))
+  }
+
+  func testBoundCountersAreNotPartOfTheState() {
+    let short = feed(#"{"name":"a"#, schema: Self.boundedSchema)
+    let long = feed(#"{"name":"abcde"#, schema: Self.boundedSchema)
+    XCTAssertEqual(short.acceptor.state, long.acceptor.state)
+    XCTAssertNotEqual(short.acceptor.counters, long.acceptor.counters)
+    XCTAssertEqual(short.acceptor.counters.remainingLength, 4)
+    XCTAssertEqual(long.acceptor.counters.remainingLength, 0)
+
+    let one = feed(#"{"name":null,"tags":["a""#, schema: Self.boundedSchema)
+    let three = feed(#"{"name":null,"tags":["a","b","c""#, schema: Self.boundedSchema)
+    XCTAssertEqual(one.acceptor.state, three.acceptor.state)
+    XCTAssertEqual(one.acceptor.counters.fewestRemainingItems, 2)
+    XCTAssertEqual(three.acceptor.counters.fewestRemainingItems, 0)
+
+    // Outside a bounded string and a bounded array there is nothing to count.
+    let outside = feed(#"{"name":"abc","tags":["a"],"#, schema: Self.boundedSchema)
+    XCTAssertNil(outside.acceptor.counters.remainingLength)
+    XCTAssertNil(outside.acceptor.counters.fewestRemainingItems)
+    XCTAssertNil(feed("{\"age\":\"abc").acceptor.counters.remainingLength)
+  }
+
+  func testItemCountStartsAgainForAnArrayInsideAnArray() {
+    let schema = BrujaJSONSchema([
+      .array("rows", of: .array(of: .integer, maxItems: 2), maxItems: 2)
+    ])
+    assertAccepted(#"{"rows":[[1,2],[3,4]]}"#, schema: schema)
+    assertRejected(",", after: #"{"rows":[[1,2"#, schema: schema)
+    assertRejected(",", after: #"{"rows":[[1,2],[3,4"#, schema: schema)
+    assertRejected(",", after: #"{"rows":[[1,2],[3,4]"#, schema: schema)
+    // The inner count is the fewest left while the inner array is open.
+    XCTAssertEqual(
+      feed(#"{"rows":[[1,2"#, schema: schema).acceptor.counters.fewestRemainingItems, 0)
+    XCTAssertEqual(
+      feed(#"{"rows":[[1,2]"#, schema: schema).acceptor.counters.fewestRemainingItems, 1)
+  }
+
+  func testNonMutatingStateAfterTextEnforcesBoundsInsideTheText() {
+    let acceptor = BrujaJSONAcceptor(schema: Self.boundedSchema)
+    let start = acceptor.initialState
+    XCTAssertNotNil(acceptor.state(after: #"{"name":"abcde""#, from: start))
+    XCTAssertNil(acceptor.state(after: #"{"name":"abcdef"#, from: start))
+    XCTAssertNil(acceptor.state(after: #"{"name":null,"tags":["a","b","c","#, from: start))
+  }
+
+  func testResetClearsTheCounters() {
+    var acceptor = feed(#"{"name":"abcde"#, schema: Self.boundedSchema).acceptor
+    let fresh = BrujaJSONAcceptor(schema: Self.boundedSchema)
+    XCTAssertNotEqual(acceptor.counters, fresh.counters)
+    acceptor.reset()
+    XCTAssertEqual(acceptor.counters, fresh.counters)
+    XCTAssertEqual(acceptor.state, fresh.state)
+  }
+
+  func testBoundedFactoriesBuildTheBoundedKinds() {
+    XCTAssertEqual(
+      BrujaJSONSchema.Property.string("a", maxLength: 7).kind, .boundedString(maxLength: 7))
+    XCTAssertEqual(BrujaJSONSchema.Kind.string(maxLength: 7), .boundedString(maxLength: 7))
+    XCTAssertEqual(BrujaJSONSchema.Property.string("a").kind, .string)
+    XCTAssertEqual(
+      BrujaJSONSchema.Property.array("a", of: .string, maxItems: 3).kind,
+      .array(of: .string, maxItems: 3))
+    XCTAssertEqual(
+      BrujaJSONSchema.Property.array("a", of: .string).kind, .array(of: .string, maxItems: nil))
+  }
 }

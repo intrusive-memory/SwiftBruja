@@ -14,6 +14,15 @@ import Foundation
 /// that accept the same continuations have equal states, so a caller can key a
 /// cache on the state.
 ///
+/// Length bounds are not part of the state. A schema's `maxLength` and
+/// `maxItems` are enforced with ``Counters`` that the acceptor keeps beside
+/// its state: how many more characters the string being written may take, and
+/// how many more items each open array may take. At `maxLength` the only
+/// character accepted is the closing quote; at `maxItems` the only character
+/// accepted after an item is `]`. A string never reaches a point where it
+/// cannot close: an escape is accepted only when the whole of it fits, and a
+/// nullable string cannot spell `null` with its last character.
+///
 /// Rules beyond plain JSON:
 /// - A nullable string rejects the values `"null"` and `""` at the closing
 ///   quote. The only way to write "nothing" is JSON `null`. A longer value that
@@ -40,21 +49,60 @@ public struct BrujaJSONAcceptor: Sendable {
     }
   }
 
+  /// What is left of the schema's length bounds at a point in the text.
+  ///
+  /// The counters sit beside a ``State``; they are not part of it. For a
+  /// schema with no `maxLength` and no `maxItems` they never change.
+  public struct Counters: Hashable, Sendable {
+    /// Characters the string being written may still take. `Int.max` outside
+    /// a bounded string.
+    fileprivate var length: Int
+
+    /// For each bounded array of the schema, the items it may still take
+    /// after the ones written. `Int.max` while that array is not open.
+    fileprivate var items: [Int]
+
+    /// How many more characters the string being written may take, or `nil`
+    /// when the position is not inside a string that has a `maxLength`.
+    public var remainingLength: Int? {
+      length == .max ? nil : length
+    }
+
+    /// The fewest items any open array with a `maxItems` may still take, or
+    /// `nil` when no such array is open.
+    public var fewestRemainingItems: Int? {
+      items.filter { $0 != .max }.min()
+    }
+  }
+
   /// The current position. Read it to save a position; assign it to go back to one.
+  ///
+  /// With a bounded schema a position is the state and the ``counters``
+  /// together: save and restore both.
   public var state: State
+
+  /// The bound counters at the current position.
+  public var counters: Counters
 
   /// The position before any character has been consumed.
   public let initialState: State
 
   private let nodes: [Node]
 
+  /// One slot per bounded array, every one closed.
+  private let closedItems: [Int]
+
   /// Builds the automaton for `schema`.
+  ///
+  /// - Precondition: every `maxLength` and `maxItems` in `schema` is at least 1.
   public init(schema: BrujaJSONSchema) {
     var compiler = Compiler()
     let start = compiler.compileTopLevel(schema)
     self.nodes = compiler.nodes
+    self.closedItems = Array(repeating: .max, count: compiler.boundedArrayCount)
     self.initialState = State(start)
     self.state = State(start)
+    self.counters = Counters(length: .max, items: closedItems)
   }
 
   /// True once the top-level object has closed.
@@ -73,23 +121,56 @@ public struct BrujaJSONAcceptor: Sendable {
   /// - Returns: `true` if the character is legal here. On `false` the state is unchanged.
   @discardableResult
   public mutating func advance(_ character: Character) -> Bool {
-    guard let next = step(state, character) else { return false }
+    guard let next = step(state, character, &counters) else { return false }
     state = next
     return true
   }
 
+  /// The counters of a position at `state` that has used none of its bounds:
+  /// the string being written, if any, has its whole `maxLength` left, and no
+  /// array is counted as open.
+  ///
+  /// These are the most permissive counters `state` can have. Every character
+  /// legal at `state` under any counters is legal under these.
+  public func unusedCounters(for state: State) -> Counters {
+    var result = Counters(length: .max, items: closedItems)
+    if case .string(_, let maxLength) = nodes[Int(state.node)] {
+      result.length = maxLength
+    }
+    return result
+  }
+
   /// The state reached from `state` by consuming one character, or `nil` if
   /// the character is not legal there. Does not change the acceptor.
+  ///
+  /// Bounds are checked as in ``unusedCounters(for:)``: a bound that the
+  /// character itself would break is enforced, one that depends on the text
+  /// before `state` is not.
   public func state(after character: Character, from state: State) -> State? {
-    step(state, character)
+    var counters = unusedCounters(for: state)
+    return step(state, character, &counters)
+  }
+
+  /// The state reached from `state` by consuming one character, or `nil` if
+  /// the character is not legal there. `counters` moves with the state; on
+  /// `nil` it is unchanged. Does not change the acceptor.
+  public func state(
+    after character: Character, from state: State, counters: inout Counters
+  ) -> State? {
+    step(state, character, &counters)
   }
 
   /// The state reached from `state` by consuming all of `text`, or `nil` if
   /// any character of it is not legal. Does not change the acceptor.
+  ///
+  /// Bounds are checked as in ``unusedCounters(for:)``: a string or an array
+  /// that `text` itself carries past its bound is rejected, a bound that
+  /// depends on the text before `state` is not enforced.
   public func state(after text: String, from state: State) -> State? {
     var current = state
+    var counters = unusedCounters(for: state)
     for character in text {
-      guard let next = step(current, character) else { return nil }
+      guard let next = step(current, character, &counters) else { return nil }
       current = next
     }
     return current
@@ -98,6 +179,7 @@ public struct BrujaJSONAcceptor: Sendable {
   /// Goes back to ``initialState``.
   public mutating func reset() {
     state = initialState
+    counters = Counters(length: .max, items: closedItems)
   }
 
   // MARK: - Automaton
@@ -138,39 +220,62 @@ public struct BrujaJSONAcceptor: Sendable {
     case literal(Character, next: Int)
     /// The first character of a value picks the branch.
     case value([Character: State])
-    /// Inside a string value; the phase says where.
-    case string(next: Int)
+    /// Inside a string value; the phase says where. `maxLength` is `Int.max`
+    /// for a string with no bound.
+    case string(next: Int, maxLength: Int)
     /// Inside a number value; the phase says where.
     case number(integerOnly: Bool, next: Int)
-    /// Just after `[`: either `]` or the first element.
-    case arrayOpen(item: Int, next: Int)
+    /// Just after `[`: either `]` or the first element. `slot` is the array's
+    /// index in `Counters.items`, or -1 for an array with no bound.
+    case arrayOpen(item: Int, next: Int, slot: Int, maxItems: Int)
     /// Just after an element: either `,` and another element, or `]`.
-    case arrayAfterItem(item: Int, next: Int)
+    case arrayAfterItem(item: Int, next: Int, slot: Int)
     /// The top-level object has closed.
     case done
   }
 
-  private func step(_ state: State, _ character: Character) -> State? {
+  /// One transition. `counters` moves with the state; when the character is
+  /// rejected, `counters` is left as it was.
+  private func step(_ state: State, _ character: Character, _ counters: inout Counters) -> State? {
     switch nodes[Int(state.node)] {
     case .literal(let expected, let next):
       return character == expected ? State(next) : nil
 
     case .value(let branches):
-      return branches[character]
+      guard let target = branches[character] else { return nil }
+      // An opening quote: the string starts with its whole length left.
+      if case .string(_, let maxLength) = nodes[Int(target.node)] {
+        counters.length = maxLength
+      }
+      return target
 
-    case .string(let next):
-      return stepString(state, character, next: next)
+    case .string(let next, _):
+      return stepString(state, character, next: next, &counters)
 
     case .number(let integerOnly, let next):
-      return stepNumber(state, character, integerOnly: integerOnly, next: next)
+      return stepNumber(state, character, integerOnly: integerOnly, next: next, &counters)
 
-    case .arrayOpen(let item, let next):
+    case .arrayOpen(let item, let next, let slot, let maxItems):
       if character == "]" { return State(next) }
-      return step(State(item), character)
+      guard let first = step(State(item), character, &counters) else { return nil }
+      // The first item has started.
+      if slot >= 0 { counters.items[slot] = maxItems - 1 }
+      return first
 
-    case .arrayAfterItem(let item, let next):
-      if character == "," { return State(item) }
-      if character == "]" { return State(next) }
+    case .arrayAfterItem(let item, let next, let slot):
+      if character == "," {
+        if slot >= 0 {
+          // At `maxItems` the only way on is `]`.
+          let left = counters.items[slot]
+          guard left >= 1 else { return nil }
+          if left != .max { counters.items[slot] = left - 1 }
+        }
+        return State(item)
+      }
+      if character == "]" {
+        if slot >= 0 { counters.items[slot] = .max }
+        return State(next)
+      }
       return nil
 
     case .done:
@@ -178,8 +283,15 @@ public struct BrujaJSONAcceptor: Sendable {
     }
   }
 
-  private func stepString(_ state: State, _ character: Character, next: Int) -> State? {
-    func at(_ phase: Phase) -> State {
+  private func stepString(
+    _ state: State, _ character: Character, next: Int, _ counters: inout Counters
+  ) -> State? {
+    // Characters this string may still take; `Int.max` when it has no bound.
+    let left = counters.length
+
+    /// Counts the character against the bound and moves to `phase`.
+    func take(_ phase: Phase) -> State {
+      if left != .max { counters.length = left - 1 }
       var result = state
       result.phase = phase
       return result
@@ -190,41 +302,54 @@ public struct BrujaJSONAcceptor: Sendable {
       if character == "\"" {
         // `""` and `"null"` are rejected here, at the closing quote.
         if state.phase == .stringEmpty || state.phase == .stringNull { return nil }
+        counters.length = .max
         return State(next)
       }
-      if character == "\\" { return at(.stringEscape) }
+      // At `maxLength` the closing quote is the only way on.
+      guard left >= 1 else { return nil }
+      if character == "\\" {
+        // An escape is at least two characters; it must fit whole.
+        return left >= 2 ? take(.stringEscape) : nil
+      }
       guard Self.isStringContent(character) else { return nil }
       switch (state.phase, character) {
-      case (.stringEmpty, "n"): return at(.stringN)
-      case (.stringN, "u"): return at(.stringNu)
-      case (.stringNu, "l"): return at(.stringNul)
-      case (.stringNul, "l"): return at(.stringNull)
-      default: return at(.stringOther)
+      case (.stringEmpty, "n"): return take(.stringN)
+      case (.stringN, "u"): return take(.stringNu)
+      case (.stringNu, "l"): return take(.stringNul)
+      case (.stringNul, "l"):
+        // `null` cannot close, so it must leave room for one more character.
+        return left >= 2 ? take(.stringNull) : nil
+      default: return take(.stringOther)
       }
 
     case .stringEscape:
+      guard left >= 1 else { return nil }
       switch character {
-      case "\"", "\\", "/", "b", "f", "n", "r", "t": return at(.stringOther)
-      case "u": return at(.stringHex4)
+      case "\"", "\\", "/", "b", "f", "n", "r", "t": return take(.stringOther)
+      case "u":
+        // `u` and its four hex digits must fit whole.
+        return left >= 5 ? take(.stringHex4) : nil
       default: return nil
       }
 
     case .stringHex4:
-      guard Self.isHexDigit(character) else { return nil }
-      return at(character == "d" || character == "D" ? .stringHex3NoSurrogate : .stringHex3)
+      guard left >= 1, Self.isHexDigit(character) else { return nil }
+      return take(character == "d" || character == "D" ? .stringHex3NoSurrogate : .stringHex3)
 
     case .stringHex3NoSurrogate:
-      guard let ascii = character.asciiValue, (0x30...0x37).contains(ascii) else { return nil }
-      return at(.stringHex2)
+      guard left >= 1, let ascii = character.asciiValue, (0x30...0x37).contains(ascii) else {
+        return nil
+      }
+      return take(.stringHex2)
 
     case .stringHex3:
-      return Self.isHexDigit(character) ? at(.stringHex2) : nil
+      return left >= 1 && Self.isHexDigit(character) ? take(.stringHex2) : nil
 
     case .stringHex2:
-      return Self.isHexDigit(character) ? at(.stringHex1) : nil
+      return left >= 1 && Self.isHexDigit(character) ? take(.stringHex1) : nil
 
     case .stringHex1:
-      return Self.isHexDigit(character) ? at(.stringOther) : nil
+      return left >= 1 && Self.isHexDigit(character) ? take(.stringOther) : nil
 
     default:
       return nil
@@ -232,7 +357,8 @@ public struct BrujaJSONAcceptor: Sendable {
   }
 
   private func stepNumber(
-    _ state: State, _ character: Character, integerOnly: Bool, next: Int
+    _ state: State, _ character: Character, integerOnly: Bool, next: Int,
+    _ counters: inout Counters
   ) -> State? {
     func at(_ phase: Phase) -> State {
       var result = state
@@ -241,7 +367,7 @@ public struct BrujaJSONAcceptor: Sendable {
     }
     // A number has no closing character: it ends when the next character
     // belongs to whatever follows it.
-    func end() -> State? { step(State(next), character) }
+    func end() -> State? { step(State(next), character, &counters) }
 
     let isDigit = Self.isDigit(character)
     let isExponentMark = !integerOnly && (character == "e" || character == "E")
@@ -316,6 +442,10 @@ public struct BrujaJSONAcceptor: Sendable {
   private struct Compiler {
     var nodes: [Node] = []
 
+    /// How many arrays with a `maxItems` have been compiled. Each one owns a
+    /// slot in `Counters.items`.
+    var boundedArrayCount = 0
+
     mutating func append(_ node: Node) -> Int {
       nodes.append(node)
       return nodes.count - 1
@@ -353,9 +483,13 @@ public struct BrujaJSONAcceptor: Sendable {
         branches["n"] = State(chain("ull", next: next))
       }
 
+      kind.checkBounds()
+
       switch kind {
-      case .string:
-        let string = append(.string(next: next))
+      case .string, .boundedString:
+        var maxLength = Int.max
+        if case .boundedString(let bound) = kind { maxLength = bound }
+        let string = append(.string(next: next, maxLength: maxLength))
         branches["\""] = State(string, nullable ? .stringEmpty : .stringOther)
 
       case .integer, .number:
@@ -370,13 +504,19 @@ public struct BrujaJSONAcceptor: Sendable {
         branches["t"] = State(chain("rue", next: next))
         branches["f"] = State(chain("alse", next: next))
 
-      case .array(let itemKind):
+      case .array(let itemKind, let maxItems):
+        var slot = -1
+        if maxItems != nil {
+          slot = boundedArrayCount
+          boundedArrayCount += 1
+        }
         // The element and the node after it point at each other, so the
         // second is reserved first and filled in after.
         let afterItem = append(.done)
         let item = compileValue(itemKind, nullable: false, next: afterItem)
-        nodes[afterItem] = .arrayAfterItem(item: item, next: next)
-        branches["["] = State(append(.arrayOpen(item: item, next: next)))
+        nodes[afterItem] = .arrayAfterItem(item: item, next: next, slot: slot)
+        branches["["] = State(
+          append(.arrayOpen(item: item, next: next, slot: slot, maxItems: maxItems ?? .max)))
 
       case .object(let schema):
         branches["{"] = State(compileObjectBody(schema, next: next))
