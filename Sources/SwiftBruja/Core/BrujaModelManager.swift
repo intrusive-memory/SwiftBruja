@@ -101,16 +101,24 @@ public actor BrujaModelManager {
     return container
   }
 
-  /// Unload a model to free memory
+  /// Unload a model to free memory.
+  ///
+  /// Drops the container, drops the cached vocabulary table, then clears the MLX buffer cache
+  /// so the freed buffers go back to the system. The cache is cleared here only, never during
+  /// or after a query.
   public func unloadModel(_ modelId: String) {
     loadedModels.removeValue(forKey: modelId)
     vocabularyTables.removeValue(forKey: modelId)
+    Memory.clearCache()
   }
 
-  /// Unload all models
+  /// Unload all models.
+  ///
+  /// Drops every container and vocabulary table, then clears the MLX buffer cache.
   public func unloadAllModels() {
     loadedModels.removeAll()
     vocabularyTables.removeAll()
+    Memory.clearCache()
   }
 
   // MARK: - Vocabulary Table

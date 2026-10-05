@@ -162,4 +162,54 @@ final class PersonajeMemoryTests: XCTestCase {
       XCTAssertGreaterThan(footprint, 0, "task_info returned no physical footprint")
     }
   }
+
+  // MARK: - BR-P3: unload releases memory
+
+  /// After unload, MLX active memory is back within 256 MB of its value before the load (OQ-4).
+  func testUnloadReleasesMemory() async throws {
+    let modelId = Self.defaultModelId
+    try skipUnlessModelPresent(modelId)
+
+    // Other tests in this class leave the model loaded.
+    await Bruja.unloadAllModels()
+    let startBytes = Memory.activeMemory
+
+    // The container is not kept in a local, so nothing here holds it past the query.
+    _ = try await Bruja.query(
+      "Reply with one short sentence about the sea.", model: modelId, maxTokens: 32)
+    let loadedBytes = Memory.activeMemory
+
+    await Bruja.unloadModel(modelId)
+    let afterBytes = Memory.activeMemory
+    let cacheAfterBytes = Memory.cacheMemory
+
+    print(
+      "\nUNLOAD start_bytes=\(startBytes) loaded_bytes=\(loadedBytes) "
+        + "after_bytes=\(afterBytes) cache_after_bytes=\(cacheAfterBytes)")
+    fflush(stdout)
+
+    XCTAssertGreaterThan(loadedBytes, startBytes, "Loading the model did not raise active memory")
+    XCTAssertLessThanOrEqual(
+      afterBytes, startBytes + 256 * 1024 * 1024,
+      "Active memory did not return to within 256 MB of its pre-load value")
+  }
+
+  /// A model that was unloaded loads again on the next query and answers.
+  func testReloadAfterUnloadAnswers() async throws {
+    let modelId = Self.defaultModelId
+    try skipUnlessModelPresent(modelId)
+
+    await Bruja.unloadAllModels()
+    let first = try await Bruja.query(
+      "Reply with one short sentence about the sea.", model: modelId, maxTokens: 32)
+    XCTAssertFalse(first.isEmpty, "First response was empty")
+
+    await Bruja.unloadModel(modelId)
+
+    let second = try await Bruja.query(
+      "Reply with one short sentence about the sea.", model: modelId, maxTokens: 32)
+    XCTAssertFalse(
+      second.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+      "Response after unload and reload was empty")
+  }
 }

@@ -95,6 +95,25 @@ public enum Bruja {
     return container
   }
 
+  /// Unload a model and release its memory.
+  ///
+  /// Drops the cached container and vocabulary table for `model` and clears the MLX buffer
+  /// cache. Callers must not hold on to a container returned by ``loadModel(_:)``: MLX memory
+  /// is freed only when the last reference is gone. A later query reloads the model.
+  ///
+  /// - Parameter model: Model ID that was loaded
+  public static func unloadModel(_ model: String) async {
+    await BrujaModelManager.shared.unloadModel(model)
+  }
+
+  /// Unload every loaded model and release their memory.
+  ///
+  /// Drops all cached containers and vocabulary tables and clears the MLX buffer cache.
+  /// Callers must not hold on to a container returned by ``loadModel(_:)``.
+  public static func unloadAllModels() async {
+    await BrujaModelManager.shared.unloadAllModels()
+  }
+
   // MARK: - Queries
 
   /// Query a model and get a text response
