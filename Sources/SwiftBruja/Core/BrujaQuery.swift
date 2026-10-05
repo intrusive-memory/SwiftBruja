@@ -15,14 +15,16 @@ public enum BrujaQuery {
     model: String,
     temperature: Float = 0.7,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> String {
     let result = try await queryWithMetadata(
       prompt,
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      thinking: thinking
     )
     return result.response
   }
@@ -35,7 +37,8 @@ public enum BrujaQuery {
     model: String,
     temperature: Float = 0.7,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> BrujaQueryResult {
     let startTime = Date()
 
@@ -63,7 +66,9 @@ public enum BrujaQuery {
     let session = ChatSession(
       container,
       instructions: instructions,
-      generateParameters: GenerateParameters(maxTokens: resolvedMaxTokens, temperature: temperature)
+      generateParameters: GenerateParameters(
+        maxTokens: resolvedMaxTokens, temperature: temperature),
+      additionalContext: thinking.additionalContext
     )
 
     // Execute query
@@ -92,7 +97,8 @@ public enum BrujaQuery {
     model: String,
     temperature: Float = 0.3,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> T {
     // Build a system prompt that encourages JSON output
     let jsonSystem =
@@ -108,7 +114,8 @@ public enum BrujaQuery {
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: jsonSystem
+      system: jsonSystem,
+      thinking: thinking
     )
 
     return try parseJSON(result.response, as: type)
@@ -123,6 +130,8 @@ public enum BrujaQuery {
   /// sampling, so the output is always one JSON object with the schema's keys in order. The model
   /// may write one space after a `:` or a `,`; no other whitespace appears outside strings.
   /// The output is decoded with `JSONDecoder` as it is.
+  ///
+  /// `thinking: .off` turns the model's thinking mode off through the chat template.
   ///
   /// `repetitionPenalty` is applied to the logits before the mask, over the last
   /// ``constrainedRepetitionContextSize`` tokens, to keep a string from repeating one word and an
@@ -140,7 +149,8 @@ public enum BrujaQuery {
     temperature: Float = 0.3,
     maxTokens: Int? = nil,
     system: String? = nil,
-    repetitionPenalty: Float? = nil
+    repetitionPenalty: Float? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> T {
     let output = try await generateConstrained(
       prompt,
@@ -149,7 +159,8 @@ public enum BrujaQuery {
       temperature: temperature,
       maxTokens: maxTokens,
       system: system,
-      repetitionPenalty: repetitionPenalty
+      repetitionPenalty: repetitionPenalty,
+      thinking: thinking
     )
     return try decodeConstrained(output.text, as: type)
   }
@@ -185,7 +196,8 @@ public enum BrujaQuery {
     temperature: Float,
     maxTokens: Int?,
     system: String?,
-    repetitionPenalty: Float? = nil
+    repetitionPenalty: Float? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> ConstrainedOutput {
     let (container, _, _) = try await resolveModel(model)
 
@@ -207,7 +219,9 @@ public enum BrujaQuery {
       (text: String, promptTokens: Int, generatedTokens: Int, seconds: Double, done: Bool) =
         try await container.perform { (context: ModelContext) in
           let start = Date()
-          let userInput = UserInput(chat: [.system(instructions), .user(prompt)])
+          let userInput = UserInput(
+            chat: [.system(instructions), .user(prompt)],
+            additionalContext: thinking.additionalContext)
           let input = try await context.processor.prepare(input: userInput)
 
           // Every id that ends generation for this model. The processor masks them until the

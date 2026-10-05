@@ -58,6 +58,33 @@ final class PersonajeAcceptanceTests: XCTestCase {
     )
   }
 
+  // MARK: - BR-P2: thinking switch
+
+  /// Qwen3.5-9B spends its whole token budget reasoning unless thinking is off. With
+  /// `thinking: .off` the chat template gets `enable_thinking: false` and the model answers.
+  func testQwen35AnswersWithThinkingOff() async throws {
+    let modelId = "mlx-community/Qwen3.5-9B-MLX-4bit"
+    try skipUnlessModelPresent(modelId)
+
+    let result = try await Bruja.queryWithMetadata(
+      "What is the capital of France? Answer in one sentence.",
+      model: modelId,
+      maxTokens: 512,
+      thinking: .off
+    )
+
+    // tokensGenerated is Bruja's estimate (characters / 4), not a count from the iterator.
+    print(
+      "PersonajeAcceptanceTests qwen3.5 thinking-off: tokens(est)=\(result.tokensGenerated) "
+        + "response=\(String(result.response.prefix(200)))")
+    XCTAssertFalse(
+      result.response.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+      "Expected a non-empty response from \(modelId) with thinking off"
+    )
+    XCTAssertFalse(result.response.contains("<think>"), "Response contains <think>")
+    XCTAssertFalse(result.response.contains("</think>"), "Response contains </think>")
+  }
+
   // MARK: - BR-P1: schema-constrained output
 
   /// The schema Personaje sends: fourteen fields, all nullable except `age`, with Personaje's bounds: 500

@@ -126,6 +126,8 @@ public enum Bruja {
   ///   - temperature: Sampling temperature (0.0-1.0, higher = more creative)
   ///   - maxTokens: Maximum tokens to generate
   ///   - system: Optional system prompt
+  ///   - thinking: `.off` turns the model's thinking mode off (chat template `enable_thinking`);
+  ///     `.modelDefault` leaves the model as it is
   /// - Returns: The model's text response
   /// - Throws: `BrujaError.modelNotFound` if model is not available locally
   public static func query(
@@ -133,14 +135,16 @@ public enum Bruja {
     model: String,
     temperature: Float = 0.7,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> String {
     try await BrujaQuery.query(
       prompt,
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      thinking: thinking
     )
   }
 
@@ -150,14 +154,16 @@ public enum Bruja {
     model: String,
     temperature: Float = 0.7,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> BrujaQueryResult {
     try await BrujaQuery.queryWithMetadata(
       prompt,
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      thinking: thinking
     )
   }
 
@@ -181,7 +187,8 @@ public enum Bruja {
     model: String,
     temperature: Float = 0.3,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> T {
     try await BrujaQuery.query(
       prompt,
@@ -189,7 +196,8 @@ public enum Bruja {
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      thinking: thinking
     )
   }
 
@@ -244,7 +252,8 @@ public enum Bruja {
     temperature: Float = 0.3,
     maxTokens: Int? = nil,
     system: String? = nil,
-    repetitionPenalty: Float? = nil
+    repetitionPenalty: Float? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> T {
     try await BrujaQuery.query(
       prompt,
@@ -254,7 +263,8 @@ public enum Bruja {
       temperature: temperature,
       maxTokens: maxTokens,
       system: system,
-      repetitionPenalty: repetitionPenalty
+      repetitionPenalty: repetitionPenalty,
+      thinking: thinking
     )
   }
 
