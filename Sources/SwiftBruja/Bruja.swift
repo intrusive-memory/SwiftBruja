@@ -169,7 +169,11 @@ public enum Bruja {
 
   /// Query a model and get a structured (typed) response
   ///
-  /// The model will be instructed to return JSON that matches the expected type.
+  /// The model will be instructed to return JSON that matches the expected type. Nothing
+  /// enforces it: the model may write other text or malformed JSON. For output that is
+  /// guaranteed to match a shape, use ``query(_:schema:as:model:temperature:maxTokens:system:repetitionPenalty:thinking:)``,
+  /// which constrains generation to a ``BrujaJSONSchema``.
+  ///
   /// Model must be pre-downloaded via SwiftAcervo to the shared models directory.
   ///
   /// - Parameters:

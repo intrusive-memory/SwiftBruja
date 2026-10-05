@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-07-04
+updated: 2026-10-04
 ---
 
 # Changelog
@@ -9,6 +9,20 @@ All notable changes to SwiftBruja will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.11.0] - 2026-10-04
+
+### Added
+- **Schema-constrained output (BR-P1, #49)** — `Bruja.query(_:schema:as:model:temperature:maxTokens:system:repetitionPenalty:thinking:)` generates one JSON object that matches a `BrujaJSONSchema`, decoded into any `Decodable`. Every token outside the schema is masked before sampling: every key is written, in schema order, with `null` for a nullable property that has no value. `BrujaJSONSchema` takes a run-time list of properties (string, integer, number, boolean, array, nested object); `maxLength` on strings and `maxItems` on arrays are enforced while generating, so a bounded value always ends. A schema with an unbounded string or array can still hit `maxTokens`, which throws the new `BrujaError.structuredOutputTruncated(tokenLimit:)`.
+- **Repetition penalty on the constrained path (BR-P1, #49)** — optional `repetitionPenalty`, off by default. At 1.1 it raised null fields over nine Personaje prompts from 19 to 33, and the unpenalised baseline showed no looping.
+- **Thinking switch (BR-P2, #50)** — `thinking: BrujaThinking` on the query APIs. `.off` passes `enable_thinking: false` to the chat template; `.modelDefault` (the default) changes nothing.
+- **Unload API (BR-P3, #48)** — `Bruja.unloadModel(_:)` and `Bruja.unloadAllModels()` (both `async`) drop the cached container and vocabulary table and clear the MLX buffer cache. A caller that keeps a `ModelContainer` from `loadModel` keeps its memory.
+- **`make test-personaje-memory` (BR-P3, #48)** — measurement target that prints MLX peak memory and process footprint at 5,000 and 15,000 prompt tokens. Plus `make test-personaje` for the Personaje acceptance tests, and the `Fixtures/Personaje/` prompts and schema they use. Both need models on disk and do not run in hosted CI.
+
+### Notes
+- **#48 is not closed by this release.** The long-prompt memory footprint is unchanged: on the default model, 15,005 prompt tokens give an MLX peak of 5.70 GB but a process footprint of 20.70 GB, of which 16.29 GB is the MLX buffer cache. Bruja sets no MLX cache limit and clears the cache only on unload.
 
 ---
 
