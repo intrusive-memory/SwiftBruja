@@ -477,7 +477,8 @@ final class BrujaJSONAcceptorTests: XCTestCase {
     assertRejected("9", after: #"{"count":"# + Self.digits20, schema: schema)
     assertRejected("9", after: #"{"count":-"# + Self.digits20, schema: schema)
     // The bound counts across the integer part, fraction and exponent.
-    assertRejected("9", after: #"{"count":0,"score":1."# + String(Self.digits20.dropFirst()), schema: schema)
+    assertRejected(
+      "9", after: #"{"count":0,"score":1."# + String(Self.digits20.dropFirst()), schema: schema)
     assertRejected(
       "9", after: #"{"count":0,"score":1.5e"# + String(Self.digits20.dropFirst(2)), schema: schema)
     // At the bound the number can still end.
