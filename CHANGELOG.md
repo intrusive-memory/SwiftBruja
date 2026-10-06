@@ -26,6 +26,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.10.0] - 2026-07-04
+
+### Changed
+- **Agent default model** — `mlx-community/Qwen3.5-9B-MLX-4bit` replaces Qwen2.5-7B as the agentic default. Apache-2.0 across all sizes; loads through mlx-swift-lm's `qwen3_5` architecture with no dependency bump. The allowlist was refreshed to the Qwen3.5 family.
+- **Reasoning traces hidden by default** — the model's `<think>…</think>` trace is stripped from `query`, `agent` and `chat` output; the new `--verbose` flag shows the full trace.
+
+### Fixed
+- **`make test`** — forwards `ACERVO_CDN_BASE_URL` into the sandboxed test runner (matching `test-ci`), so the `--remote` manifest tests reach the CDN instead of trapping under SwiftAcervo 0.21+.
+- **`make resolve`** — passes `-skipMacroValidation -skipPackagePluginValidation`.
+
+### Dependencies
+- **SwiftAcervo** — pinned `.upToNextMajor(from: "0.23.0")`, which carries the CDN base-URL fix.
+
+---
+
 ## [1.9.0] - 2026-07-04
 
 ### Changed
