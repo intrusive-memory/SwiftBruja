@@ -18,6 +18,9 @@ public enum BrujaGenerationEvent: Sendable {
   case text(String)
   /// A parsed tool call (id + name + already-serialized JSON arguments).
   case toolCall(id: String, name: String, argumentsJSON: String)
+  /// A tool-call-shaped output MLX refused to make executable (malformed, incomplete, undeclared
+  /// tool, invalid arguments, ...). `reason` is MLX's `RejectedToolCall.Reason` raw value.
+  case rejectedToolCall(reason: String, toolName: String?)
   /// Completion / token-rate metadata; not surfaced as a loop event.
   case info
 }
@@ -184,6 +187,9 @@ struct ContainerGenerationSource: GenerationSource {
                   argumentsJSON: MLXToolEncoding.argumentsJSON(for: call)
                 )
               )
+            case .rejectedToolCall(let rejected):
+              continuation.yield(
+                .rejectedToolCall(reason: rejected.reason.rawValue, toolName: rejected.toolName))
             case .info:
               continuation.yield(.info)
             }

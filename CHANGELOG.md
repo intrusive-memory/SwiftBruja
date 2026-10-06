@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unload API (BR-P3, #48)** — `Bruja.unloadModel(_:)` and `Bruja.unloadAllModels()` (both `async`) drop the cached container and vocabulary table and clear the MLX buffer cache. A caller that keeps a `ModelContainer` from `loadModel` keeps its memory.
 - **`make test-personaje-memory` (BR-P3, #48)** — measurement target that prints MLX peak memory and process footprint at 5,000 and 15,000 prompt tokens. Plus `make test-personaje` for the Personaje acceptance tests, and the `Fixtures/Personaje/` prompts and schema they use. Both need models on disk and do not run in hosted CI.
 
+### Fixed
+- **mlx-swift-lm 3.32.3** — `Generation.rejectedToolCall` (new upstream case) is handled: the agent loop surfaces it as a `toolFinished` event with the rejection reason instead of failing to compile. Resolves to mlx-swift-lm 3.32.3 / mlx-swift 0.32.3.
+- **CI could not fail** — the `macOS Tests` job piped `make test-ci` through `tee`, so the job reported success on a failed build or test run (since 2026-01-26). The step now sets `pipefail`.
+
 ### Notes
 - **#48 is not closed by this release.** The long-prompt memory footprint is unchanged: on the default model, 15,005 prompt tokens give an MLX peak of 5.70 GB but a process footprint of 20.70 GB, of which 16.29 GB is the MLX buffer cache. Bruja sets no MLX cache limit and clears the cache only on unload.
 

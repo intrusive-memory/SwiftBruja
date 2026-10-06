@@ -57,8 +57,12 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
+      # pipefail: without it the pipe to tee returns tee's exit status, and a failed build or
+      # test run still reports success (it did, from 2026-01-26 until this line was added).
       - name: Build and test
-        run: make test-ci 2>&1 | tee test_output.txt
+        run: |
+          set -o pipefail
+          make test-ci 2>&1 | tee test_output.txt
 
       - name: Upload test results
         if: always()
