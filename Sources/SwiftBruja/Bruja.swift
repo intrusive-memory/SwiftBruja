@@ -95,6 +95,25 @@ public enum Bruja {
     return container
   }
 
+  /// Unload a model and release its memory.
+  ///
+  /// Drops the cached container and vocabulary table for `model` and clears the MLX buffer
+  /// cache. Callers must not hold on to a container returned by ``loadModel(_:)``: MLX memory
+  /// is freed only when the last reference is gone. A later query reloads the model.
+  ///
+  /// - Parameter model: Model ID that was loaded
+  public static func unloadModel(_ model: String) async {
+    await BrujaModelManager.shared.unloadModel(model)
+  }
+
+  /// Unload every loaded model and release their memory.
+  ///
+  /// Drops all cached containers and vocabulary tables and clears the MLX buffer cache.
+  /// Callers must not hold on to a container returned by ``loadModel(_:)``.
+  public static func unloadAllModels() async {
+    await BrujaModelManager.shared.unloadAllModels()
+  }
+
   // MARK: - Queries
 
   /// Query a model and get a text response
@@ -107,6 +126,8 @@ public enum Bruja {
   ///   - temperature: Sampling temperature (0.0-1.0, higher = more creative)
   ///   - maxTokens: Maximum tokens to generate
   ///   - system: Optional system prompt
+  ///   - thinking: `.off` turns the model's thinking mode off (chat template `enable_thinking`);
+  ///     `.modelDefault` leaves the model as it is
   /// - Returns: The model's text response
   /// - Throws: `BrujaError.modelNotFound` if model is not available locally
   public static func query(
@@ -114,14 +135,16 @@ public enum Bruja {
     model: String,
     temperature: Float = 0.7,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> String {
     try await BrujaQuery.query(
       prompt,
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      thinking: thinking
     )
   }
 
@@ -131,20 +154,26 @@ public enum Bruja {
     model: String,
     temperature: Float = 0.7,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> BrujaQueryResult {
     try await BrujaQuery.queryWithMetadata(
       prompt,
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      thinking: thinking
     )
   }
 
   /// Query a model and get a structured (typed) response
   ///
-  /// The model will be instructed to return JSON that matches the expected type.
+  /// The model will be instructed to return JSON that matches the expected type. Nothing
+  /// enforces it: the model may write other text or malformed JSON. For output that is
+  /// guaranteed to match a shape, use ``query(_:schema:as:model:temperature:maxTokens:system:repetitionPenalty:thinking:)``,
+  /// which constrains generation to a ``BrujaJSONSchema``.
+  ///
   /// Model must be pre-downloaded via SwiftAcervo to the shared models directory.
   ///
   /// - Parameters:
@@ -162,7 +191,8 @@ public enum Bruja {
     model: String,
     temperature: Float = 0.3,
     maxTokens: Int? = nil,
-    system: String? = nil
+    system: String? = nil,
+    thinking: BrujaThinking = .modelDefault
   ) async throws -> T {
     try await BrujaQuery.query(
       prompt,
@@ -170,7 +200,77 @@ public enum Bruja {
       model: model,
       temperature: temperature,
       maxTokens: maxTokens,
-      system: system
+      system: system,
+      thinking: thinking
+    )
+  }
+
+  /// Query a model with the output constrained to a JSON schema, and decode it
+  ///
+  /// Every token that would take the output outside `schema` is masked before sampling, so the
+  /// model can only write one JSON object: every key of the schema, in schema order, with no
+  /// text around it. Outside strings the only whitespace it may write is one space after a `:`
+  /// or a `,`. A property with no value is written as `null` (the property must be nullable).
+  /// The output is decoded with `JSONDecoder` as it is; nothing is stripped or repaired.
+  ///
+  /// The schema is a run-time value, so one `Decodable` type can serve calls that ask for
+  /// different subsets of its fields:
+  ///
+  /// ```swift
+  /// struct Profile: Decodable { let age: String?; let occupation: String? }
+  /// let schema = BrujaJSONSchema([.string("age"), .string("occupation")])
+  /// let profile = try await Bruja.query(
+  ///   excerpt, schema: schema, as: Profile.self, model: "mlx-community/Qwen2.5-7B-Instruct-4bit")
+  /// ```
+  ///
+  /// Model must be pre-downloaded via SwiftAcervo to the shared models directory.
+  ///
+  /// - Note: The mask fixes the shape, not the content. Name the fields and say what each one
+  ///   should hold in `prompt` or `system`.
+  /// - Note: A character the model's tokenizer can only spell as split-byte tokens cannot be
+  ///   generated on this path. The mask takes each token's text to be its own decoding, which
+  ///   holds for byte-level BPE vocabularies such as Qwen's; a tokenizer whose decoder depends on
+  ///   the neighbouring tokens is not supported here.
+  ///
+  /// - Parameters:
+  ///   - prompt: The prompt to send to the model
+  ///   - schema: The shape of the JSON object to generate
+  ///   - type: The Decodable type to decode the object into
+  ///   - model: Model ID (e.g., "mlx-community/Qwen2.5-7B-Instruct-4bit")
+  ///   - temperature: Sampling temperature (0 picks the most likely legal token)
+  ///   - maxTokens: Maximum tokens to generate; when `nil`, chosen from available memory
+  ///   - system: Optional system prompt. When `nil`, a short instruction to answer with one JSON
+  ///     object and to use `null` for unknown values is used.
+  ///   - repetitionPenalty: Penalty on the tokens of the last 64 tokens of context, applied
+  ///     before the mask, to keep a string from repeating one word and an array from repeating
+  ///     one item. Values above 1 discourage repetition. `nil`, the default, applies no penalty.
+  ///     A penalty can push fields to `null`: over nine prompts, 1.1 took the null fields from
+  ///     19 to 33. That is why it is off by default.
+  /// - Returns: The decoded object
+  /// - Throws: `BrujaError.modelNotFound` if model is not available locally;
+  ///   `BrujaError.structuredOutputTruncated` if `maxTokens` is reached before the object
+  ///   closes; `BrujaError.jsonParsingFailed` if the object does not decode as `T`
+  public static func query<T: Decodable>(
+    _ prompt: String,
+    schema: BrujaJSONSchema,
+    as type: T.Type,
+    model: String,
+    temperature: Float = 0.3,
+    maxTokens: Int? = nil,
+    system: String? = nil,
+    repetitionPenalty: Float? = nil,
+    thinking: BrujaThinking = .modelDefault
+  ) async throws -> T {
+    try await BrujaQuery.query(
+      prompt,
+      schema: schema,
+      as: type,
+      model: model,
+      temperature: temperature,
+      maxTokens: maxTokens,
+      system: system,
+      repetitionPenalty: repetitionPenalty,
+      thinking: thinking
     )
   }
 

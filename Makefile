@@ -22,7 +22,7 @@ VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || 
 SMALL_FIXTURE_MODEL = mlx-community/Qwen2.5-0.5B-Instruct-4bit
 MISSING_MODEL_ID    = mlx-community/__nope__
 
-.PHONY: all build release install clean test test-ci test-agent-seam test-agent-repl test-agent-fm resolve dist lint help reference-check codesign-cli
+.PHONY: all build release install clean test test-ci test-agent-seam test-agent-repl test-agent-fm test-personaje test-personaje-memory resolve dist lint help reference-check codesign-cli
 
 all: install
 
@@ -119,6 +119,8 @@ test-ci: resolve
 	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG) \
 		-skip-testing:BrujaIntegrationTests/InferenceIntegrationTest \
 		-skip-testing:BrujaIntegrationTests/ErrorReportingSmokeTest \
+		-skip-testing:BrujaIntegrationTests/PersonajeAcceptanceTests \
+		-skip-testing:BrujaIntegrationTests/PersonajeMemoryTests \
 		-skip-testing:SwiftBrujaTests/AcervoComponentReadyTests/testDownloadModelLevel2PathWorksForUnregisteredRepoId \
 		-skip-testing:SwiftBrujaTests/AcervoComponentReadyTests/testEnsureComponentReadyHydratesFiles \
 		-skip-testing:SwiftBrujaTests/AcervoManifestFetchTests/testEstimatedSizeForProductionModelIsNonZeroAndCreatesNoFiles \
@@ -177,6 +179,48 @@ test-agent-fm: install codesign-cli
 	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
 		-XCTest FoundationBackendIntegrationTest/testFoundationBackendRoundTripsOrFailsLoudly "$$XCTEST_BUNDLE"
 
+# Run the Personaje acceptance tests (BR-P1 … BR-P4) against Personaje's default model.
+#
+# Runs the whole PersonajeAcceptanceTests class under the unsandboxed `xcrun xctest` host with
+# ACERVO_APP_GROUP_ID set (same reason as test-agent-seam: the sandboxed `xcodebuild test` host
+# cannot reach the App Group container, so the tests would XCTSkip there). A skipped test still
+# exits 0 — look for "Test Case '-[BrujaIntegrationTests.PersonajeAcceptanceTests <name>]' passed".
+#
+# One test only: make test-personaje ONLY=<testName>
+#   e.g. make test-personaje ONLY=testConstrainedQueryOnDefaultModel
+#
+# Prereq: mlx-community/Qwen2.5-7B-Instruct-4bit present in the shared-models container.
+PERSONAJE_TESTS = PersonajeAcceptanceTests$(if $(strip $(ONLY)),/$(strip $(ONLY)))
+
+test-personaje: resolve
+	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG)
+	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
+	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
+	echo "Running $(PERSONAJE_TESTS) via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
+	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
+		-XCTest $(PERSONAJE_TESTS) "$$XCTEST_BUNDLE"
+
+# Run the Personaje peak-memory harness (BR-P3) against Personaje's default model.
+#
+# Same unsandboxed `xcrun xctest` host as test-personaje. The harness prints one line per prompt
+# size and asserts nothing about the figures:
+#   PEAK tokens=<n> mlx_bytes=<MLX Memory.peakMemory> footprint_bytes=<process phys_footprint>
+# A skipped test still exits 0 — look for
+# "Test Case '-[BrujaIntegrationTests.PersonajeMemoryTests <name>]' passed".
+#
+# One test only: make test-personaje-memory ONLY=<testName>
+#
+# Prereq: mlx-community/Qwen2.5-7B-Instruct-4bit present in the shared-models container.
+PERSONAJE_MEMORY_TESTS = PersonajeMemoryTests$(if $(strip $(ONLY)),/$(strip $(ONLY)))
+
+test-personaje-memory: resolve
+	xcodebuild build-for-testing -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG)
+	@XCTEST_BUNDLE="$$(find "$$HOME/Library/Developer/Xcode/DerivedData" -type d -name BrujaIntegrationTests.xctest -path '*SwiftBruja-*/Build/Products/Debug/*' 2>/dev/null | head -1)"; \
+	test -n "$$XCTEST_BUNDLE" || { echo "Error: BrujaIntegrationTests.xctest not found; run build-for-testing first."; exit 1; }; \
+	echo "Running $(PERSONAJE_MEMORY_TESTS) via unsandboxed xctest host: $$XCTEST_BUNDLE"; \
+	ACERVO_APP_GROUP_ID=$(APP_GROUP_ID) xcrun xctest \
+		-XCTest $(PERSONAJE_MEMORY_TESTS) "$$XCTEST_BUNDLE"
+
 # Format Swift source files
 lint:
 	swift format -i -r .
@@ -211,6 +255,8 @@ reference-check: install
 	xcodebuild test -scheme SwiftBruja-Package -destination '$(DESTINATION)' $(MACRO_FLAG) \
 		-skip-testing:BrujaIntegrationTests/InferenceIntegrationTest \
 		-skip-testing:BrujaIntegrationTests/ErrorReportingSmokeTest \
+		-skip-testing:BrujaIntegrationTests/PersonajeAcceptanceTests \
+		-skip-testing:BrujaIntegrationTests/PersonajeMemoryTests \
 		-skip-testing:SwiftBrujaTests/AcervoComponentReadyTests/testDownloadModelLevel2PathWorksForUnregisteredRepoId \
 		-skip-testing:SwiftBrujaTests/AcervoComponentReadyTests/testEnsureComponentReadyHydratesFiles \
 		-skip-testing:SwiftBrujaTests/AcervoManifestFetchTests/testEstimatedSizeForProductionModelIsNonZeroAndCreatesNoFiles \
@@ -355,6 +401,10 @@ help:
 	@echo "  test-agent-seam  - Run the S2 read_file round-trip spike via an unsandboxed xctest host"
 	@echo "  test-agent-repl  - Run the S7 'bruja agent' end-to-end REPL test against ./bin/bruja"
 	@echo "  test-agent-fm    - Run the S9 Foundation Models backend integration test against ./bin/bruja"
+	@echo "  test-personaje   - Run the Personaje acceptance tests via an unsandboxed xctest host"
+	@echo "                     (one test: make test-personaje ONLY=<testName>)"
+	@echo "  test-personaje-memory - Print peak memory at 5,000 and 15,000 prompt tokens (measures only)"
+	@echo "                     (one test: make test-personaje-memory ONLY=<testName>)"
 	@echo "  lint             - Format Swift source files"
 	@echo "  clean            - Clean build artifacts"
 	@echo "  reference-check  - R1–R5 end-to-end verification (build, offline, TTY, error-map, preflight)"

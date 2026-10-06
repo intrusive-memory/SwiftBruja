@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-07-04
+updated: 2026-10-04
 ---
 
 # Changelog
@@ -9,6 +9,35 @@ All notable changes to SwiftBruja will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.11.0] - 2026-10-04
+
+### Added
+- **Schema-constrained output (BR-P1, #49)** — `Bruja.query(_:schema:as:model:temperature:maxTokens:system:repetitionPenalty:thinking:)` generates one JSON object that matches a `BrujaJSONSchema`, decoded into any `Decodable`. Every token outside the schema is masked before sampling: every key is written, in schema order, with `null` for a nullable property that has no value. `BrujaJSONSchema` takes a run-time list of properties (string, integer, number, boolean, array, nested object); `maxLength` on strings and `maxItems` on arrays are enforced while generating, so a bounded value always ends; numbers are capped at `BrujaJSONAcceptor.maximumNumberDigits` (20) digits, enough for any `Int64` and the largest finite `Double`. A schema with an unbounded string or array can still hit `maxTokens`, which throws the new `BrujaError.structuredOutputTruncated(tokenLimit:)`. The mask assumes a tokenizer whose tokens decode the same alone as in sequence (byte-level BPE, as in Qwen); context-sensitive decoders are not supported on this path.
+- **Repetition penalty on the constrained path (BR-P1, #49)** — optional `repetitionPenalty`, off by default. At 1.1 it raised null fields over nine Personaje prompts from 19 to 33, and the unpenalised baseline showed no looping.
+- **Thinking switch (BR-P2, #50)** — `thinking: BrujaThinking` on the query APIs. `.off` passes `enable_thinking: false` to the chat template; `.modelDefault` (the default) changes nothing.
+- **Unload API (BR-P3, #48)** — `Bruja.unloadModel(_:)` and `Bruja.unloadAllModels()` (both `async`) drop the cached container and vocabulary table and clear the MLX buffer cache. A caller that keeps a `ModelContainer` from `loadModel` keeps its memory.
+- **`make test-personaje-memory` (BR-P3, #48)** — measurement target that prints MLX peak memory and process footprint at 5,000 and 15,000 prompt tokens. Plus `make test-personaje` for the Personaje acceptance tests, and the `Fixtures/Personaje/` prompts and schema they use. Both need models on disk and do not run in hosted CI.
+
+### Notes
+- **#48 is not closed by this release.** The long-prompt memory footprint is unchanged: on the default model, 15,005 prompt tokens give an MLX peak of 5.70 GB but a process footprint of 20.70 GB, of which 16.29 GB is the MLX buffer cache. Bruja sets no MLX cache limit and clears the cache only on unload.
+
+---
+
+## [1.10.0] - 2026-07-04
+
+### Changed
+- **Agent default model** — `mlx-community/Qwen3.5-9B-MLX-4bit` replaces Qwen2.5-7B as the agentic default. Apache-2.0 across all sizes; loads through mlx-swift-lm's `qwen3_5` architecture with no dependency bump. The allowlist was refreshed to the Qwen3.5 family.
+- **Reasoning traces hidden by default** — the model's `<think>…</think>` trace is stripped from `query`, `agent` and `chat` output; the new `--verbose` flag shows the full trace.
+
+### Fixed
+- **`make test`** — forwards `ACERVO_CDN_BASE_URL` into the sandboxed test runner (matching `test-ci`), so the `--remote` manifest tests reach the CDN instead of trapping under SwiftAcervo 0.21+.
+- **`make resolve`** — passes `-skipMacroValidation -skipPackagePluginValidation`.
+
+### Dependencies
+- **SwiftAcervo** — pinned `.upToNextMajor(from: "0.23.0")`, which carries the CDN base-URL fix.
 
 ---
 
