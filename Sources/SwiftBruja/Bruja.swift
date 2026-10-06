@@ -228,7 +228,9 @@ public enum Bruja {
   /// - Note: The mask fixes the shape, not the content. Name the fields and say what each one
   ///   should hold in `prompt` or `system`.
   /// - Note: A character the model's tokenizer can only spell as split-byte tokens cannot be
-  ///   generated on this path.
+  ///   generated on this path. The mask takes each token's text to be its own decoding, which
+  ///   holds for byte-level BPE vocabularies such as Qwen's; a tokenizer whose decoder depends on
+  ///   the neighbouring tokens is not supported here.
   ///
   /// - Parameters:
   ///   - prompt: The prompt to send to the model

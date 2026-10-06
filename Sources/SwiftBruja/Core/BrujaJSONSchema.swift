@@ -23,7 +23,8 @@ import Foundation
 /// generation enforces both while it writes, so a bounded value always ends.
 /// A string or an array with no bound can grow until the token limit runs out.
 /// For output that is guaranteed to close, bound every string and every array,
-/// including the strings inside array items.
+/// including the strings inside array items. A number is always bounded, at
+/// ``BrujaJSONAcceptor/maximumNumberDigits`` digits.
 ///
 /// ```swift
 /// let schema = BrujaJSONSchema([

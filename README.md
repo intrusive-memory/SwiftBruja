@@ -89,7 +89,7 @@ let result: Analysis = try await Bruja.query(
 
 ### Constrained Output
 
-Constrain the output to a schema so the model can only write that JSON object. A property with no value is written as `null`, so its field must be optional. Bound every string and array so the object is guaranteed to close.
+Constrain the output to a schema so the model can only write that JSON object. A property with no value is written as `null`, so its field must be optional. Bound every string and array so the object is guaranteed to close; numbers are bounded already (20 digits).
 
 ```swift
 import SwiftBruja

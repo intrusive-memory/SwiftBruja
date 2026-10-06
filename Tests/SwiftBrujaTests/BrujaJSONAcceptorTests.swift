@@ -455,6 +455,63 @@ final class BrujaJSONAcceptorTests: XCTestCase {
       "\"", after: #"{"count":1,"score":1,"alive":true,"tags":[],"levels":["#, schema: schema)
   }
 
+  // MARK: - Number digit bound
+
+  private static let digits20 = String(repeating: "9", count: BrujaJSONAcceptor.maximumNumberDigits)
+
+  func testNumberOfExactlyMaximumDigitsAccepted() {
+    let schema = Self.mixedSchema
+    let rest = #","score":null,"alive":null,"tags":null,"levels":null,"home":null}"#
+    assertAccepted(#"{"count":"# + Self.digits20 + rest, schema: schema)
+    // The sign is not a digit.
+    assertAccepted(#"{"count":-"# + Self.digits20 + rest, schema: schema)
+    // Int64.max and the largest finite Double both fit.
+    assertAccepted(#"{"count":9223372036854775807"# + rest, schema: schema)
+    assertAccepted(
+      #"{"count":0,"score":1.7976931348623157e308,"alive":null,"tags":null,"levels":null,"home":null}"#,
+      schema: schema)
+  }
+
+  func testNumberOneDigitOverMaximumRejected() {
+    let schema = Self.mixedSchema
+    assertRejected("9", after: #"{"count":"# + Self.digits20, schema: schema)
+    assertRejected("9", after: #"{"count":-"# + Self.digits20, schema: schema)
+    // The bound counts across the integer part, fraction and exponent.
+    assertRejected("9", after: #"{"count":0,"score":1."# + String(Self.digits20.dropFirst()), schema: schema)
+    assertRejected(
+      "9", after: #"{"count":0,"score":1.5e"# + String(Self.digits20.dropFirst(2)), schema: schema)
+    // At the bound the number can still end.
+    XCTAssertNil(feed(#"{"count":"# + Self.digits20 + #","score":"#, schema: schema).rejectedAt)
+  }
+
+  func testNumberCannotStartAPartItHasNoDigitLeftFor() {
+    let schema = Self.mixedSchema
+    // `.`, `e` and `E` each need a digit after them, so none is accepted with no digit left.
+    for character in [".", "e", "E"] as [Character] {
+      assertRejected(character, after: #"{"count":0,"score":"# + Self.digits20, schema: schema)
+    }
+    // With one digit left the point is accepted and then one digit; the exponent is not.
+    let oneLeft = #"{"count":0,"score":"# + String(Self.digits20.dropFirst())
+    assertRejected("9", after: oneLeft + ".5", schema: schema)
+    assertRejected("e", after: oneLeft + ".5", schema: schema)
+  }
+
+  func testDigitCounterIsNotPartOfTheStateAndEndsWithTheNumber() {
+    var short = BrujaJSONAcceptor(schema: Self.mixedSchema)
+    var long = BrujaJSONAcceptor(schema: Self.mixedSchema)
+    for character in #"{"count":1"# { short.advance(character) }
+    for character in #"{"count":"# + Self.digits20 { long.advance(character) }
+    XCTAssertEqual(short.state, long.state, "digits written changed the state")
+    XCTAssertEqual(short.counters.remainingLength, BrujaJSONAcceptor.maximumNumberDigits - 1)
+    XCTAssertEqual(long.counters.remainingLength, 0)
+    // The unused counters of a number position have every digit left.
+    XCTAssertEqual(
+      short.unusedCounters(for: short.state).remainingLength, BrujaJSONAcceptor.maximumNumberDigits)
+    // Leaving the number drops the counter.
+    long.advance(",")
+    XCTAssertNil(long.counters.remainingLength)
+  }
+
   func testEmptySchemaAcceptsOnlyEmptyObject() {
     let schema = BrujaJSONSchema([])
     assertAccepted("{}", schema: schema)

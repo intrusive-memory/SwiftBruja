@@ -27,6 +27,11 @@ import MLXLMCommon
 ///   split-byte tokens (each of which decodes, alone, to U+FFFD) cannot be
 ///   generated on this path. Characters that have a whole token of their own,
 ///   or that sit inside a longer whole token, are not affected.
+/// - Important: Known limit. Each token's text is `decode([id])` on its own,
+///   which is the text it contributes in a byte-level BPE vocabulary such as
+///   Qwen's. A tokenizer whose decoder depends on neighbouring tokens
+///   (WordPiece, Metaspace, cross-token space cleanup) is not supported: the
+///   accepted text and the model's real decoded sequence can differ.
 ///
 /// The allowed-token set is cached per acceptor state, so the vocabulary is
 /// scanned once for each state the generation visits, not once per step. The

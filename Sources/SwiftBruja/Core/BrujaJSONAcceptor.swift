@@ -30,6 +30,12 @@ import Foundation
 /// cannot close: an escape is accepted only when the whole of it fits, and a
 /// nullable string cannot spell `null` with its last character.
 ///
+/// A number has a fixed bound, ``maximumNumberDigits``, on the digits it is
+/// written with, counted across its integer part, fraction and exponent. It
+/// uses the same counter a string does, since the two are never open at once.
+/// A number never reaches a point where it cannot end: `.`, `e` and `E` are
+/// accepted only while at least one digit is left to follow them.
+///
 /// Rules beyond plain JSON:
 /// - A nullable string rejects the values `"null"` and `""` at the closing
 ///   quote. The only way to write "nothing" is JSON `null`. A longer value that
@@ -61,16 +67,18 @@ public struct BrujaJSONAcceptor: Sendable {
   /// The counters sit beside a ``State``; they are not part of it. For a
   /// schema with no `maxLength` and no `maxItems` they never change.
   public struct Counters: Hashable, Sendable {
-    /// Characters the string being written may still take. `Int.max` outside
-    /// a bounded string.
+    /// Characters the string being written may still take, or digits the
+    /// number being written may still take. `Int.max` outside a bounded
+    /// string and outside a number.
     fileprivate var length: Int
 
     /// For each bounded array of the schema, the items it may still take
     /// after the ones written. `Int.max` while that array is not open.
     fileprivate var items: [Int]
 
-    /// How many more characters the string being written may take, or `nil`
-    /// when the position is not inside a string that has a `maxLength`.
+    /// How many more characters the string being written may take, or how
+    /// many more digits the number being written may take, or `nil` when the
+    /// position is inside neither a string that has a `maxLength` nor a number.
     public var remainingLength: Int? {
       length == .max ? nil : length
     }
@@ -93,6 +101,12 @@ public struct BrujaJSONAcceptor: Sendable {
 
   /// The position before any character has been consumed.
   public let initialState: State
+
+  /// The most digits a number is written with, across its integer part,
+  /// fraction and exponent. Twenty covers every `Int64` (19 digits) and the
+  /// largest finite `Double` written in full (`1.7976931348623157e308`, 20
+  /// digits). Without it a model can pick digit tokens until `maxTokens`.
+  public static let maximumNumberDigits = 20
 
   private let nodes: [Node]
 
@@ -134,15 +148,21 @@ public struct BrujaJSONAcceptor: Sendable {
   }
 
   /// The counters of a position at `state` that has used none of its bounds:
-  /// the string being written, if any, has its whole `maxLength` left, and no
-  /// array is counted as open.
+  /// the string being written, if any, has its whole `maxLength` left, the
+  /// number being written, if any, has all of ``maximumNumberDigits`` left,
+  /// and no array is counted as open.
   ///
   /// These are the most permissive counters `state` can have. Every character
   /// legal at `state` under any counters is legal under these.
   public func unusedCounters(for state: State) -> Counters {
     var result = Counters(length: .max, items: closedItems)
-    if case .string(_, let maxLength) = nodes[Int(state.node)] {
+    switch nodes[Int(state.node)] {
+    case .string(_, let maxLength):
       result.length = maxLength
+    case .number:
+      result.length = Self.maximumNumberDigits
+    default:
+      break
     }
     return result
   }
@@ -253,9 +273,16 @@ public struct BrujaJSONAcceptor: Sendable {
 
     case .value(let branches):
       guard let target = branches[character] else { return nil }
-      // An opening quote: the string starts with its whole length left.
-      if case .string(_, let maxLength) = nodes[Int(target.node)] {
+      switch nodes[Int(target.node)] {
+      case .string(_, let maxLength):
+        // An opening quote: the string starts with its whole length left.
         counters.length = maxLength
+      case .number:
+        // A `-` or a first digit: the number starts with all its digits left,
+        // less the one just written if it was a digit.
+        counters.length = Self.maximumNumberDigits - (Self.isDigit(character) ? 1 : 0)
+      default:
+        break
       }
       return target
 
@@ -407,46 +434,63 @@ public struct BrujaJSONAcceptor: Sendable {
       return result
     }
     // A number has no closing character: it ends when the next character
-    // belongs to whatever follows it.
-    func end() -> State? { step(State(next), character, &counters) }
+    // belongs to whatever follows it. The digit counter goes with it.
+    func end() -> State? {
+      let saved = counters.length
+      counters.length = .max
+      guard let after = step(State(next), character, &counters) else {
+        counters.length = saved
+        return nil
+      }
+      return after
+    }
+    // A digit spends one of the digits left; none left, no digit.
+    func digit(_ phase: Phase) -> State? {
+      guard counters.length > 0 else { return nil }
+      counters.length -= 1
+      return at(phase)
+    }
 
+    // `.`, `e` and `E` must be followed by a digit, so each needs one left.
+    let digitLeft = counters.length > 0
     let isDigit = Self.isDigit(character)
-    let isExponentMark = !integerOnly && (character == "e" || character == "E")
+    let isPoint = !integerOnly && character == "." && digitLeft
+    let isExponentMark = !integerOnly && (character == "e" || character == "E") && digitLeft
 
     switch state.phase {
     case .numberMinus:
       guard isDigit else { return nil }
-      return at(character == "0" ? .numberZero : .numberInteger)
+      return digit(character == "0" ? .numberZero : .numberInteger)
 
     case .numberZero:
-      if !integerOnly && character == "." { return at(.numberPoint) }
+      if isPoint { return at(.numberPoint) }
       if isExponentMark { return at(.numberExponent) }
       // A leading zero cannot be followed by another digit.
       return isDigit ? nil : end()
 
     case .numberInteger:
-      if isDigit { return state }
-      if !integerOnly && character == "." { return at(.numberPoint) }
+      if isDigit { return digit(.numberInteger) }
+      if isPoint { return at(.numberPoint) }
       if isExponentMark { return at(.numberExponent) }
       return end()
 
     case .numberPoint:
-      return isDigit ? at(.numberFraction) : nil
+      return isDigit ? digit(.numberFraction) : nil
 
     case .numberFraction:
-      if isDigit { return state }
+      if isDigit { return digit(.numberFraction) }
       if isExponentMark { return at(.numberExponent) }
       return end()
 
     case .numberExponent:
       if character == "+" || character == "-" { return at(.numberExponentSign) }
-      return isDigit ? at(.numberExponentDigits) : nil
+      return isDigit ? digit(.numberExponentDigits) : nil
 
     case .numberExponentSign:
-      return isDigit ? at(.numberExponentDigits) : nil
+      return isDigit ? digit(.numberExponentDigits) : nil
 
     case .numberExponentDigits:
-      return isDigit ? state : end()
+      return isDigit ? digit(.numberExponentDigits) : end()
 
     default:
       return nil
