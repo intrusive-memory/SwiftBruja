@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-07-04
+updated: 2026-10-04
 ---
 
 <p align="center">
@@ -49,7 +49,7 @@ brew install intrusive-memory/tap/bruja
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.10.0")
+    .package(url: "https://github.com/intrusive-memory/SwiftBruja", from: "1.11.0")
 ]
 ```
 
@@ -85,6 +85,35 @@ let result: Analysis = try await Bruja.query(
 )
 // result.sentiment == "positive"
 // result.confidence == 0.95
+```
+
+### Constrained Output
+
+Constrain the output to a schema so the model can only write that JSON object. A property with no value is written as `null`, so its field must be optional. Bound every string and array so the object is guaranteed to close; numbers are bounded already (20 digits).
+
+```swift
+import SwiftBruja
+
+struct Character: Decodable {
+    let age: String?
+    let occupation: String?
+    let relationships: [String]?
+}
+
+let schema = BrujaJSONSchema([
+    .string("age", maxLength: 100),
+    .string("occupation", maxLength: 100),   // nullable by default
+    .array("relationships", of: .string(maxLength: 100), maxItems: 5),
+])
+
+let character = try await Bruja.query(
+    "Describe the character from this excerpt: ...",
+    schema: schema,
+    as: Character.self,
+    model: "mlx-community/Qwen3.5-9B-MLX-4bit",
+    thinking: .off
+)
+// character.occupation == nil when the excerpt does not say
 ```
 
 ### Query with Metadata
@@ -235,9 +264,11 @@ bruja agent --model mlx-community/Qwen3.5-9B-MLX-4bit "Find all TODO comments in
 |--------|-------------|
 | `Bruja.query(_:model:)` | Simple text query, returns String |
 | `Bruja.query(_:as:model:)` | Structured query, returns Codable type |
+| `Bruja.query(_:schema:as:model:)` | Schema-constrained query, returns a Decodable type |
 | `Bruja.queryWithMetadata(_:model:)` | Query with timing and token info |
 | `Bruja.download(model:)` | Ensure model is available via SwiftAcervo |
 | `Bruja.listModels()` | List downloaded models |
+| `Bruja.unloadModel(_:)` | Unload a model and release its memory (`async`) |
 | `Bruja.modelExists(at:)` | Check if model exists at path |
 | `Bruja.modelExists(id:)` | Check if model exists by HuggingFace ID |
 

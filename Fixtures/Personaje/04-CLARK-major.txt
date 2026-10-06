@@ -1,0 +1,872 @@
+You are extracting a character profile from excerpts of a screenplay.
+The character to profile is named on the line after the marker below.
+Read the excerpts below and return one JSON object and nothing else. The
+object has exactly these fields, in this order:
+age, pronouns, occupation, languages, logline, sampleLine, appearance,
+wardrobe, personality, backstory, arc, relationships, voiceAndSpeech,
+canonFacts.
+relationships is a list of objects with the fields with and nature.
+canonFacts is a list of objects with the fields fact and quote.
+Every field except age can be null. A field other than age that the excerpts
+say nothing about must be null. Do not guess or invent for any field other than
+age. Use the JSON value null, never the text "null".
+age is never null. If the excerpts state the character's age, give it as
+stated. If they state none, give your best guess from context as exactly one
+of: child, adult, older adult.
+sampleLine must be one of the character's own lines, word for word. A quote
+in canonFacts must appear word for word in the excerpts.
+Return the JSON object only, with no text before or after it.
+=== EXCERPTS ===
+CHARACTER: CLARK
+
+SCENE: EXT. GRANVILLE GRADE SCHOOL - DAY
+
+[ACTION]
+DUKE LATTIMER and LEROY SMALLS walk and talk past GRANVILLE GRADE SCHOOL.
+
+[DUKE]
+They hired that Hunter Rhodes boy down at the city planning office.
+
+[LEROY]
+(completely disgusted)
+Never did like that boy. Ever since he got drunk, and threw up in my pool.
+
+[ACTION]
+They pass a large sign that reads "READING FAIR STARTS TODAY."
+
+[DUKE]
+Oh, for christ's sake. Dumbass. That was like thirty years ago! He was ten years old. He wasn't drunk. He was in the sun too long and then ate cantaloupe.
+
+[LEROY]
+There's never been a time, when I've had stuff comin' up, that I couldn't aim it in the direction, away from important stuff.
+
+[DUKE]
+You ever thrown-up sour cantaloupe?
+
+[LEROY]
+I don't eat cantaloupe. Gives me heartburn.
+
+[DUKE]
+Well, I haven't eaten it since. Can't stand the smell now.
+
+[LEROY]
+That Rhodes boy--What'd Tucker hire him to do?
+
+[DUKE]
+(matter of fact)
+They want to get some federal grants.
+
+[LEROY]
+(confused)
+I don't know what for. I already cleaned the pool years ago.
+
+[DUKE]
+Not for you, you old fool. Small Town Innovation grants... to spruce up the city.
+
+[NARRATOR]
+A truck door slams across the lot. The hulking bear-ish frame of Shane and, a dark-skinned latino muscle-bear, Cyrus walk around the back of the truck, each with a rolling rack of food and drinks.
+
+[LEROY]
+(suddenly interested)
+Wait, Is that food?
+
+[DUKE]
+That's Shane being Shane.
+
+[LEROY]
+That was not the question I asked.
+
+[SHANE]
+Yes, it's food Leroy.
+
+[LEROY]
+(friendly)
+Mister Shane. Howya doin?
+
+[SHANE]
+Hi, Leroy. Duke.
+
+[DUKE]
+Howdy.
+
+[SHANE]
+If you guys want a burger, you can have some after the kids get theirs.
+
+[NARRATOR]
+The smell of the burgers wafts past the two old men, who sniff to take it in. Once he's out of their earshot, Shane mumbles.
+
+[SHANE]
+(sotto)
+Or you could just quit being such a tight wad, and actually come in, and pay for a meal.
+
+[CYRUS]
+Eso no va a pasar ni en sueños, jefe.
+
+[SHANE]
+Yup. Never gonna happen.
+
+[NARRATOR]
+And that's Cyrus. Nobody in this town speaks Spanish, but everybody in this town understands Cyrus.
+
+[NARRATOR]
+We follow the tray carts past the peanut gallery, and in through the gym doors. Once they get in the large, metal-roofed gym area, they make a loud sound being rolled across the uneven concrete floor. And the whole room turns its head.
+
+[CLARK]
+Shane! You didn't have to do this.
+
+[NARRATOR]
+Standing there in a Bowtie and Sweater vest is Granville Grade School's most celebrated history teacher, Clark Fletcher.
+
+[SHANE]
+Hi Clark, I want you to meet Cyrus, best cook I ever had. Cyrus, this is Clark Fletcher, our best player on trivia night.
+
+[CYRUS]
+(friendly)
+Leer da hambre, profe. Alguien tiene que alimentar a esta manada.
+
+[CLARK]
+Well, if someone has to feed them, I'm glad it's you, Cyrus. Shane, let me put you on the donations list. Please.
+
+[SHANE]
+Don't you dare. My brother sees my name on a list, I'll hear about it till Christmas. Besides, I'm only giving them one small burger. If Cyrus has done his job right, they're going to crave another one, real soon.
+
+[CYRUS]
+A la orden, jefe. Muy addictivo.
+
+[NARRATOR]
+Then the children find the trays: Commence mayhem. A familiar face gets Shane's attention: Toby Rhodes looks up at Shane's large frame.
+
+[TOBY]
+Are those root beers?
+
+[SHANE]
+Bottom shelf. Take two, don't tell your dad.
+
+[TOBY]
+What about the burgers?
+
+[SHANE]
+They're here for you guys.
+
+[NARRATOR]
+Toby takes a burger, starts to walk away, then takes a second one, eliciting a smile-and-wink from Shane. Across the gym, Hunter watches his son take a massive bite of the burger and chew it with his mouth open.
+
+[NARRATOR]
+Clark watches Hunter with a smile on *his* face. Their eyes meet, and exchange a smile. Neither looks away. Hunter gives Clark a friendly "hi neighbor" wave, which makes Clark blush, then wave back.
+
+[SHANE]
+Clark, you can have a burger too. They're not just for kids.
+
+[CLARK]
+Oh, thank you Shane, but I'm--
+
+[NARRATOR]
+Clark's cheeks go red under Shane's attention. Across the room, that blush Hunter notices and it makes him smile.
+
+[SHANE]
+Cyrus, these burgers are wonderful. Good job as always, my friend.
+
+[NARRATOR]
+Cyrus Yawns, widely.
+
+[SHANE]
+Rough night?
+
+[CYRUS]
+Tengo visita en la casa.
+
+[SHANE]
+A visitor? Which brother? The little one?
+
+[CYRUS]
+Arquero vive de una maleta. Donde antes estaba la tabla de planchar.
+
+[SHANE]
+Nothing like sleeping on an air mattress to humble you.
+
+[CYRUS]
+Tres hombres grandes. Quiero mucho a mi hermano, pero... un solo baño.
+
+[SHANE]
+I love my brother too. But i'm glad we have separate bathrooms.
+
+[CYRUS]
+Si. Es verdad.
+
+[SHANE]
+What about the apartment above the bar--
+
+[CYRUS]
+NO. Ni se te ocurra ofrecerle tu departamento a mi hermano.
+
+[SHANE]
+Why? That's what it's there for. To help get people back on their feet.
+
+[CYRUS]
+Por su osito.
+
+[SHANE]
+Once I hit fifty, the "Ositos" haven't been biting like they used to.
+
+[CYRUS]
+Kieran se quejará.
+
+[SHANE]
+Kieran is going to complain no matter what happens.
+
+[CYRUS]
+No te falta razón.
+
+[NARRATOR]
+A school gym can hold four hundred people, and almost as many secrets. Secrets like...
+
+[BECKETT]
+Who are you staring at--
+
+[NARRATOR]
+Like a schoolteacher hiding his secret crush.
+
+[BECKETT]
+Oh, absolutely not.
+
+[NARRATOR]
+Unsuccessfully.
+
+[CLARK]
+I wasn't.
+
+[BECKETT]
+Dude.
+
+[CLARK]
+I wasn't.
+
+[BECKETT]
+You can't. There are rules.
+
+[CLARK]
+Those rules exist for a very good reason.
+
+[BECKETT]
+Don't date a student.
+
+[CLARK]
+Never been tempted. Not even once. I know my own rules--
+
+[BECKETT]
+Don't date a parent.
+
+[CLARK]
+...and I made them for a reason--
+
+[BECKETT]
+And especially don’t date a DILF--
+
+[NARRATOR]
+Clark’s hand instinctively goes to Beck’s mouth.
+
+[CLARK]
+Dude! Don't say the "F" word around the kids.
+
+[BECKETT]
+I didn't say the words, I said "DILF".
+
+[CLARK]
+Well, don't imply the f-word around my students.
+
+[BECKETT]
+(sotto)
+You've been gaga for him since grade school.
+
+[CLARK]
+I am not gaga. I'm doing my job. I am staffing a table.
+
+[BECKETT]
+You've refilled that bookmark bowl four times. It was full the first time.
+
+[CLARK]
+People love a full bowl.
+
+[BECKETT]
+Clark. That is Hunter Rhodes. Five grades up the ladder, golden boy, the kid every little kid orbited — and you were the AV-cart kid, the Math League kid, the kid he did not know was alive for eleven consecutive years.
+
+[CLARK]
+(distracted)
+Twelve. And keep your voice down.
+
+[BECKETT]
+And now he strolls back into town, taller, sadder around the eyes. Giving off those bisexual vibes.
+
+[CLARK]
+(disappointed)
+The bisexual ones are always the hardest to read. Is it male bonding? Is it flirting? I never know.
+
+[BECKETT]
+(sotto)
+Maybe he'll give you a firm handshake after you have sex, and call you "bro."
+
+[CLARK]
+Dude. Not funny.
+
+[NARRATOR]
+And other “secrets” that aren’t really secret. Like the fact that Hunter Rhodes, was the hottest property this town had seen in years, and every single mom was angling to get some face time with him.
+
+[PREDATOR MOM 1]
+(laughing a half-beat early)
+Oh my gosh, you are so funny. Isn't he funny? So — the picture books are back this way, if you want a second opinion. I have opinions.
+
+[HUNTER]
+(polite, oblivious)
+O, he's more of a chapter-book kid now, actually. He reads above grade. 'Scuse me.
+
+[PREDATOR MOM 2]
+A reader. See, that is so attractive in a — in a family. That's such a family quality.
+
+[HUNTER]
+(missing it entirely)
+...Thanks? Yeah, we like books. Scuse me.
+
+[NARRATOR]
+Hunter pushes past her with his son, and her shoulders droop at the failure.
+
+[JOANN]
+(pretend disgust)
+Those women are like sharks chasing chum. You are a hot commodity, Hunter Rhodes.
+
+[HUNTER]
+(a plea)
+Mom, stop.
+
+[NARRATOR]
+There's a scowl on Toby's face: His father can't be this oblivious.
+
+[JOANN]
+I'm just reporting the weather. There are three casseroles in my freezer I did not make. Three. Addressed to you.
+
+[HUNTER]
+(firmly)
+Mom. Stop.
+
+[JOANN]
+(the thing she's been saving)
+It's been long enough. It has. A boy ought to see his father actually live — not just carpool and worry. You should start dating again.
+
+[HUNTER]
+No. I didn't move home to date. Drop it.
+
+[JOANN]
+(unbothered, singsong)
+Dropping it. It's dropped. It's on the floor. I'm scraping it off my shoe and moving on.
+
+[NARRATOR]
+Across the gym, Clark's Principal finds him in his booth.
+
+[PRINCIPAL]
+Here are your new grasshoppers. Fresh additions. Two transfer students.
+
+[CLARK]
+(distracted)
+Great. Thank you.
+
+[NARRATOR]
+The principal watches Clark watch Hunter, smiling to herself.
+
+[PRINCIPAL]
+Couple new families this session. One of them just moved back to town, actually.
+
+[CLARK]
+(gaze still across the gym)
+Mm. Love that. New families. Great.
+
+[PRINCIPAL]
+The Rhodes family. Are you and Mr. Rhodes... familiar?
+
+[CLARK]
+Oh, pfft... nah. No. I mean, he's a parent so I can't. I wouldn't. I mean, we went to high school--He was in high school and I was in--
+
+[PRINCIPAL]
+In a small town like this, there's no way to enforce a policy of not dating parents. Date whoever you want. If you think there might be a conflict of interest, bring it to me.
+(sing-song)
+Good luuuck!
+
+[NARRATOR]
+While across the gymnasium, Hunter Rhodes stubbornly refuses to acknowledge that he is, in actuality, the hunted.
+
+[IOLA]
+Hunter Rhodes. Look at you, all grown and back home. Your mother is beside herself, you know that.
+
+[HUNTER]
+Hi, Miss Iola. How are you this afternoon.
+
+[IOLA]
+(no runway wasted)
+I have a son. Clark. You may not remember him. He was a few grades younger than you, quiet, wonderful boy. Sweet. Patient. Just... so good with kids. Wonderful with kids.
+
+[HUNTER]
+That's nice. Yeah, I kinda--
+
+[IOLA]
+(looking him dead in the eye)
+Single, too. Which, I only mention because it's a fact. I'm a very factual person.
+
+[NARRATOR]
+While the mothers bid and counter-bid, across the room, Clark has his world changed, with a series of letters on a page, in twelve point times roman.
+
+[CLARK]
+(sotto)
+New Family just moved to town--wait.
+
+[CLARK]
+(quietly, to himself)
+...Toby Rhodes.
+
+[BECKETT]
+Clark? What. What just happened. You've gone the color of the gym floor.
+
+[CLARK]
+That's my student. That kid. That's my new student.
+
+[BECKETT]
+The kid whose dad you've been... oh. Oh, that's beautiful.
+
+[CLARK]
+Beckett.
+
+[BECKETT]
+I guess we're going to find out if it's a rule or just a guideline.
+
+[CLARK]
+Its a rule.
+
+[BECKETT]
+Yeah, but, Is it?
+
+[HUNTER]
+Miss Iola. I'm flattered that you would want me to date Clark. I mean that. But I've got my hands full. New school, new town, getting Toby settled, the whole everything.
+
+[IOLA]
+Of course. Of course not. I'm only saying, when you are ready--
+
+[HUNTER]
+Anyone. I don't want to date anyone right now. I'm concentrating on Toby.
+
+[IOLA]
+(smiling, entirely undeterred)
+Mm. We'll see.
+
+[HUNTER]
+It's not a "we'll see," it's a—
+
+[IOLA]
+We'll see.
+
+[NARRATOR]
+Toby returns with an arm-full of books.
+
+[HUNTER]
+One book, buddy. We agreed. You picked the dinosaur one, that's the one, put the other ones back.
+
+[TOBY]
+(negotiating)
+What if the dinosaur one is lonely.
+
+[HUNTER]
+(running out of patience)
+The dinosaur one is not lonely.
+
+[PREDATOR MOM 3]
+(the accidental touch)
+Oh — sorry — you're tall, could you just — that one, the blue one, right up — thank you, oh my gosh, you're a lifesaver. A real — a lifesaver.
+
+[HUNTER]
+(trying to be polite)
+No problem. There you go. Have a good one.
+
+[NARRATOR]
+The doors swing shut and the fair goes muffled behind them. Two mothers go home with nothing but a plan.
+
+[TOBY]
+(after a while, casual, testing)
+Dad. That lady liked you.
+
+[NARRATOR]
+One teacher goes home with a rule, and a problem wearing the same last name. And the afternoon hands its last gold, to a father who noticed nothing — and a son who noticed everything.
+
+[HUNTER]
+(genuinely lost)
+Which lady?
+
+[TOBY]
+(filing it away)
+...Both of 'em.
+
+[HUNTER]
+(oblivious, opening the car)
+Buddy, they were just being nice. Come on, seatbelt.
+
+[TOBY]
+(sotto voce)
+...I noticed.
+
+[NARRATOR]
+So that's Granville on an ordinary Tuesday: a gym full of smiling people, a name on a piece of paper, like some sort of scholastic fortune cookie, and three people who now know something the fourth still doesn't.
+
+[NARRATOR]
+But as we watch Hunter take a deep breath, start the car, look around him and then ease into traffic, we can't help but remember that things aren't always as they appear to be.
+
+[DUKE]
+Looks like Iola's boy had a good turnout at his reading shindig.
+
+[LEROY]
+You know she got him a date with that Percy-whats-his-name.
+
+[DUKE]
+Is that kid still around? I thought he died years ago. From just bein' too damn awkward. How'd she get Clark to agree to that?
+
+[LEROY]
+I don't think he knows yet.
+
+[DUKE]
+Sure would like to be there when he finds out.
+
+[NARRATOR]
+They both cackle like witches stirring a pot. Across the parking lot from them, Clark is getting in his car, when he gets a phone call.
+
+[CLARK]
+(answering the phone)
+Hello, this is Clark...
+
+[NARRATOR]
+You may think the oldest sport in Granville is baseball.
+
+[CLARK]
+(disappointed)
+Oh, hi Percy...
+
+[NARRATOR]
+But you'd be wrong. It's match-making.
+
+[CLARK]
+Aunt Iola said what?
+
+[NARRATOR]
+And the women who play, Play to win.
+
+[CLARK]
+I don't know why she would tell you that. I'm not really looking to date anyone right now. But... I guess if you want, we can do trivia night at the Bone-N-Brew.
+
+[NARRATOR]
+Another school night settles into Granville. At the Ball-Sack house, Toby Rhodes discovers there's still no hot water.
+
+[TOBY]
+(whining, crying, and dragging out the vowels in a high-pitched child's voice)
+Daaad! There's no hot water!
+
+[NARRATOR]
+Archer Rodriguez is discovering, that there's no such thing as a comfortable air mattress. And Shane and Clark both go home to empty houses.
+
+[NARRATOR]
+Over at the Rhodes farm, Joann left the porch light on. Just in case.
+
+---
+
+SCENE: EXT. GRANVILLE GRADE SCHOOL — DROP-OFF LOT — MORNING
+
+[TOBY]
+(mouth full)
+Bye, Dad!
+
+[HUNTER]
+Have a good day, Tobes.
+
+[CLARK]
+(all business)
+Morning. go ahead, you're clear.
+
+[ACTION]
+Hunter gives Clark the straight-guy-head-tilt-acknowledgment.
+
+[CLARK]
+(sotto)
+...Yeah. Have a good one.
+
+[NARRATOR]
+And that's the morning relay race. And not a single soul the wiser, about how entwined all of their strings are about to become.
+
+---
+
+SCENE: INT. GRANVILLE GRADE SCHOOL — CLARK'S CLASSROOM — MORNING
+
+[NARRATOR]
+We follow the Clark Fletcher and the last of the drop-off line in through the double doors, down a hallway that smells like sweaty grade-school playgrounds and Pine-Sol. We pass a sign that reads "GO GRANVILLE GRASSHOPPERS," and continue on to a classroom where the bulletin board is already three weeks ahead of everyone in it. Clark walks to the front of his class, holding a piece of chalk like a conductor's baton.
+
+[CLARK]
+All right, Grasshoppers. Eyes up here. Today we start the biggest thing we are going to do all year. Bigger than the science fair. Bigger than the recorder concert — and yes, the recorder concert is still happening, I've seen the calendar, save your applause.
+
+[CLARK]
+This year, this class is going to discover the history of Granville. Where this town came from. Who built it. Why everything here is named the way it's named. Most of it, anyway. And at the end of the year — in the spring — we are going to put on a play. About the history of this town. Written by you. Performed by you. For everybody.
+
+[NARRATOR]
+For exactly four seconds, the room is electric. A play. Costumes. An audience. Then Clark keeps talking, the way teachers do.
+
+[CLARK]
+But. You cannot put on a play about a history you don't know. So before anyone touches a costume — we research. Old newspapers. The library. The historical society. Your own grandparents, who are dying for one of you to ask.
+
+[NARRATOR]
+Seventeen fifth-graders deflate in unison, with a sound like a tire going flat.
+
+[CLARK]
+(unbothered)
+That's the spirit.
+
+[TOBY]
+Do we get to pick what we research?
+
+[CLARK]
+Within reason.
+
+[TOBY]
+Because my house is really old. My dad says the pipes are from before hot water was invented.
+
+[CLARK]
+(a beat)
+...Which house is yours, Toby?
+
+[TOBY]
+The big one on the corner of Ball and Sack.
+
+[NARRATOR]
+Clark rides out the giggling like a man who has taught fifth grade in this town for years. Patience, eyebrows, silence. But something behind his eyes has quietly sat up.
+
+[CLARK]
+(sotto)
+The old Queen Anne on Ball and Sack. Huh.
+
+---
+
+SCENE: EXT. GRANVILLE ELEMENTARY — PICKUP — AFTERNOON
+
+[NARRATOR]
+The pickup line is long gone by the time Hunter's truck rounds the corner. Twenty minutes late, driven by a man who is visibly damp. On the front steps, Toby sits with his backpack between his knees, next to a teacher who definitely has grading to do, and definitely is not leaving until this kid is in a car.
+
+[TOBY]
+(running up)
+Dad! You're all wet!
+
+[HUNTER]
+(getting out)
+I'm aware, buddy. Get in the car and let's get home and get some dinner.
+
+[CLARK]
+Mr. Rhodes.
+
+[HUNTER]
+Clark? Right? I am so sorry. The water heater... there was an incident. Or... A series of incidents.
+
+[CLARK]
+It's no trouble. I had grading.
+(warily)
+Is the incident... over? Is your house okay?
+
+[HUNTER]
+The house is fine. The basement is now a water feature. The sound is very calming.
+
+[NARRATOR]
+Clark laughs. Hunter, suddenly aware he's standing near clark in a wet t-shirt with his nipples showing.
+
+[CLARK]
+(trying to change the subject)
+Actually, since I have you. Toby's a great kid. Sharp. But the transfer put him about a unit behind on fractions, and I'd hate for him to spend the fall feeling stupid when he isn't. I do tutoring after school. I could catch him up in a few weeks.
+
+[HUNTER]
+That would... seriously? That would be huge. What do I owe you?
+
+[CLARK]
+Nothing. Although.
+(here it comes)
+There is something you could trade me. A tour of your house.
+
+[HUNTER]
+(incredulous)
+My house?
+
+[CLARK]
+The class is spending the whole year on the history of Granville. We're putting on a play in the spring, it's a whole thing, there will be costumes. And that house of yours, is one of the oldest still standing in this town. It was built the year the town incorporated.
+
+[HUNTER]
+(smirking)
+You want a tour of my Ball-Sack house?
+
+[CLARK]
+(dying inside)
+I want a tour of the historic property at the corner of Ball and Sack. ...Yes. Fine. Yes, I do.
+
+[HUNTER]
+Deal. Toby gets fractions, you get the house. Fair warning. There's no hot water, and as of about an hour ago the basement's got a moat.
+
+[CLARK]
+Historians love a primary source.
+
+[NARRATOR]
+They shake on it. The handshake lasts maybe half a second longer than commerce requires, and Clark's ears go beet-red. Hunter doesn't notice the way he smiles whenever Clark blushes. But from the truck window, a ten-year-old notices everything.
+
+[TOBY]
+(casual, testing)
+Mr. Clark's really nice.
+
+[HUNTER]
+He is. He's going to help you with your fractions.
+
+[TOBY]
+(sotto)
+Yeah. Ok. Fractions.
+
+[NARRATOR]
+The sun gets low, and gold, and Granville starts handing the day back. Four men. One ordinary Thursday. A key riding in a bar owner's pocket instead of on the hook where it belongs. A sketchbook with whiskers in it, awake for the first time since February. A basement drying out around a brand-new water heater, and a handshake that ran half a second long. Nobody in this town would call any of that news. Well. Almost nobody.
+
+---
+
+SCENE: INT. THE BALL-SACK HOUSE — LATE AFTERNOON
+
+[NARRATOR]
+The doorbell of the Ball-Sack house hasn't worked since the Carter administration, so Clark knocks. And when Hunter opens the door, he starts to say something, but stops. Backlit by the late afternoon sun, Clark's blonde "broccoli" style curl caught the light like an angel's halo in a renaissance painting. A spell which is almost immediately broken by Toby, arriving at the door at a dead run.
+
+[TOBY]
+Daa-aaad. Stop being weird.
+
+[HUNTER]
+Sorry — hi. Come in. Excuse the — everything. Toby, back up, let the man in the house.
+
+[NARRATOR]
+Clark steps inside, and stops dead in the front hall, looking straight up the staircase like a man walking into a cathedral.
+
+[CLARK]
+Oh. Oh, would you look at this place. Original newel post. Original *everything.*
+
+[NARRATOR]
+Then Clark notices Toby.
+
+[CLARK]
+Hi, buddy. Why don't you go grab your math stuff and meet me at the kitchen table. I saw it through the window and it looks like a good fractions table.
+
+[HUNTER]
+There's a "good" kind of fractions table?
+
+[CLARK]
+So, here's my thing, before we start. I don't want to just drill him. I've watched too many kids get parked with a tutor for the coverage and sit there serving time. I want Toby to opt in. Choose it.
+
+[CLARK]
+Fractions as pizza. Fractions as baseball stats. Fractions as how much of that staircase is original. I promise I'll do everything I can to make it genuinely interesting for both of you.
+
+[HUNTER]
+...That sounds... yeah. That sounds good. Good for Toby.
+
+[CLARK]
+The family buy-in. It works better when the parent's, well...  anyway. Toby? Kitchen. I'll be right there.
+
+[NARRATOR]
+Toby thunders off toward the kitchen with the specific joy of a kid who has company. Clark turns a slow circle in the front hall — the crown molding, the pocket doors, the water stain on the ceiling shaped exactly like Ohio.
+
+[CLARK]
+Hey — can I say something. Off the record. I had some time with Toby earlier this week. He is a genuinely wonderful kid. Curious, kind, easy to be around. That does not happen by accident. Whatever you think you're screwing up — from where I'm standing, you're killing it.
+
+[NARRATOR]
+The compliment which for Clark came without effort, hit Hunter like a ton of bricks. When was the last time he'd been complimented on anything?
+
+[HUNTER]
+...I— Thank you. That's— Thank you. Really. I... I... I needed that. Because I bought this fixer upper — and you're standing in it — and there's no hot water, and when I tried to fix the water heater, the rusty part fell off in my hand and flooded the basement.
+
+[CLARK]
+(delighted)
+Historians love a primary source. Show me the basement. Wait — no. Fractions first. Basement after. If I go down there now, you will never get me back out.
+
+[HUNTER]
+Yes, that is correct: I bought a house on the corner of Ball and Sack, and now the basement has a deep end.
+
+[CLARK]
+This town loves its middle school genital puns.
+
+[HUNTER]
+Yes, I still can't believe there's a Beaver Hole Park. I thought they were making it up.
+
+[CLARK]
+You should come visit my neighborhood sometime.
+
+[CLARK]
+Sometime in the depression Carl Dixon went bankrupt and lost a bunch of land to the bank who then sold it to a real estate developer, who in honor of the bankrupt businessman, renamed the neighborhood "Dix's Slap."
+
+[NARRATOR]
+And that's how the evening settles in, at the corner of Ball and Sack. At the kitchen table, Clark and Toby cut a paper pizza into eighths, and Toby argues for bigger slices — which, as Clark points out, is exactly how fractions work. And one room over, with the light dying gold in the tall old windows, Hunter Rhodes sands a windowsill in a hundred-and-forty-year-old house, listening to his son laugh at his teacher's terrible math jokes. He does not get much sanding done.
+
+---
+
+SCENE: EXT. THE BALL-SACK HOUSE - NIGHT
+
+[NARRATOR]
+Hunter walks Clark out to his car, Toby nowhere to be found.
+
+[CLARK]
+So how are you finding living in Granville so far?
+
+[HUNTER]
+I have to admit it takes some getting used to.
+
+[CLARK]
+How so?
+
+[HUNTER]
+Well, the matchmakers are very aggressive.
+
+[CLARK]
+Right? What is with that?
+
+[HUNTER]
+Including your aunt.
+
+[CLARK]
+OH. My. God! She didn't.
+
+[HUNTER]
+She told me if I wanted a piece of you I needed to get it quickly because you were a hot commodity in this town.
+
+[CLARK]
+That's what all the single moms keep saying about you.
+
+[HUNTER]
+Right? How are you going to make a pass at me like that in front of your kid--in front of my kid?
+
+[CLARK]
+I wish they all would just mind their own business.
+
+[HUNTER]
+Well, there is a way...
+
+[CLARK]
+A way to what?
+
+[HUNTER]
+Get them off our back.
+
+[CLARK]
+And how would we do that?
+
+[HUNTER]
+We could pretend to date each other.
+
+[NARRATOR]
+Clark's face turns beet-red.
+
+[CLARK]
+Are you suggesting--But people would think you're--
+
+[HUNTER]
+I don't have a problem with people thinking i'm gay. My brother actually--
+
+[CLARK]
+Oh, everyone knows Kevin. And Roxy, for that matter. What i'm saying is this would be new ground for you.
+
+[HUNTER]
+I suppose if our goal is to get people to stop gossiping about us, that would actually have the opposite effect.
+
+[CLARK]
+Ya think?

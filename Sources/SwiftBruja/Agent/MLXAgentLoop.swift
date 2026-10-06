@@ -140,6 +140,12 @@ public final class MLXAgentLoop {
             await onEvent(.assistantText(text))
           case .toolCall(let id, let name, let argumentsJSON):
             pendingToolCalls.append((id: id, name: name, argumentsJSON: argumentsJSON))
+          case .rejectedToolCall(let reason, let toolName):
+            // Nothing to dispatch: MLX already refused the call. Echo it so the turn does not
+            // end silently; the CLI's empty-answer fallback explains the rest.
+            await onEvent(
+              .toolFinished(
+                name: toolName ?? "<unparsed>", result: "tool call rejected by MLX: \(reason)"))
           case .info:
             continue
           }

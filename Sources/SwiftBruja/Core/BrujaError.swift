@@ -41,6 +41,10 @@ public enum BrujaError: LocalizedError, Sendable {
   /// source cannot report exact counts.
   case contextWindowExceeded(tokenCount: Int, limit: Int)
 
+  /// Schema-constrained generation reached its token limit before the JSON object closed, so
+  /// the output is not a complete object. Carries the limit that was hit.
+  case structuredOutputTruncated(tokenLimit: Int)
+
   public var errorDescription: String? {
     switch self {
     case .modelNotFound(let path):
@@ -71,6 +75,9 @@ public enum BrujaError: LocalizedError, Sendable {
         return "Context window exceeded: \(tokenCount) tokens requested, \(limit) tokens available"
       }
       return "Context window exceeded: prompt and history are too large for the model"
+    case .structuredOutputTruncated(let tokenLimit):
+      return
+        "Structured output truncated: the JSON object was not complete after \(tokenLimit) token(s). Raise maxTokens or shorten the request."
     }
   }
 }

@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "properties": {
+    "age": {"type": "string", "maxLength": 500},
+    "pronouns": {"type": ["string", "null"], "maxLength": 500},
+    "occupation": {"type": ["string", "null"], "maxLength": 500},
+    "languages": {"type": ["string", "null"], "maxLength": 500},
+    "logline": {"type": ["string", "null"], "maxLength": 500},
+    "sampleLine": {"type": ["string", "null"], "maxLength": 500},
+    "appearance": {"type": ["string", "null"], "maxLength": 500},
+    "wardrobe": {"type": ["string", "null"], "maxLength": 500},
+    "personality": {"type": ["string", "null"], "maxLength": 500},
+    "backstory": {"type": ["string", "null"], "maxLength": 500},
+    "arc": {"type": ["string", "null"], "maxLength": 500},
+    "relationships": {
+      "type": ["array", "null"],
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "properties": {
+          "with": {"type": ["string", "null"], "maxLength": 200},
+          "nature": {"type": ["string", "null"], "maxLength": 200}
+        },
+        "propertyOrder": ["with", "nature"]
+      }
+    },
+    "voiceAndSpeech": {"type": ["string", "null"], "maxLength": 500},
+    "canonFacts": {
+      "type": ["array", "null"],
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "properties": {
+          "fact": {"type": ["string", "null"], "maxLength": 200},
+          "quote": {"type": ["string", "null"], "maxLength": 200}
+        },
+        "propertyOrder": ["fact", "quote"]
+      }
+    }
+  },
+  "propertyOrder": ["age", "pronouns", "occupation", "languages", "logline", "sampleLine", "appearance", "wardrobe", "personality", "backstory", "arc", "relationships", "voiceAndSpeech", "canonFacts"]
+}

@@ -1,6 +1,25 @@
 import Foundation
 import SwiftAcervo
 
+/// Whether a model reasons before it answers.
+///
+/// Models such as Qwen3.5 read `enable_thinking` in their chat template. `.off` sets it to
+/// `false`, so the model does not generate the reasoning at all.
+public enum BrujaThinking: Sendable {
+  /// Leave the chat template as the model ships it. Nothing is passed to the template.
+  case modelDefault
+  /// Pass `enable_thinking: false` to the chat template.
+  case off
+
+  /// The additional context for the chat template; `nil` for `.modelDefault`.
+  internal var additionalContext: [String: any Sendable]? {
+    switch self {
+    case .modelDefault: return nil
+    case .off: return ["enable_thinking": false]
+    }
+  }
+}
+
 /// Result of a query operation with metadata
 public struct BrujaQueryResult: Codable, Sendable {
   /// The model's text response.

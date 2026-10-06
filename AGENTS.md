@@ -1,13 +1,13 @@
 ---
 type: reference
-updated: 2026-07-04
+updated: 2026-10-04
 ---
 
 # AGENTS.md
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.10.0
+**Current Version**: 1.11.0
 
 ---
 
@@ -44,7 +44,8 @@ Refresh after significant changes with `/codemap` (or
   - `Core/BrujaModelManager.swift` -- Loads models into memory, validates memory
   - `Core/BrujaQuery.swift` -- Query execution via MLX, resolves models via SwiftAcervo
   - `Core/BrujaMemory.swift` -- Memory validation and auto-tuned maxTokens
-  - `Core/BrujaTypes.swift` -- `BrujaQueryResult`, `BrujaModelInfo`
+  - `Core/BrujaTypes.swift` -- `BrujaQueryResult`, `BrujaModelInfo`, `BrujaThinking`
+  - `Core/BrujaJSONSchema.swift` -- `BrujaJSONSchema`, the run-time schema for constrained queries
   - `Core/BrujaError.swift` -- Error types (includes agent errors: `toolExecutionFailed`, `agentStepLimitExceeded`, `contextWindowExceeded`)
   - `Agent/MLXAgentLoop.swift` -- the hand-rolled macOS-26 MLX agent loop (owns the tool round-trip)
   - `Agent/MLXGeneration.swift` -- MLX generation seam (`GenerationSource`, `ContainerGenerationSource`, `TurnState` KV-cache reuse + step cap)
@@ -64,7 +65,8 @@ Refresh after significant changes with `/codemap` (or
   - `AgentCommand.swift` -- `bruja agent` verb + AgentLoop + ConsentToolObserver + ConsentToolWrapper
   - `ErrorReporting.swift` -- Typed CLI error mapping
 - `Tests/SwiftBrujaTests/` -- Unit tests (agent tools, PathGuard, backend selection, mock harness)
-- `Tests/BrujaIntegrationTests/` -- Integration tests (AgentSeamSpikeTest, AgentReplTest, FoundationBackendIntegrationTest)
+- `Tests/BrujaIntegrationTests/` -- Integration tests (AgentSeamSpikeTest, AgentReplTest, FoundationBackendIntegrationTest, PersonajeAcceptanceTests, PersonajeMemoryTests)
+- `Fixtures/Personaje/` -- Prompts, `schema.json` and `build-fixtures.py` for the Personaje acceptance and memory tests (see its `README.md`)
 - `Tests/ProgressRendererTests/` -- IOCoordinator + ProgressRenderer unit tests
 
 ## Key Components
@@ -75,8 +77,9 @@ Refresh after significant changes with `/codemap` (or
 | `BrujaModelManager.swift` | Loads models into memory, validates memory, resolves models via SwiftAcervo |
 | `BrujaQuery.swift` | Executes LLM inference via MLX, resolves models via SwiftAcervo, supports structured output via `Decodable` |
 | `BrujaMemory.swift` | Validates available memory before loading models (80% threshold), auto-tunes `maxTokens` based on memory (4096 or 8192) |
-| `BrujaTypes.swift` | `BrujaQueryResult` (response + metadata), `BrujaModelInfo` (model details) |
-| `BrujaError.swift` | `insufficientMemory`, `modelNotFound`, `modelLoadFailed`, `queryFailed`, `jsonParsingFailed` |
+| `BrujaTypes.swift` | `BrujaQueryResult` (response + metadata), `BrujaModelInfo` (model details), `BrujaThinking` (thinking switch) |
+| `BrujaJSONSchema.swift` | `BrujaJSONSchema`: the object shape, with optional `maxLength` / `maxItems` bounds, that `query(_:schema:as:)` enforces while generating |
+| `BrujaError.swift` | `insufficientMemory`, `modelNotFound`, `modelLoadFailed`, `queryFailed`, `jsonParsingFailed`, `structuredOutputTruncated` |
 
 ## CLI Commands
 
@@ -207,7 +210,17 @@ make install codesign-cli
 make test-agent-seam    # S2 read_file round-trip spike
 make test-agent-repl    # S7 agent REPL end-to-end
 make test-agent-fm      # S9 Foundation Models backend integration
+
+# Unsandboxed Personaje tests (models on disk; not run in hosted CI)
+make test-personaje                              # nine prompts, schema-constrained, 4-8 minutes
+make test-personaje ONLY=<testName>              # one test
+make test-personaje-memory                       # prints peak memory at 5,000 and 15,000 prompt tokens
+make test-personaje-memory ONLY=<testName>
 ```
+
+**Personaje targets.** Both use the unsandboxed `xcrun xctest` host (see below). They need `mlx-community/Qwen2.5-7B-Instruct-4bit` in Acervo's shared models directory; `test-personaje` also needs `mlx-community/Qwen3.5-9B-MLX-4bit` for its one thinking test. A test whose model is absent skips, and a skip still exits 0, so look for `Test Case '-[BrujaIntegrationTests.<Class> <testName>]' passed` in the output. Neither target runs in hosted CI; `make test-ci` skips both classes. `test-personaje-memory` only measures: it prints one `PEAK tokens=<n> mlx_bytes=<...> footprint_bytes=<...>` line per prompt size and asserts nothing about the figures.
+
+**`Fixtures/Personaje/`** holds the nine Personaje prompts (`01-HUNTER-major.txt` through `09-DUKE-minor.txt`), `schema.json` (the single source the tests build their `BrujaJSONSchema` from) and `build-fixtures.py` (regenerates the prompts). The 500 / 200 / 8 bounds (`maxLength` on top-level strings, `maxLength` inside array items, `maxItems`) and the rule that `age` is never null are Personaje's choices, carried by that prompt and schema. They are not library behaviour or defaults. See `Fixtures/Personaje/README.md`.
 
 ### Real-inference tests: App Group sandbox limitation
 
@@ -215,7 +228,7 @@ make test-agent-fm      # S9 Foundation Models backend integration
 
 1. Build + code-sign the binary: `make install codesign-cli`
 2. Download the fixture model: `./bin/bruja download -m mlx-community/Qwen2.5-0.5B-Instruct-4bit`
-3. Use the unsandboxed targets: `make test-agent-seam` / `make test-agent-repl` / `make test-agent-fm`
+3. Use the unsandboxed targets: `make test-agent-seam` / `make test-agent-repl` / `make test-agent-fm` / `make test-personaje` / `make test-personaje-memory`
 
 These targets use `xcrun xctest` (unsandboxed) with `ACERVO_APP_GROUP_ID` set, which can access the App Group container via plain POSIX (same-user, mode 700).
 
@@ -295,6 +308,45 @@ let result: Analysis = try await Bruja.query(
 )
 ```
 
+### Schema-Constrained Output
+
+`query(_:schema:as:model:temperature:maxTokens:system:repetitionPenalty:thinking:)` masks every token that would take the output outside a `BrujaJSONSchema`, so the model can only write one JSON object: every key of the schema, in schema order, nothing around it. A property with no value is written as `null` (the property must be nullable). The result is decoded with `JSONDecoder` as written, nothing stripped or repaired. Outside strings the only whitespace allowed is one optional space after `:` and `,` (the model writes `{"age": "52", ...`), so the output is not byte-compact. The mask fixes the shape, not the content: name each field and say what it holds in the prompt.
+
+```swift
+struct Profile: Decodable { let age: String?; let occupation: String? }
+
+let schema = BrujaJSONSchema([
+    .string("age", maxLength: 500),
+    .string("occupation", maxLength: 500),
+])
+let profile = try await Bruja.query(
+    excerpt,
+    schema: schema,
+    as: Profile.self,
+    model: "mlx-community/Qwen2.5-7B-Instruct-4bit"
+)
+```
+
+- **`BrujaJSONSchema`**: an ordered list of `Property` values (`.string`, `.integer`, `.number`, `.boolean`, `.array`, `.object`). Properties are nullable by default; pass `nullable: false` to forbid `null`. Array elements are never `null`.
+- **Bounds**: `.string(_:maxLength:)` caps a string and `.array(_:of:maxItems:)` caps an array; use `.string(maxLength:)` as the `Kind` of array elements. Both are enforced while writing, so a bounded value always ends. `maxLength` counts the characters of the JSON text between the quotes as written, so an escape counts every character it is written with (`\n` counts 2, `\u00e9` counts 6). A bound below 1 is a precondition failure. Numbers have a fixed bound: at most `BrujaJSONAcceptor.maximumNumberDigits` (20) digits across the integer part, fraction and exponent, enough for any `Int64` and the largest finite `Double`. A schema with an unbounded string or array can still run to `maxTokens` and throw `BrujaError.structuredOutputTruncated(tokenLimit:)`. To get output that is guaranteed to close, bound every string and array, including strings inside array items; numbers, booleans and `null` are bounded already.
+- **`repetitionPenalty`** (`Float?`, default `nil`): penalises tokens in the last 64 tokens of context, before the mask, to stop a string repeating one word or an array repeating one item. It is off by default because it costs more than it buys on the default model: at 1.1, over the nine Personaje prompts, null fields rose from 19 to 33, and the unpenalised baseline showed no looping. Bounds are the first defence against runaway output; turn the penalty on only if you see looping.
+- **`maxTokens`**: when `nil`, chosen from available memory, as for the other queries.
+- **Errors**: `structuredOutputTruncated` if `maxTokens` is reached before the object closes; `jsonParsingFailed` if the object does not decode as the type. A character the tokenizer can only spell as split-byte tokens cannot be generated on this path.
+- **Tokenizer assumption**: the mask takes each token's text to be `decode([id])` on its own, which holds for byte-level BPE vocabularies such as Qwen's. A tokenizer whose decoder depends on the neighbouring tokens (WordPiece, Metaspace, or one that cleans up spaces across token boundaries) can produce field text that differs from the model's real decoded sequence; this path is not validated against such tokenizers.
+
+### Thinking
+
+Every query overload takes `thinking: BrujaThinking`. `.modelDefault` (the default) passes nothing to the chat template. `.off` passes `enable_thinking: false`, which models such as Qwen3.5 read to skip their reasoning entirely.
+
+### Unloading Models
+
+```swift
+await Bruja.unloadModel("mlx-community/Qwen2.5-7B-Instruct-4bit")
+await Bruja.unloadAllModels()
+```
+
+Both are `async`. They drop the cached container and vocabulary table and clear the MLX buffer cache; a later query reloads the model. A caller that keeps the `ModelContainer` returned by `Bruja.loadModel` keeps its memory, because MLX frees it only when the last reference goes.
+
 ### Query with Metadata
 
 ```swift
@@ -313,6 +365,17 @@ SwiftBruja automatically manages memory to prevent out-of-memory errors:
    - **> 32 GB**: 8192 tokens
 3. **Info logging**: Resolved `maxTokens` value printed to stdout: `[SwiftBruja] maxTokens set to N for this query`
 4. Callers can override by passing explicit `maxTokens` value
+
+### MLX buffer cache and long prompts
+
+Measured with `make test-personaje-memory` on the default Personaje model (`mlx-community/Qwen2.5-7B-Instruct-4bit`) on a 32 GB machine:
+
+| Prompt tokens | MLX peak active | Process footprint | MLX cache |
+|---------------|-----------------|-------------------|-----------|
+| 5,001 | 5.22 GB | 7.50 GB | 3.10 GB |
+| 15,005 | 5.70 GB | 20.70 GB | 16.29 GB |
+
+The footprint grows because of the MLX buffer cache, not live tensors. Bruja sets no MLX cache limit and clears the cache only when a model is unloaded (`Bruja.unloadModel` / `unloadAllModels`). This was a deliberate decision, not an oversight; issue #48 stays open.
 
 ## Default Values
 
