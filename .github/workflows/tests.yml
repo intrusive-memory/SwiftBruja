@@ -9,6 +9,9 @@ on:
 
 env:
   ACERVO_APP_GROUP_ID: group.intrusive-memory.models
+  # `make test-ci` forwards this into the sandboxed test runner as TEST_RUNNER_ACERVO_CDN_BASE_URL.
+  # SwiftAcervo 0.21+ fatalErrors on `--remote` when it is unset, which failed PreflightManifestTest.
+  ACERVO_CDN_BASE_URL: https://cdn.intrusive-memory.productions/models
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
