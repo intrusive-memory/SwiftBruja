@@ -35,8 +35,8 @@ let package = Package(
   // not a guarantee that the current Sources still compile against it.
   dependencies: [
     // MLX backend (R3): on-device inference engine + LLM layer.
-    .package(url: "https://github.com/ml-explore/mlx-swift", .upToNextMajor(from: "0.31.3")),
-    .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
+    .package(url: "https://github.com/ml-explore/mlx-swift", .upToNextMajor(from: "0.32.3")),
+    .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.32.3")),
 
     // Model download / cache / discovery (R3.2, G1/G2).
     .package(
