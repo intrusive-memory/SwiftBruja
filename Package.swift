@@ -39,7 +39,8 @@ let package = Package(
     .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.32.3")),
 
     // Model download / cache / discovery (R3.2, G1/G2).
-    .package(url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.25.0")),
+    .package(
+      url: "https://github.com/intrusive-memory/SwiftAcervo.git", .upToNextMajor(from: "0.25.0")),
 
     // CLI argument parsing (R5). Not named in REQUIREMENTS, but the agent CLI requires it.
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),

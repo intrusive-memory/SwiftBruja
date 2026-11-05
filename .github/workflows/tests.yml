@@ -21,7 +21,7 @@ jobs:
   # Step 1: Code Quality
   code-quality:
     name: Code Quality
-    runs-on: macos-26
+    runs-on: xcode-27
 
     steps:
       - name: Checkout code
@@ -46,11 +46,11 @@ jobs:
   # Step 2: Build and Test on macOS
   # Note: Must use xcodebuild because Metal shaders cannot be compiled with swift build.
   # Package.swift targets macOS 26 (swift-tools-version: 6.2, .macOS(.v26)); the agent stack
-  # is macOS-26-only (the macOS-27 FoundationModels custom-provider seam was removed), so this
-  # builds and runs on the hosted macos-26 image with its default Xcode 26.
+  # is macOS-26-only (the macOS-27 FoundationModels custom-provider seam was removed). It builds
+  # and runs on the hosted xcode-27 image (macOS 27, Xcode 27, Swift 6.4).
   macos-tests:
     name: macOS Tests
-    runs-on: macos-26
+    runs-on: xcode-27
     needs: [code-quality]
 
     steps:
@@ -77,11 +77,11 @@ jobs:
 
   # Step 2b: Integration Tests (CLI binary smoke test + dist artifact)
   # Builds AND runs the macOS-26-target `bruja` binary (make dist + smoke test) on the hosted
-  # macos-26 image. No special Xcode selection needed — the image's default Xcode 26 ships the
-  # Swift 6.2 toolchain the manifest now targets.
+  # xcode-27 image. No special Xcode selection needed — the image's Xcode 27 (Swift 6.4) builds
+  # the Swift 6.2 / macOS 26 floor the manifest targets.
   integration-tests:
     name: Integration Tests
-    runs-on: macos-26
+    runs-on: xcode-27
     needs: [code-quality]
     timeout-minutes: 15
 

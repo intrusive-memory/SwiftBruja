@@ -22,7 +22,7 @@ permissions:
 jobs:
   build-and-upload:
     name: Build and Upload Binary
-    runs-on: macos-26
+    runs-on: xcode-27
 
     steps:
       - name: Checkout
@@ -30,9 +30,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The released binary targets macOS 26 (swift-tools-version: 6.2, .macOS(.v26)); the hosted
-      # macos-26 image's default Xcode 26 ships the Swift 6.2 toolchain, so no Xcode selection is
-      # needed.
+      # The released binary targets macOS 26 (swift-tools-version: 6.2, .macOS(.v26)); it is built
+      # on the hosted xcode-27 image (Xcode 27, Swift 6.4), whose toolchain builds that floor, so no
+      # Xcode selection is needed.
       - name: Determine Version
         id: version
         run: |

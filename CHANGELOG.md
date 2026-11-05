@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-10-04
+updated: 2026-11-04
 ---
 
 # Changelog
@@ -9,6 +9,16 @@ All notable changes to SwiftBruja will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.11.1] - 2026-11-04
+
+### Fixed
+- **Dependency floors match the code** — v1.11.0 calls mlx-swift-lm's `Generation.rejectedToolCall`, which exists only in mlx-swift-lm 3.32+, but `Package.swift` still allowed 3.31.3, so a consumer with an older lock failed to compile. The floors are now mlx-swift 0.32.3 and mlx-swift-lm 3.32.3 (same majors). The unused local-sibling helper was removed; every dependency is a plain remote `.upToNextMajor` pin.
+
+### Changed
+- **CI runs on the `xcode-27` image** (macOS 27, Xcode 27, Swift 6.4) instead of `macos-26`. The package's `swift-tools-version` (6.2) and `.macOS(.v26)` floor are unchanged.
 
 ---
 
