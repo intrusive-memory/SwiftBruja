@@ -130,12 +130,27 @@ public final class MLXAgentLoop {
 
       var assistantText = ""
       var pendingToolCalls: [(id: String, name: String, argumentsJSON: String)] = []
+      // Reasoning is shown wrapped in <think>…</think>, as thinking models wrote it before
+      // mlx-swift-lm 3.33 split it out, so `ReasoningTrace` and `--verbose` behave as they did.
+      // It isn't added to `assistantText`: the transcript replays the answer only.
+      var inReasoning = false
 
       do {
         for try await event in stream {
           switch event {
+          case .reasoning(let text):
+            guard !text.isEmpty else { continue }
+            if !inReasoning {
+              inReasoning = true
+              await onEvent(.assistantText("<think>"))
+            }
+            await onEvent(.assistantText(text))
           case .text(let text):
             guard !text.isEmpty else { continue }
+            if inReasoning {
+              inReasoning = false
+              await onEvent(.assistantText("</think>\n\n"))
+            }
             assistantText += text
             await onEvent(.assistantText(text))
           case .toolCall(let id, let name, let argumentsJSON):
