@@ -21,6 +21,10 @@ public enum BrujaGenerationEvent: Sendable {
   /// A tool-call-shaped output MLX refused to make executable (malformed, incomplete, undeclared
   /// tool, invalid arguments, ...). `reason` is MLX's `RejectedToolCall.Reason` raw value.
   case rejectedToolCall(reason: String, toolName: String?)
+  /// Thinking text, apart from the answer. mlx-swift-lm 3.33 delivers a thinking model's
+  /// reasoning (Qwen3.5's `<think>`, Gemma 4's channels) separately, delimiters removed. The loop
+  /// shows it but doesn't replay it in the transcript.
+  case reasoning(String)
   /// Completion / token-rate metadata; not surfaced as a loop event.
   case info
 }
@@ -190,8 +194,13 @@ struct ContainerGenerationSource: GenerationSource {
             case .rejectedToolCall(let rejected):
               continuation.yield(
                 .rejectedToolCall(reason: rejected.reason.rawValue, toolName: rejected.toolName))
+            case .reasoning(let text):
+              continuation.yield(.reasoning(text))
             case .info:
               continuation.yield(.info)
+            case .steering:
+              // Bruja submits no steering instructions, so there is no outcome to report.
+              continue
             }
           }
 

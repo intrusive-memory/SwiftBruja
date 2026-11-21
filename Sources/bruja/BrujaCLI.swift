@@ -343,16 +343,33 @@ struct ChatCommand: AsyncParsableCommand {
           continue
         }
 
-        let stream = session.streamResponse(to: trimmed)
         do {
           if verbose {
-            // Verbose: stream token-by-token live, reasoning trace included.
-            for try await chunk in stream {
-              print(chunk, terminator: "")
+            // Verbose: stream token-by-token live, reasoning trace included. mlx-swift-lm 3.33
+            // delivers reasoning apart from the answer; it's printed inside <think>…</think>.
+            var inReasoning = false
+            for try await item in session.streamDetails(to: trimmed) {
+              switch item {
+              case .reasoning(let text):
+                if !inReasoning {
+                  inReasoning = true
+                  print("<think>", terminator: "")
+                }
+                print(text, terminator: "")
+              case .chunk(let text):
+                if inReasoning {
+                  inReasoning = false
+                  print("</think>\n")
+                }
+                print(text, terminator: "")
+              case .info, .toolCall, .rejectedToolCall, .steering:
+                continue
+              }
               fflush(stdout)
             }
             print("\n")
           } else {
+            let stream = session.streamResponse(to: trimmed)
             // Default: hiding the <think> reasoning means we can't know where it ends until the
             // turn completes, so buffer the whole response, strip the trace, then print the answer.
             var full = ""
