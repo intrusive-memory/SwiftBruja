@@ -234,7 +234,9 @@ These targets use `xcrun xctest` (unsandboxed) with `ACERVO_APP_GROUP_ID` set, w
 
 ### CI Gating
 
-The `Package.swift` manifest (`swift-tools-version: 6.2`, `.macOS(.v26)`) builds on the hosted `macos-26` image with its default Xcode 26. `tests.yml` (Code Quality + macOS Tests + Integration Tests) and `release.yml` all `runs-on: macos-26` and gate normally — no `continue-on-error` and no Xcode-27 selection.
+The `Package.swift` manifest (`swift-tools-version: 6.2`, `.macOS(.v26)`) builds on the hosted `xcode-27` image (macOS 27, Xcode 27, Swift 6.4). `tests.yml` (Code Quality + macOS Tests + Integration Tests) runs on PRs into `main` and `development`, and on pushes to `main`. Jobs gate normally — no `continue-on-error`.
+
+**CI does not run on draft PRs; mark the PR ready for review to run the suite** (the `draft-pr-ci-gate` pattern: `ready_for_review` trigger, `if: !draft` on every job). Branch protection on both `main` and `development` requires **Code Quality**, **macOS Tests** and **Integration Tests** (`strict` on `main`, not on `development`). Renaming a job un-requires it; update both branches' protection contexts in the same PR.
 
 The agent stack is intentionally macOS-26-only: the macOS-27 FoundationModels custom-provider seam (`LanguageModel`/`LanguageModelExecutor`) was removed, and the MLX backend uses the hand-rolled `MLXAgentLoop` (driven by `MLXLMCommon` native tool-call parsing). Local note: a macOS-27 / Xcode 27 host still builds correctly because the `.macOS(.v26)` deployment target makes the compiler's availability checker flag any stray macOS-27 symbol as an error — so a local `make build` is a faithful proxy for the macOS-26 CI compile.
 
@@ -406,7 +408,8 @@ Formula location: `intrusive-memory/homebrew-tap/Formula/bruja.rb`
 ## Development Workflow
 
 - **Branch**: `development` → PR → `main`
-- **CI Required**: Code Quality + macOS Tests + Integration Tests must pass
+- **CI Required**: Code Quality + macOS Tests + Integration Tests must pass, into `development` and into `main`
+- **Draft PRs run no CI**: mark a PR ready for review to run the suite
 - **Never commit directly to `main`**
 - **Integration Tests**: Build CLI via `make release`, verify `--version` and `--help`
 
