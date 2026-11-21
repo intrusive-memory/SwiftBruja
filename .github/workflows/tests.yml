@@ -1,8 +1,12 @@
 name: Tests
 
 on:
+  # `ready_for_review` isn't in GitHub's default pull_request types: without it, marking a draft
+  # ready never starts the suite. Drafts still get opened/synchronize events, and every job below
+  # skips them (`if: !draft`), so CI runs only on PRs that are up for merge (draft-pr-ci-gate).
   pull_request:
-    branches: [main]
+    branches: [main, development]
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
   workflow_dispatch:
@@ -21,6 +25,7 @@ jobs:
   # Step 1: Code Quality
   code-quality:
     name: Code Quality
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: xcode-27
 
     steps:
@@ -50,6 +55,7 @@ jobs:
   # and runs on the hosted xcode-27 image (macOS 27, Xcode 27, Swift 6.4).
   macos-tests:
     name: macOS Tests
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: xcode-27
     needs: [code-quality]
 
@@ -81,6 +87,7 @@ jobs:
   # the Swift 6.2 / macOS 26 floor the manifest targets.
   integration-tests:
     name: Integration Tests
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: xcode-27
     needs: [code-quality]
     timeout-minutes: 15

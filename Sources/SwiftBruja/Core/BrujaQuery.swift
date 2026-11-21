@@ -7,6 +7,15 @@ import SwiftAcervo
 /// Handles query execution against loaded models
 public enum BrujaQuery {
 
+  /// A thinking model's reasoning and answer as one response: `<think>\nreasoning\n</think>\n\n`
+  /// in front of the answer, or the answer alone when there was no reasoning.
+  static func combine(reasoning: String, answer: String) -> String {
+    let thought = reasoning.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !thought.isEmpty else { return answer }
+    return
+      "<think>\n\(thought)\n</think>\n\n\(answer.trimmingCharacters(in: .whitespacesAndNewlines))"
+  }
+
   // MARK: - Simple Query
 
   /// Execute a query and return the text response
@@ -71,8 +80,19 @@ public enum BrujaQuery {
       additionalContext: thinking.additionalContext
     )
 
-    // Execute query
-    let response = try await session.respond(to: prompt)
+    // Execute query. mlx-swift-lm 3.33 delivers a thinking model's reasoning apart from the
+    // answer; it's put back in front as <think>…</think>, the shape `query` has always returned
+    // for thinking models, so callers that strip it (ReasoningTrace) keep working.
+    var answer = ""
+    var reasoning = ""
+    for try await item in session.streamDetails(to: prompt) {
+      switch item {
+      case .chunk(let text): answer += text
+      case .reasoning(let text): reasoning += text
+      case .info, .toolCall, .rejectedToolCall, .steering: continue
+      }
+    }
+    let response = BrujaQuery.combine(reasoning: reasoning, answer: answer)
 
     let duration = Date().timeIntervalSince(startTime)
 
@@ -270,7 +290,7 @@ public enum BrujaQuery {
           }
 
           // The iterator evaluates one token ahead; let that settle before the lock is released.
-          Stream().synchronize()
+          Stream.defaultStream.synchronize()
 
           return (
             text, input.text.tokens.size, generated, Date().timeIntervalSince(start),

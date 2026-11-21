@@ -1,6 +1,6 @@
 ---
 type: doc
-updated: 2026-11-04
+updated: 2026-11-21
 ---
 
 # Changelog
@@ -9,6 +9,19 @@ All notable changes to SwiftBruja will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.12.0] - 2026-11-21
+
+### Fixed
+- **Builds against mlx-swift-lm 3.33** — 3.33.0 added `Generation.reasoning` and `Generation.steering`. Bruja's `.upToNextMajor(from: "3.32.3")` floor admitted it, so every fresh resolve resolved 3.33.0 and failed to compile ("switch must be exhaustive" in `MLXGeneration.swift`). Both cases are handled.
+- **Thinking models' reasoning still shows with `--verbose`** — mlx-swift-lm 3.33 delivers a thinking model's reasoning (Qwen3.5's `<think>`) apart from the answer, and `ChatSession.respond`/`streamResponse` return the answer alone. `Bruja.query` puts the reasoning back in front as `<think>…</think>`, the shape it has always returned; the REPL streams it under `--verbose`; the agent loop shows it in `<think>…</think>` but no longer replays it in the transcript, as mlx-swift-lm recommends.
+- **Deprecated `Stream()`** — the post-generation synchronize now waits on `Stream.defaultStream`; in mlx-swift 0.33 `Stream()` would create a new, empty stream.
+
+### Changed
+- **Dependency floors** raised to mlx-swift 0.33.0 and mlx-swift-lm 3.33.0, the latest releases (same majors).
+- `BrujaGenerationEvent` has a new `reasoning(String)` case. An exhaustive `switch` over it outside Bruja needs the case.
 
 ---
 
