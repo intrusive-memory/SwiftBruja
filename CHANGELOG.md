@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.12.0] - 2026-11-21
 
 ### Fixed
 - **Builds against mlx-swift-lm 3.33** — 3.33.0 added `Generation.reasoning` and `Generation.steering`. Bruja's `.upToNextMajor(from: "3.32.3")` floor admitted it, so every fresh resolve resolved 3.33.0 and failed to compile ("switch must be exhaustive" in `MLXGeneration.swift`). Both cases are handled.

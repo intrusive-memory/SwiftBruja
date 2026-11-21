@@ -12,9 +12,9 @@ public enum BrujaQuery {
   static func combine(reasoning: String, answer: String) -> String {
     let thought = reasoning.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !thought.isEmpty else { return answer }
-    return "<think>\n\(thought)\n</think>\n\n\(answer.trimmingCharacters(in: .whitespacesAndNewlines))"
+    return
+      "<think>\n\(thought)\n</think>\n\n\(answer.trimmingCharacters(in: .whitespacesAndNewlines))"
   }
-
 
   // MARK: - Simple Query
 

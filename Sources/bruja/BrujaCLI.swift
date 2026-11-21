@@ -31,7 +31,7 @@ struct BrujaCLI: AsyncParsableCommand {
 
       \(Acervo.environmentHelp())
       """,
-    version: "1.11.1-dev",
+    version: "1.12.0",
     subcommands: [
       DownloadCommand.self, QueryCommand.self, ChatCommand.self, AgentCommand.self,
       ListCommand.self, InfoCommand.self,
