@@ -7,7 +7,7 @@ updated: 2026-10-04
 
 This file provides comprehensive documentation for AI agents working with the SwiftBruja codebase.
 
-**Current Version**: 1.11.1-dev
+**Current Version**: 1.12.0
 
 ---
 
@@ -24,7 +24,7 @@ SwiftBruja makes local LLM queries as simple as possible. One import, one line o
 ## Queryable Codemap
 
 A prebuilt [graphify](https://pypi.org/project/graphifyy/) knowledge graph of this
-codebase lives in [`graphify-out/`](graphify-out/) (765 nodes · 1307 edges). **Prefer
+codebase lives in [`graphify-out/`](graphify-out/) (1296 nodes · 2563 edges). **Prefer
 querying it before grepping** for architecture or "what connects to what" questions:
 
 ```bash
