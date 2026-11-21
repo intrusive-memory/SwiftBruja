@@ -17,7 +17,8 @@ This file contains instructions specific to Claude Code agents working on SwiftB
 Reference: [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md) for complete Claude Code workflow.
 
 - **Branch**: `development` → PR → `main`
-- **CI Required**: Code Quality + macOS Tests + Integration Tests must pass
+- **CI Required**: Code Quality + macOS Tests + Integration Tests must pass, into `development` and into `main` (branch protection on both)
+- **CI does not run on draft PRs**; mark the PR ready for review to run the suite (`draft-pr-ci-gate` skill)
 - **Never** commit directly to `main`
 - **Never** add `@available` checks for older platforms
 
