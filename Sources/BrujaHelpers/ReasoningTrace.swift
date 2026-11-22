@@ -9,7 +9,7 @@ import Foundation
 /// * **Explicit**: `<think>reasoning…</think>\n\nanswer` — both tags emitted by the model.
 /// * **Primed**: `reasoning…</think>\n\nanswer` — the chat template opens `<think>` in the prompt,
 ///   so the model only emits the *closing* tag. (This is what Qwen3.5 does through
-///   `#huggingFaceTokenizerLoader()`'s `applyChatTemplate`.)
+///   the tokenizer's `applyChatTemplate`.)
 ///
 /// Both shapes are handled by keying on the closing tag: the answer is whatever follows the final
 /// `</think>`. Text with no reasoning markers is returned unchanged.

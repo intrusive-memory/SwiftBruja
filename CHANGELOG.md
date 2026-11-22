@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **Tokenizer: swift-tokenizers instead of swift-transformers.** `SwiftTokenizersLoader` adapts DePasqualeOrg/swift-tokenizers 0.7.5 to mlx-swift-lm's `MLXLMCommon.TokenizerLoader`, replacing huggingface/swift-transformers and the `#huggingFaceTokenizerLoader()` macro (`MLXHuggingFace` product). Both tokenizer packages define a `Tokenizers` module, so apps that also link the image stack (SwiftTuberia, flux-2-swift-mlx, SwiftVinetas) could not build with SwiftBruja. swift-transformers and swift-jinja leave the dependency graph.
+
+### Testing
+
+- `SwiftTokenizersLoaderTests`: encode/decode, special tokens, chat-template rendering and the missing-template error, against a hand-written tokenizer.
+
 ## [1.12.0] - 2026-11-21
 
 ### Fixed
