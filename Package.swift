@@ -45,23 +45,16 @@ let package = Package(
     // CLI argument parsing (R5). Not named in REQUIREMENTS, but the agent CLI requires it.
     .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.7.1")),
 
-    // Tokenizer (S2 / OQ-2). mlx-swift-lm 3.x ships only the `MLXLMCommon.Tokenizer`/
-    // `TokenizerLoader` *protocols* — no concrete tokenizer. swift-transformers provides a
-    // local-folder tokenizer loader (and bundles swift-jinja so `applyChatTemplate` works).
-    // It is independent of mlx-swift-lm, so it does NOT collide with our ml-explore pin the way
-    // the DePasqualeOrg swift-tokenizers-mlx fork would. We wire it into the MLXLMCommon seam via
-    // mlx-swift-lm's own `#huggingFaceTokenizerLoader()` macro (from the `MLXHuggingFace` product),
-    // which expands to `AutoTokenizer.from(modelFolder:)` — so the `import Tokenizers` dependency
-    // is still required at the call site even though the adapter code is macro-generated.
+    // Tokenizer. mlx-swift-lm 3.x ships only the `MLXLMCommon.Tokenizer`/`TokenizerLoader`
+    // protocols; `SwiftTokenizersLoader` adapts DePasqualeOrg/swift-tokenizers (the Rust
+    // `tokenizers` crate, with Jinja chat templates) to them. swift-tokenizers is the
+    // tokenizer the image stack uses (SwiftTuberia, flux-2-swift-mlx, SwiftVinetas,
+    // mlx-audio-swift); swift-transformers, used before 1.13.0, defines a module of the same
+    // name (`Tokenizers`), so an app could not link SwiftBruja beside them.
+    // upToNextMinor: swift-tokenizers is 0.x and changed API between minors.
     .package(
-      url: "https://github.com/huggingface/swift-transformers", .upToNextMajor(from: "1.3.3")),
+      url: "https://github.com/DePasqualeOrg/swift-tokenizers.git", .upToNextMinor(from: "0.7.5")),
 
-    // Deliberately removed: swift-tokenizers + swift-tokenizers-mlx. The adapter
-    // (swift-tokenizers-mlx 0.3.0) does not compile against swift-tokenizers 0.7.x
-    // (encode/decode became typed-throws and the bridge was never updated; no newer
-    // adapter release exists). The tokenizer story is deferred to the rework's
-    // "different dependency solution".
-    //
     // FoundationModels (R2/R8.1) is a system framework — `import FoundationModels`,
     // no SPM dependency entry required.
   ],
@@ -75,9 +68,8 @@ let package = Package(
         .product(name: "MLXFast", package: "mlx-swift"),
         .product(name: "MLXLLM", package: "mlx-swift-lm"),
         .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
-        .product(name: "MLXHuggingFace", package: "mlx-swift-lm"),
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
-        .product(name: "Tokenizers", package: "swift-transformers"),
+        .product(name: "Tokenizers", package: "swift-tokenizers"),
       ],
       swiftSettings: [.swiftLanguageMode(.v6)]
     ),
@@ -108,6 +100,7 @@ let package = Package(
       dependencies: [
         "SwiftBruja",
         .product(name: "SwiftAcervo", package: "SwiftAcervo"),
+        .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
       ],
       swiftSettings: [.swiftLanguageMode(.v6)]
     ),
