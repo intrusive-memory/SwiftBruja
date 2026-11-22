@@ -1,10 +1,8 @@
 import Foundation
 import MLX
-import MLXHuggingFace
 import MLXLLM
 import MLXLMCommon
 import SwiftAcervo
-import Tokenizers
 
 // MARK: - BrujaModelManager
 
@@ -80,18 +78,15 @@ public actor BrujaModelManager {
 
     // Load model from local directory using LLMModelFactory (mlx-swift-lm 3.x API).
     //
-    // S2: every `loadContainer(from:using:)` overload requires a concrete
-    // `MLXLMCommon.TokenizerLoader`. mlx-swift-lm ships the protocol only, so we
-    // supply one via its own `#huggingFaceTokenizerLoader()` macro (OQ-2), which
-    // expands to `AutoTokenizer.from(modelFolder:)` — reading the tokenizer from the
-    // local model directory offline via swift-transformers. The load is fully local —
-    // `Acervo` already placed every file in `modelDir`. (Requires `import Tokenizers`
-    // and `import MLXHuggingFace` above for the macro expansion to resolve.)
+    // Every `loadContainer(from:using:)` overload needs a concrete
+    // `MLXLMCommon.TokenizerLoader`; `SwiftTokenizersLoader` reads the tokenizer from the
+    // local model directory with swift-tokenizers. Fully local: `Acervo` already placed
+    // every file in `modelDir`.
     let container: ModelContainer
     do {
       container = try await LLMModelFactory.shared.loadContainer(
         from: modelDir,
-        using: #huggingFaceTokenizerLoader()
+        using: SwiftTokenizersLoader()
       )
     } catch {
       throw BrujaError.modelLoadFailed(error)
